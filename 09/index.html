@@ -89,6 +89,7 @@ td[contenteditable]:empty::before{content:'클릭해 입력';color:#C0BACF;font-
     <div class="spin" id="spin"></div>
     <span id="status"></span>
     <button id="dlBtn">⬇ ③ hwpx 다운로드</button>
+    <button id="clearBtn" style="background:#fff;border:1.5px solid var(--line);color:var(--muted);padding:12px 16px;font-weight:500">내용 지우기</button>
   </div>
 
   <div class="card" style="flex:1;display:flex;flex-direction:column">
@@ -114,7 +115,7 @@ td[contenteditable]:empty::before{content:'클릭해 입력';color:#C0BACF;font-
 
 <script>
 const PASSWORD='tlsekq';
-let unlocked=false, currentFile=null;
+let unlocked=false, enteredPw='', currentFile=null;
 
 // 표 정의: key, hwpx 자리표시자 규칙(rowStart=1, colStart), 헤더, 행 라벨(없으면 전체 편집)
 const SHEETS=[
@@ -202,6 +203,37 @@ SHEETS.forEach((sh,i)=>{
   sheetsEl.appendChild(div);
 });
 
+// ---- 자동 저장: 입력할 때마다 브라우저에 보관, 새로고침해도 유지 ----
+const SAVE_KEY='gy9_autosave';
+function saveCells(){
+  const data={};
+  document.querySelectorAll('[data-key]').forEach(td=>{ if(td.innerText.trim()) data[td.dataset.key]=td.innerText; });
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(data)); }catch(e){}
+}
+let saveT=null;
+sheetsEl.addEventListener('input',()=>{ clearTimeout(saveT); saveT=setTimeout(saveCells,400); });
+(function restoreCells(){
+  try{
+    const data=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}');
+    const keys=Object.keys(data); if(!keys.length) return;
+    keys.forEach(k=>{ const td=document.querySelector(`[data-key="${k}"]`); if(td) td.textContent=data[k]; });
+    setTimeout(()=>toast('이전 작성 내용을 불러왔습니다. 새로 시작하려면 [내용 지우기]를 누르세요.'),600);
+  }catch(e){}
+})();
+let clearArmed=false;
+const clearBtn=document.getElementById('clearBtn');
+clearBtn.onclick=()=>{
+  if(!clearArmed){
+    clearArmed=true; clearBtn.textContent='정말 지울까요?'; clearBtn.style.color='#C0392B';
+    setTimeout(()=>{clearArmed=false; clearBtn.textContent='내용 지우기'; clearBtn.style.color='';},2500);
+    return;
+  }
+  document.querySelectorAll('[data-key]').forEach(td=>td.textContent='');
+  localStorage.removeItem(SAVE_KEY);
+  clearArmed=false; clearBtn.textContent='내용 지우기'; clearBtn.style.color='';
+  toast('모든 칸을 지웠습니다.');
+};
+
 // 파일 선택
 const fileInput=document.getElementById('fileInput'), draftBtn=document.getElementById('draftBtn');
 fileInput.addEventListener('change',()=>{
@@ -221,7 +253,8 @@ draftBtn.onclick=()=>{
 };
 function checkPw(){
   if(document.getElementById('pwInput').value===PASSWORD){
-    unlocked=true; document.getElementById('modalBg').style.display='none'; runDraft();
+    unlocked=true; enteredPw=document.getElementById('pwInput').value;
+    document.getElementById('modalBg').style.display='none'; runDraft();
   } else { document.getElementById('pwErr').style.display='block'; }
 }
 document.getElementById('pwOk').onclick=checkPw;
@@ -239,7 +272,7 @@ async function runDraft(){
   try{
     const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(currentFile);});
     const resp=await fetch('/api/draft',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({filename:currentFile.name,mime:currentFile.type,data:b64})});
+      body:JSON.stringify({filename:currentFile.name,mime:currentFile.type,data:b64,pw:enteredPw})});
     const data=await resp.json();
     if(!resp.ok) throw new Error(data.error||'초안 생성 실패');
     // 배열 → 셀 채우기
@@ -250,6 +283,7 @@ async function runDraft(){
         if(td) td.textContent=val;
       }));
     }
+    saveCells(); // AI 초안도 즉시 자동 저장
     toast('AI 초안 완성! 내 수업에 맞게 다듬은 뒤 hwpx로 내려받으세요.');
   }catch(err){ toast('오류: '+err.message); }
   finally{

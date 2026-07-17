@@ -9,7 +9,9 @@ module.exports = async function handler(req, res) {
   if (!UPSTAGE_KEY) { res.status(500).json({ error: '서버에 UPSTAGE_API_KEY가 설정되지 않았습니다.' }); return; }
 
   try {
-    const { filename, mime, data } = req.body || {};
+    const { filename, mime, data, pw } = req.body || {};
+    // 화면 잠금과 별개로 서버에서도 비밀번호를 검사해 무단 API 호출을 막는다
+    if (pw !== 'tlsekq') { res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' }); return; }
     if (!filename || !data) { res.status(400).json({ error: '파일 데이터가 없습니다.' }); return; }
 
     // 1) Document Parse

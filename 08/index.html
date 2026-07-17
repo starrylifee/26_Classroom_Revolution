@@ -171,7 +171,7 @@ button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-siz
 const LABELS = ['① 학습자 주도성','② 의미 있는 과제','③ 구조화된 상호작용','④ 가시적 학습·즉각 피드백','⑤ 개별화·맞춤형 지원'];
 const PASSWORD = '20260717';
 let selfScores = [5,5,5,5,5];
-let unlocked = false, selfMode = true, currentFile = null, chart;
+let unlocked = false, enteredPw = '', selfMode = true, currentFile = null, chart;
 
 function toast(msg){
   const t = document.getElementById('toast');
@@ -233,7 +233,7 @@ tabAI.onclick = ()=>{
 // 비밀번호
 function checkPw(){
   if(document.getElementById('pwInput').value===PASSWORD){
-    unlocked=true;
+    unlocked=true; enteredPw=document.getElementById('pwInput').value;
     document.getElementById('modalBg').style.display='none';
     tabAI.textContent='🤖 AI 진단 ✓';
     toast('AI 진단이 활성화되었습니다.');
@@ -278,7 +278,7 @@ analyzeBtn.onclick = async ()=>{
       r.readAsDataURL(currentFile);
     });
     const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({filename:currentFile.name, mime:currentFile.type, data:b64})});
+      body:JSON.stringify({filename:currentFile.name, mime:currentFile.type, data:b64, pw:enteredPw})});
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error||'분석 실패');
     chart.data.datasets[1].data = data.scores;
