@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>데이터 감사표 작성 도우미 · 9과정</title>
+<meta property="og:title" content="데이터 감사표 작성 도우미">
+<meta property="og:description" content="수업 설계안을 올리면 AI가 학습지 초안을 잡아주고, 수정 후 hwpx로 내려받습니다.">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E2841'/%3E%3Cpath d='M32 10 52 25 44 50H20L12 25Z' fill='none' stroke='%230F9ED5' stroke-width='5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='33' r='6' fill='%23E97132'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0E2841;--teal:#156082;--sky:#0F9ED5;--orange:#E97132;--bg:#F4F7FA;--line:#D8E0E8;--muted:#5B6B7C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:#1B2A3A;min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--navy);color:#fff;padding:14px 28px;display:flex;align-items:center;gap:14px}
+header .badge{background:var(--sky);color:#fff;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+header h1{font-size:22px;font-weight:700}
+header .sub{margin-left:auto;font-size:13px;color:#AFC3D4;white-space:nowrap}
+main{flex:1;max-width:1500px;width:100%;margin:0 auto;padding:18px 28px;display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05)}
+.toolbar{display:flex;align-items:center;gap:14px;padding:16px 20px;flex-wrap:wrap}
+.toolbar .step{font-weight:700;color:var(--navy);font-size:15px;white-space:nowrap}
+.filebtn{position:relative;overflow:hidden;background:#EBF4FA;border:1.5px dashed #9CC4DD;color:var(--teal);padding:11px 18px;border-radius:9px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+#fileName{font-size:14px;color:var(--muted);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:700;transition:.15s}
+#draftBtn{background:var(--orange);color:#fff;padding:12px 22px}
+#draftBtn:hover{background:#D4642A}
+#draftBtn:disabled{background:#E5B79E;cursor:not-allowed}
+#dlBtn{background:var(--teal);color:#fff;padding:12px 22px;margin-left:auto}
+#dlBtn:hover{background:#124F6B}
+.spin{display:none;width:22px;height:22px;border:3px solid #E2ECF3;border-top-color:var(--orange);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#status{font-size:14px;color:var(--orange);font-weight:500}
+.tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{padding:14px 18px;font-size:15px;font-weight:700;color:var(--muted);background:#FAFCFD;border:none;border-bottom:3px solid transparent;white-space:nowrap}
+.tab.active{color:var(--navy);border-bottom-color:var(--sky);background:#fff}
+.sheet{display:none;padding:20px;overflow-x:auto}
+.sheet.active{display:block}
+.sheet h2{font-size:17px;color:var(--navy);margin-bottom:6px}
+.sheet .hint{font-size:13px;color:var(--muted);margin-bottom:14px}
+table{border-collapse:collapse;width:100%;min-width:900px;margin-bottom:22px}
+th{background:var(--navy);color:#fff;font-size:14px;font-weight:700;padding:10px 8px;border:1px solid #2A4560}
+td{border:1px solid var(--line);padding:9px 10px;font-size:14px;line-height:1.5;vertical-align:top;background:#fff}
+td.label{background:#EDF3F8;font-weight:700;color:var(--navy);white-space:nowrap;text-align:center}
+td[contenteditable]{min-width:110px}
+td[contenteditable]:focus{outline:2px solid var(--sky);background:#F4FAFE}
+td[contenteditable]:empty::before{content:'클릭해 입력';color:#B9C6D2;font-size:13px}
+.modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
+.modal h3{font-size:18px;color:var(--navy);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);margin-bottom:14px}
+.modal input{width:100%;padding:13px;font-size:16px;border:1.5px solid var(--line);border-radius:9px;outline:none;font-family:inherit}
+.modal input:focus{border-color:var(--sky)}
+.modal .err{display:none;color:#C0392B;font-size:13px;margin-top:8px}
+.modal .row{display:flex;gap:10px;margin-top:16px}
+.modal .row button{flex:1;padding:12px}
+.btn-outline{background:#fff;border:1.5px solid var(--line);color:#1B2A3A;font-weight:500}
+.btn-primary{background:var(--teal);color:#fff}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
+.toast.show{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">9과정</span>
+  <h1>데이터 감사표 작성 도우미</h1>
+  <span class="sub">2026 인공지능 활용 선도교사 연수 · 초등 맞춤 교수학습 설계 워크숍</span>
+</header>
+
+<main>
+  <div class="card toolbar">
+    <span class="step">① 설계안 업로드</span>
+    <label class="filebtn">📄 수업 설계안 선택<input type="file" id="fileInput" accept=".pdf,.pptx,.docx,.hwp,.hwpx,.png,.jpg,.jpeg"></label>
+    <span id="fileName">PDF·PPTX·HWPX·이미지 (3MB 이하)</span>
+    <span class="step">→ ② AI 초안</span>
+    <button id="draftBtn" disabled>🤖 AI 초안 생성</button>
+    <div class="spin" id="spin"></div>
+    <span id="status"></span>
+    <button id="dlBtn">⬇ ③ hwpx 다운로드</button>
+  </div>
+
+  <div class="card" style="flex:1;display:flex;flex-direction:column">
+    <div class="tabs" id="tabs"></div>
+    <div id="sheets"></div>
+  </div>
+</main>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>🔒 AI 초안 활성화</h3>
+    <p>강사가 안내한 비밀번호를 입력하세요.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호">
+    <div class="err" id="pwErr">비밀번호가 일치하지 않습니다.</div>
+    <div class="row">
+      <button class="btn-outline" id="pwCancel">취소</button>
+      <button class="btn-primary" id="pwOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PASSWORD='20260717';
+let unlocked=false, currentFile=null;
+
+// 표 정의: key, hwpx 자리표시자 규칙(rowStart=1, colStart), 헤더, 행 라벨(없으면 전체 편집)
+const SHEETS=[
+ {tab:'학습지 1 · 데이터 감사표', tables:[
+   {key:'g', colStart:1, title:'내 설계안 데이터 감사표',
+    headers:['수업 단계','활동 내용','사용 도구','남는 데이터','데이터를 보는 시점','해석 기준','교사 행동'],
+    rowLabels:['도입','전개 1','전개 2','정리','기타']},
+   {key:'s', colStart:0, title:'예상되는 데이터 신호',
+    headers:['내 수업에서 예상되는 데이터 신호','가능한 해석 1','가능한 해석 2','추가 확인 데이터','교사 행동'],
+    rows:3}
+ ]},
+ {tab:'학습지 2 · 해석 카드', tables:[
+   {key:'t', colStart:1, title:'같은 데이터, 다른 해석 카드 (시간대별 흐름)',
+    headers:['시간','학생 활동','AI·디지털 도구','남는 데이터','교사 확인 시점','교사 행동'],
+    rowLabels:['0~2분','2~5분','5~10분','10~15분','15~20분','20~30분','30~40분']}
+ ]},
+ {tab:'학습지 3 · 스윔레인', tables:[
+   {key:'e', colStart:1, title:'학생-AI-교사 분 단위 스윔레인 (15분 핵심 구간)',
+    headers:['평가 요소','동선에서 증거가 남는 지점','남는 데이터·산출물','루브릭 채점 근거','보완 필요'],
+    rowLabels:['개념 이해','문제 해결 과정','협업·소통','자기성찰','도구 활용']}
+ ]},
+ {tab:'학습지 4 · 평가 증거 정합', tables:[
+   {key:'p', colStart:1, title:'동선 위 평가 증거 정합 (페르소나 점검)',
+    headers:['페르소나','막히는 지점','왜 위험한가','수정 제안','반영 여부'],
+    rowLabels:['빠른 학습자','느린 학습자','이탈 학습자','특수교육대상 학생','기기·네트워크 문제'],
+    fixedLastCol:'□ 반영 □ 보류 □ 기각'}
+ ]},
+ {tab:'학습지 5 · 크래시 테스트', tables:[
+   {key:'c', colStart:1, title:'설계안 크래시 테스트 기록지',
+    headers:['시간','학습 단계','학생 활동','AI·도구/데이터','데이터 확인 시점','IF–THEN–DO','교사 행동','평가 증거','Plan B'],
+    rowLabels:['0~2분','2~7분','7~12분','12~15분']}
+ ]},
+ {tab:'학습지 6 · 15분 큐시트', tables:[
+   {key:'q', colStart:1, title:'마이크로티칭용 15분 큐시트',
+    headers:['시간','학습 단계','학생 활동','AI·도구/데이터','데이터 확인 시점','IF–THEN–DO','교사 행동','평가 증거','Plan B'],
+    rowLabels:['0~2분','2~7분','7~12분','12~15분']}
+ ]}
+];
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// 표 렌더링
+const tabsEl=document.getElementById('tabs'), sheetsEl=document.getElementById('sheets');
+SHEETS.forEach((sh,i)=>{
+  const btn=document.createElement('button');
+  btn.className='tab'+(i===0?' active':''); btn.textContent=sh.tab;
+  btn.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active'); document.getElementById('sheet'+i).classList.add('active');
+  };
+  tabsEl.appendChild(btn);
+  const div=document.createElement('div');
+  div.className='sheet'+(i===0?' active':''); div.id='sheet'+i;
+  sh.tables.forEach(tb=>{
+    const h=document.createElement('h2'); h.textContent=tb.title; div.appendChild(h);
+    const table=document.createElement('table');
+    const thead=document.createElement('thead'); const trh=document.createElement('tr');
+    tb.headers.forEach(hd=>{const th=document.createElement('th');th.textContent=hd;trh.appendChild(th);});
+    thead.appendChild(trh); table.appendChild(thead);
+    const tbody=document.createElement('tbody');
+    const nRows=tb.rowLabels?tb.rowLabels.length:tb.rows;
+    const editCols=tb.headers.length-(tb.rowLabels?1:0)-(tb.fixedLastCol?1:0);
+    for(let r=0;r<nRows;r++){
+      const tr=document.createElement('tr');
+      if(tb.rowLabels){const td=document.createElement('td');td.className='label';td.textContent=tb.rowLabels[r];tr.appendChild(td);}
+      for(let c=0;c<editCols;c++){
+        const td=document.createElement('td');
+        td.contentEditable='true';
+        td.dataset.key=`${tb.key}_${r+1}_${tb.colStart+c}`;
+        tr.appendChild(td);
+      }
+      if(tb.fixedLastCol){const td=document.createElement('td');td.textContent=tb.fixedLastCol;td.style.whiteSpace='nowrap';tr.appendChild(td);}
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody); div.appendChild(table);
+  });
+  const hint=document.createElement('div'); hint.className='hint';
+  hint.textContent='칸을 클릭해 자유롭게 수정하세요. 수정한 내용 그대로 hwpx에 들어갑니다.';
+  div.appendChild(hint);
+  sheetsEl.appendChild(div);
+});
+
+// 파일 선택
+const fileInput=document.getElementById('fileInput'), draftBtn=document.getElementById('draftBtn');
+fileInput.addEventListener('change',()=>{
+  const f=fileInput.files[0]; if(!f) return;
+  if(f.size>3*1024*1024){toast('3MB를 초과합니다. PDF로 변환해 다시 올려주세요.');return;}
+  currentFile=f;
+  document.getElementById('fileName').textContent='📄 '+f.name;
+  draftBtn.disabled=false;
+});
+
+// AI 초안 (비밀번호 잠금)
+draftBtn.onclick=()=>{
+  if(unlocked){runDraft();return;}
+  document.getElementById('modalBg').style.display='flex';
+  const inp=document.getElementById('pwInput'); inp.value=''; inp.focus();
+  document.getElementById('pwErr').style.display='none';
+};
+function checkPw(){
+  if(document.getElementById('pwInput').value===PASSWORD){
+    unlocked=true; document.getElementById('modalBg').style.display='none'; runDraft();
+  } else { document.getElementById('pwErr').style.display='block'; }
+}
+document.getElementById('pwOk').onclick=checkPw;
+document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkPw();});
+document.getElementById('pwCancel').onclick=()=>document.getElementById('modalBg').style.display='none';
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')e.target.style.display='none';});
+
+const MSGS=['설계안을 읽는 중입니다...','수업 흐름에서 데이터 지점을 찾는 중...','학습지 초안을 작성하는 중...','표를 채우는 중...'];
+async function runDraft(){
+  if(!currentFile) return;
+  draftBtn.disabled=true;
+  document.getElementById('spin').style.display='block';
+  let i=0; const st=document.getElementById('status'); st.textContent=MSGS[0];
+  const h=setInterval(()=>{st.textContent=MSGS[++i%MSGS.length];},2500);
+  try{
+    const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(currentFile);});
+    const resp=await fetch('/api/draft',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({filename:currentFile.name,mime:currentFile.type,data:b64})});
+    const data=await resp.json();
+    if(!resp.ok) throw new Error(data.error||'초안 생성 실패');
+    // 배열 → 셀 채우기
+    for(const tb of SHEETS.flatMap(s=>s.tables)){
+      const arr=data[tb.key]; if(!Array.isArray(arr)) continue;
+      arr.forEach((row,r)=>row.forEach((val,c)=>{
+        const td=document.querySelector(`[data-key="${tb.key}_${r+1}_${tb.colStart+c}"]`);
+        if(td) td.textContent=val;
+      }));
+    }
+    toast('AI 초안 완성! 내 수업에 맞게 다듬은 뒤 hwpx로 내려받으세요.');
+  }catch(err){ toast('오류: '+err.message); }
+  finally{
+    clearInterval(h); st.textContent='';
+    document.getElementById('spin').style.display='none';
+    draftBtn.disabled=false; draftBtn.textContent='🤖 다시 생성';
+  }
+}
+
+// ---------------- hwpx 생성 ----------------
+function xmlEscape(s){return String(s??'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]);}
+function escapeRegex(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function applyPlaceholder(xml,key,value){
+  const text=String(value||'').replace(/\n{2,}/g,'\n').trim();
+  const lines=text.split('\n');
+  if(lines.length===1){return xml.replace(new RegExp(escapeRegex(key),'g'),xmlEscape(text));}
+  const escapedKey=escapeRegex(key);
+  const pPattern=new RegExp(`<hp:p\\b[^>]*>(?:(?!<hp:p\\b)[\\s\\S])*?${escapedKey}(?:(?!<hp:p\\b)[\\s\\S])*?</hp:p>`,'g');
+  const replaced=xml.replace(pPattern,match=>lines.map(line=>match.replace(key,xmlEscape(line))).join(''));
+  if(replaced===xml){return xml.replace(new RegExp(escapedKey,'g'),xmlEscape(text.replace(/\n/g,' ')));}
+  return replaced;
+}
+
+document.getElementById('dlBtn').onclick=async()=>{
+  try{
+    const resp=await fetch('./template.hwpx');
+    if(!resp.ok) throw new Error('템플릿 로드 실패');
+    const zip=await JSZip.loadAsync(await resp.arrayBuffer());
+    let xml=await zip.file('Contents/section0.xml').async('string');
+    document.querySelectorAll('[data-key]').forEach(td=>{
+      xml=applyPlaceholder(xml,`{{${td.dataset.key}}}`,td.innerText);
+    });
+    // 남은 자리표시자 제거 + 레이아웃 캐시 제거(한글이 열 때 재계산)
+    xml=xml.replace(/\{\{[a-z]_\d+_\d+\}\}/g,'');
+    xml=xml.replace(/<hp:linesegarray>[\s\S]*?<\/hp:linesegarray>/g,'').replace(/<hp:linesegarray\s*\/>/g,'');
+    zip.file('Contents/section0.xml',xml);
+    const blob=await zip.generateAsync({type:'blob',mimeType:'application/hwp+zip',compression:'DEFLATE'});
+    const a=document.createElement('a');
+    a.download=`9과정_학습지_${new Date().toISOString().slice(0,10)}.hwpx`;
+    a.href=URL.createObjectURL(blob); a.click();
+    URL.revokeObjectURL(a.href);
+    toast('hwpx 파일로 저장했습니다. 한글에서 열어 확인하세요.');
+  }catch(err){ toast('다운로드 오류: '+err.message); }
+};
+</script>
+</body>
+</html>
