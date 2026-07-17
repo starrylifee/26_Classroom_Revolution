@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IF–THEN–DO 챌린지 · 9과정</title>
+<meta property="og:title" content="IF–THEN–DO 챌린지 — 데이터 상황실">
+<meta property="og:description" content="수업 중 데이터 신호를 읽고 제한시간 안에 해석과 교사 행동을 결정하는 훈련 게임">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2C59'/%3E%3Cpath d='M32 10 52 25 44 50H20L12 25Z' fill='none' stroke='%23F6C2E4' stroke-width='5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='33' r='6' fill='%23FCE303'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E2C59;--teal:#7A2E6E;--sky:#F6C2E4;--orange:#7A2E6E;--green:#1F7A3D;--red:#C0392B;--bg:#F7F9FF;--line:#DDE1EB;--muted:#5B6B7C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:#1B2A3A;min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--navy);color:#fff;padding:12px 28px;display:flex;align-items:center;gap:14px}
+header .badge{background:var(--sky);font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px}
+header h1{font-size:20px;font-weight:700}
+header a{margin-left:auto;color:#B7C0DA;font-size:14px;text-decoration:none}
+header a:hover{color:#fff}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:16px}
+.wrap{width:min(1100px,96vw)}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 2px 14px rgba(14,40,65,.07);padding:34px}
+/* 시작 화면 */
+.start h2{font-size:34px;font-weight:900;color:var(--navy);letter-spacing:-.02em}
+.start .desc{font-size:18px;line-height:1.8;color:var(--muted);margin:18px 0 8px}
+.rule{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 0}
+.rule div{background:#ECDFF6;border:1px solid #D9C6EC;border-radius:12px;padding:18px;text-align:center}
+.rule b{display:block;font-size:22px;color:var(--teal);margin-bottom:6px}
+.rule span{font-size:15px;color:var(--muted)}
+.bigbtn{width:100%;padding:18px;font-size:20px;font-weight:900;background:var(--orange);color:#fff;border:none;border-radius:12px;cursor:pointer;font-family:inherit}
+.bigbtn:hover{background:#5C2253}
+/* 게임 화면 */
+.hud{display:flex;align-items:center;gap:18px;margin-bottom:16px}
+.hud .round{font-size:16px;font-weight:700;color:var(--muted);white-space:nowrap}
+.hud .phase{background:var(--navy);color:#fff;font-size:15px;font-weight:700;padding:5px 14px;border-radius:7px;white-space:nowrap}
+.timerbar{flex:1;height:14px;background:#E8E2F2;border-radius:7px;overflow:hidden}
+.timerbar i{display:block;height:100%;background:var(--sky);border-radius:7px;transition:width .2s linear}
+.timerbar i.warn{background:#FCE303}
+.hud .score{font-size:22px;font-weight:900;color:var(--navy);white-space:nowrap}
+.hud .combo{font-size:14px;color:var(--orange);font-weight:700;white-space:nowrap}
+.signal{background:var(--navy);color:#fff;border-radius:14px;padding:24px 28px;margin-bottom:18px}
+.signal .when{font-size:15px;color:#C9BEE8;font-weight:700;margin-bottom:8px}
+.signal .if{font-size:26px;font-weight:900;line-height:1.5}
+.signal .if b{color:#FCE303}
+.qlabel{font-size:17px;font-weight:900;color:var(--teal);margin-bottom:12px}
+.qlabel span{background:#ECDFF6;padding:3px 12px;border-radius:6px;margin-right:8px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{background:#fff;border:2px solid var(--line);border-radius:12px;padding:18px 20px;font-size:18px;font-weight:500;line-height:1.55;text-align:left;cursor:pointer;font-family:inherit;transition:.12s}
+.opt:hover{border-color:var(--sky);background:#FBF7FE}
+.opt.correct{border-color:var(--green);background:#EDF7EE;font-weight:700}
+.opt.wrong{border-color:var(--red);background:#FBEeed;opacity:.85}
+.opt:disabled{cursor:default}
+.explain{display:none;margin-top:16px;background:#FAF0F7;border-left:4px solid var(--orange);border-radius:0 10px 10px 0;padding:16px 20px;font-size:16px;line-height:1.7}
+.explain b{color:var(--orange)}
+.nextbtn{display:none;margin-top:16px;width:100%;padding:15px;font-size:18px;font-weight:700;background:var(--teal);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit}
+.nextbtn:hover{background:#5C2253}
+/* 결과 화면 */
+.result{text-align:center}
+.result h2{font-size:24px;color:var(--muted);font-weight:700}
+.result .final{font-size:64px;font-weight:900;color:var(--navy);margin:6px 0}
+.result .title{display:inline-block;font-size:24px;font-weight:900;color:#fff;background:var(--orange);padding:10px 26px;border-radius:12px;margin:10px 0 6px}
+.result .comment{font-size:17px;color:var(--muted);line-height:1.7;margin:14px 0 22px}
+.review{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px}
+.review div{border:1px solid var(--line);border-radius:10px;padding:10px 6px;font-size:13px;line-height:1.5}
+.review .ox{font-size:20px;font-weight:900}
+.review .o{color:var(--green)} .review .x{color:var(--red)}
+@media(max-width:760px){.opts{grid-template-columns:1fr}.rule{grid-template-columns:1fr}.review{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">9과정 · 활동</span>
+  <h1>IF–THEN–DO 챌린지 — 데이터 상황실</h1>
+  <a href="../">← 학습지 작성 도우미</a>
+</header>
+
+<main><div class="wrap">
+
+  <!-- 시작 -->
+  <div class="card start" id="viewStart">
+    <h2>지금, 대시보드에 신호가 떴다.</h2>
+    <p class="desc">가상 수업 40분. 대시보드와 교실에서 <strong>데이터 신호(IF)</strong>가 올라옵니다.<br>
+    제한시간 안에 <strong>해석(THEN)</strong>과 <strong>교사 행동(DO)</strong>을 결정하세요.<br>
+    빠른 단정은 함정입니다. 데이터가 "보여주지 못하는 것"까지 생각해야 점수가 쌓입니다.</p>
+    <div class="rule">
+      <div><b>10 라운드</b><span>도입 → 진단 → 탐구 → 공유 → 정리</span></div>
+      <div><b>20초</b><span>라운드당 제한시간 · 남은 시간만큼 보너스</span></div>
+      <div><b>콤보</b><span>연속 정답 시 추가 점수</span></div>
+    </div>
+    <input type="text" id="nameInput" placeholder="이름 또는 별명을 입력하세요" maxlength="12"
+      style="width:100%;padding:16px;font-size:19px;border:2px solid var(--line);border-radius:12px;outline:none;font-family:inherit;margin-bottom:12px;text-align:center">
+    <button class="bigbtn" id="startBtn">수업 시작 ▶</button>
+  </div>
+
+  <!-- 게임 -->
+  <div class="card" id="viewGame" style="display:none">
+    <div class="hud">
+      <span class="round" id="hudRound">1/10</span>
+      <span class="phase" id="hudPhase">도입</span>
+      <div class="timerbar"><i id="timerFill" style="width:100%"></i></div>
+      <span class="combo" id="hudCombo"></span>
+      <span class="score" id="hudScore">0점</span>
+    </div>
+    <div class="signal">
+      <div class="when" id="sigWhen"></div>
+      <div class="if" id="sigIf"></div>
+    </div>
+    <div class="qlabel" id="qLabel"></div>
+    <div class="opts" id="opts"></div>
+    <div class="explain" id="explain"></div>
+    <button class="nextbtn" id="nextBtn">다음 신호 ▶</button>
+  </div>
+
+  <!-- 결과 -->
+  <div class="card result" id="viewResult" style="display:none">
+    <div id="captureArea" style="background:#fff;border-radius:12px;padding:20px 16px">
+      <h2 id="resultHead">수업 종료 — 최종 점수</h2>
+      <div class="final" id="finalScore"></div>
+      <div class="title" id="finalTitle"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:640px;margin:18px auto">
+        <div style="background:#ECDFF6;border-radius:12px;padding:16px">
+          <div style="font-size:14px;color:var(--muted);font-weight:700">정답률</div>
+          <div id="statRate" style="font-size:30px;font-weight:900;color:var(--teal)"></div>
+        </div>
+        <div style="background:#ECDFF6;border-radius:12px;padding:16px">
+          <div style="font-size:14px;color:var(--muted);font-weight:700">걸린 시간</div>
+          <div id="statTime" style="font-size:30px;font-weight:900;color:var(--teal)"></div>
+        </div>
+        <div style="background:#ECDFF6;border-radius:12px;padding:16px">
+          <div style="font-size:14px;color:var(--muted);font-weight:700">최고 콤보</div>
+          <div id="statCombo" style="font-size:30px;font-weight:900;color:var(--teal)"></div>
+        </div>
+      </div>
+      <p class="comment" id="finalComment"></p>
+      <div class="review" id="review"></div>
+      <div id="resultMeta" style="font-size:13px;color:#9AA1B8"></div>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:18px">
+      <button class="bigbtn" id="saveBtn" style="background:var(--teal)">결과 JPG 저장</button>
+      <button class="bigbtn" id="retryBtn">다시 도전 ▶</button>
+    </div>
+  </div>
+
+</div></main>
+
+<script>
+// 라운드: IF 신호 → Q1 해석(THEN) → Q2 행동(DO). correct = 정답 인덱스.
+const ROUNDS = [
+ {phase:'도입', when:'수업 2분차 · LMS 접속 현황',
+  sig:'26명 중 <b>4명이 아직 미접속</b>입니다.',
+  q1:{q:'이 신호, 어떻게 해석할까?', opts:[
+    '수업에 집중할 마음이 없는 학생들이다',
+    '기기·로그인 문제일 수 있다. 아직 단정할 수 없다'], correct:1},
+  q2:{q:'교사의 행동(DO)은?', opts:[
+    '전체를 멈추고 접속 안 한 학생을 호명해 주의를 준다',
+    'QR 접속을 다시 안내하고, 안 되면 종이 활동지로 전환한다'], correct:1},
+  why:'접속 로그는 <b>마음이 아니라 기기 상태</b>부터 말해줍니다. 미접속 = 태만 단정은 위험. Plan B(종이 대안)를 준비한 설계가 크래시를 막습니다.'},
+
+ {phase:'진단', when:'수업 5분차 · 진단 퀴즈 결과',
+  sig:'정답률 <b>90%</b>, 평균 응답 시간 <b>4초</b>.',
+  q1:{q:'이 신호, 어떻게 해석할까?', opts:[
+    '거의 다 이해했다. 바로 다음 단계로 넘어가자',
+    '찍기나 쉬운 문항 가능성이 있다. 풀이 과정을 더 봐야 한다'], correct:1},
+  q2:{q:'교사의 행동(DO)은?', opts:[
+    '변형 문항 1개를 투입해 진짜 이해인지 확인한다',
+    '칭찬하고 계획대로 진도를 나간다'], correct:0},
+  why:'응답 4초는 <b>생각한 시간이 아니라 클릭한 시간</b>일 수 있습니다. 정답률 뒤에 숨은 "어떻게 풀었는가"를 변형 문항으로 확인하세요.'},
+
+ {phase:'탐구', when:'수업 10분차 · 개별 풀이 모니터링',
+  sig:'한 학생이 <b>90초 넘게 미제출</b> 상태입니다.',
+  q1:{q:'이 신호, 어떻게 해석할까?', opts:[
+    '멍하니 딴생각 중인 게 분명하다',
+    '깊이 생각 중일 수도, 막힘·입력 부담일 수도 있다'], correct:1},
+  q2:{q:'교사의 행동(DO)은?', opts:[
+    '즉시 정답을 알려주고 다음 문제로 넘긴다',
+    '힌트 1단계를 제공하고 표정·화면을 직접 관찰한다'], correct:1},
+  why:'미제출 90초의 원인은 최소 세 가지(사고 중·막힘·입력 부담). <b>가장 작은 개입(힌트 1단계)</b> 후 관찰로 좁혀가는 것이 순서입니다.'},
+
+ {phase:'공유', when:'수업 14분차 · 패들렛 현황',
+  sig:'댓글이 <b>30개</b>로 폭증했습니다.',
+  q1:{q:'이 신호, 어떻게 해석할까?', opts:[
+    '협업이 활발하다는 확실한 증거다',
+    '"좋아요~" 같은 짧은 반응 반복일 수 있다. 내용의 질을 봐야 한다'], correct:1},
+  q2:{q:'교사의 행동(DO)은?', opts:[
+    '근거를 담아 쓰도록 댓글 문장틀을 제공한다',
+    '댓글 수 1등 모둠에게 보상을 준다'], correct:0},
+  why:'개수는 <b>양의 데이터</b>일 뿐, 배움은 내용의 질에 있습니다. 문장틀("나는 ~라고 생각해, 왜냐하면~")이 질을 끌어올립니다.'},
+
+ {phase:'탐구', when:'수업 12분차 · 활동 로그',
+  sig:'한 학생의 활동 로그가 <b>0건</b>입니다.',
+  q1:{q:'이 신호, 어떻게 해석할까?', opts:[
+    '무기력하고 참여 의지가 없는 상태다',
+    '로그인 실패, 타자 부담 등 로그 밖 원인일 수 있다'], correct:1},
+  q2:{q:'교사의 행동(DO)은?', opts:[
+    '가까이 가서 구두로 확인하고 음성·그림 대안을 연다',
+    '학급 전체에 "참여 안 한 사람 있다"고 공지한다'], correct:0},
+  why:'로그 0건은 <b>디지털 사각지대</b> 신호이기도 합니다. 특히 타자가 느린 학생은 "참여 안 함"으로 보일 수 있어요. 대안 입력 경로가 설계에 있어야 합니다.'},
+
+ {phase:'탐구', when:'수업 11분차 · AI 코스웨어',
+  sig:'한 학생이 힌트를 <b>9회</b> 사용했습니다.',
+  q1:{q:'이 신호, 어떻게 해석할까?', opts:[
+    '포기하지 않고 열심히 노력하는 중이다',
+    '개념 없이 힌트로만 버티는 중일 수 있다. 힌트 후 정답률을 보자'], correct:1},
+  q2:{q:'교사의 행동(DO)은?', opts:[
+    '스스로 해결하도록 힌트를 잠근다',
+    '핵심 개념을 짧게 재설명하고 다시 풀게 한다'], correct:1},
+  why:'힌트 9회 + 힌트 후에도 오답이면 <b>개념 구멍</b> 신호입니다. 이때 필요한 건 더 많은 힌트가 아니라 개념 재설명입니다.'},
+
+ {phase:'탐구', when:'수업 7분차 · 진도 현황',
+  sig:'빠른 학습자 3명이 <b>이미 과제를 끝냈습니다.</b>',
+  q1:{q:'이 신호, 왜 위험할까?', opts:[
+    '대기 시간에 이탈(딴짓)로 이어질 수 있다',
+    '문제없다. 잘하는 학생은 기다리게 두면 된다'], correct:0},
+  q2:{q:'교사의 행동(DO)은?', opts:[
+    '심화 미션이나 또래 튜터 역할을 제공한다',
+    '남은 학생을 재촉해 진도를 맞춘다'], correct:0},
+  why:'빠른 학습자의 <b>빈 시간</b>은 설계 단계에서 준비해야 합니다. 즉석에서 만들면 늦어요. 심화 미션·또래 튜터는 큐시트에 미리 적어둘 것.'},
+
+ {phase:'공유', when:'수업 15분차 · 참여 대시보드',
+  sig:'특수교육대상 학생의 참여도가 <b>"낮음"</b>으로 표시됩니다.',
+  q1:{q:'이 신호, 어떻게 해석할까?', opts:[
+    '활동에 참여하지 않고 있다',
+    '타자·조작 부담 때문에 참여가 낮아 보일 수 있다'], correct:1},
+  q2:{q:'교사의 행동(DO)은?', opts:[
+    '음성·그림·종이 등 다른 표현 경로를 허용한다',
+    '보조 인력에게 대신 입력하게 한다'], correct:0},
+  why:'대시보드는 <b>입력된 것만</b> 셉니다. 표현 방법을 바꾸면 참여가 드러나는 학생이 있어요. 대체 경로는 UDL(보편적 학습설계)의 기본입니다.'},
+
+ {phase:'정리', when:'수업 35분차 · 단원 평가 요약',
+  sig:'학급 평균 <b>85점</b>. 수업이 성공한 걸까요?',
+  q1:{q:'이 신호, 어떻게 해석할까?', opts:[
+    '평균이 높으니 전체적으로 성공한 수업이다',
+    '평균 뒤에 반복 오답 학생군이 숨어 있을 수 있다'], correct:1},
+  q2:{q:'교사의 행동(DO)은?', opts:[
+    '하위 그룹의 오답 유형을 따로 확인한다',
+    '학급 전체에 축하 인사를 하고 마친다'], correct:0},
+  why:'평균은 <b>개인을 지워버리는 숫자</b>입니다. "평균 85점 수업"에서도 같은 유형을 계속 틀리는 학생군이 존재할 수 있어요. 집계는 개인 확인으로 이어져야 합니다.'},
+
+ {phase:'탐구', when:'수업 13분차 · 화면 모니터링',
+  sig:'한 학생이 <b>2분째 무응답</b>, 새 탭 전환 흔적이 보입니다.',
+  q1:{q:'이 신호, 어떻게 해석할까?', opts:[
+    '이탈 신호로 보되, 원인은 아직 단정하지 않는다',
+    '게임 중인 게 분명하니 기기를 회수한다'], correct:0},
+  q2:{q:'교사의 행동(DO)은?', opts:[
+    '가까이 가서 화면을 함께 보며 "어디까지 했어?"라고 발문한다',
+    '원격으로 화면을 잠그고 경고 메시지를 띄운다'], correct:0},
+  why:'이탈 신호의 <b>가장 좋은 추가 데이터는 교사의 눈</b>입니다. 다가가서 발문하면 원인(막힘·지루함·딴짓)이 30초 만에 드러납니다. IF(무응답 2분) → THEN(이탈 의심) → DO(접근·발문)를 큐시트에 적어두세요.'},
+];
+
+const TIME = 20, PER_Q = 100, COMBO_BONUS = 20, TICK_BONUS = 5;
+let idx = 0, score = 0, combo = 0, timer = null, remain = TIME, phaseQ = 1, roundOK = true, results = [];
+let playerName = '', qCorrect = 0, maxCombo = 0, startTs = 0;
+
+const $ = id => document.getElementById(id);
+
+$('startBtn').onclick = start;
+$('nameInput').addEventListener('keydown', e => { if(e.key === 'Enter') start(); });
+window.addEventListener('load', () => $('nameInput').focus());
+$('retryBtn').onclick = () => { $('viewResult').style.display = 'none'; start(); };
+$('nextBtn').onclick = nextRound;
+
+function start(){
+  playerName = $('nameInput').value.trim() || '선생님';
+  idx = 0; score = 0; combo = 0; results = [];
+  qCorrect = 0; maxCombo = 0; startTs = Date.now();
+  $('viewStart').style.display = 'none';
+  $('viewResult').style.display = 'none';
+  $('viewGame').style.display = 'block';
+  loadRound();
+}
+
+function loadRound(){
+  const r = ROUNDS[idx];
+  phaseQ = 1; roundOK = true;
+  $('hudRound').textContent = `${idx+1}/${ROUNDS.length}`;
+  $('hudPhase').textContent = r.phase;
+  $('sigWhen').textContent = '📡 ' + r.when;
+  $('sigIf').innerHTML = 'IF · ' + r.sig;
+  $('explain').style.display = 'none';
+  $('nextBtn').style.display = 'none';
+  renderQ(r.q1, 'THEN · 해석');
+  startTimer();
+  updateHud();
+}
+
+function renderQ(q, label){
+  $('qLabel').innerHTML = `<span>${label}</span>${q.q}`;
+  const box = $('opts'); box.innerHTML = '';
+  // 보기 순서 섞기
+  const order = q.opts.map((_,i)=>i).sort(()=>Math.random()-0.5);
+  order.forEach(i=>{
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = q.opts[i];
+    b.onclick = () => answer(b, i === q.correct, q);
+    box.appendChild(b);
+  });
+}
+
+function startTimer(){
+  clearInterval(timer); remain = TIME;
+  const fill = $('timerFill');
+  fill.style.width = '100%'; fill.className = '';
+  timer = setInterval(()=>{
+    remain -= 0.2;
+    fill.style.width = Math.max(0, remain/TIME*100) + '%';
+    if(remain <= 6) fill.className = 'warn';
+    if(remain <= 0){ clearInterval(timer); timeOut(); }
+  }, 200);
+}
+
+function answer(btn, ok, q){
+  clearInterval(timer);
+  document.querySelectorAll('.opt').forEach(b=>{
+    b.disabled = true;
+    if(b.textContent === q.opts[q.correct]) b.classList.add('correct');
+  });
+  if(ok){
+    combo++; qCorrect++;
+    if(combo > maxCombo) maxCombo = combo;
+    score += PER_Q + Math.round(remain) * TICK_BONUS + (combo>1 ? COMBO_BONUS*(combo-1) : 0);
+  } else {
+    btn.classList.add('wrong');
+    combo = 0; roundOK = false;
+  }
+  updateHud();
+  setTimeout(()=> phaseQ === 1 ? toQ2() : endRound(), ok ? 700 : 1400);
+}
+
+function timeOut(){
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  combo = 0; roundOK = false;
+  updateHud();
+  setTimeout(()=> phaseQ === 1 ? toQ2() : endRound(), 800);
+}
+
+function toQ2(){
+  phaseQ = 2;
+  renderQ(ROUNDS[idx].q2, 'DO · 교사 행동');
+  startTimer();
+}
+
+function endRound(){
+  clearInterval(timer);
+  results.push(roundOK);
+  const ex = $('explain');
+  ex.innerHTML = '<b>왜?</b> ' + ROUNDS[idx].why;
+  ex.style.display = 'block';
+  $('nextBtn').style.display = 'block';
+  $('nextBtn').textContent = idx === ROUNDS.length-1 ? '결과 보기 ▶' : '다음 신호 ▶';
+  $('nextBtn').focus();
+}
+
+function nextRound(){
+  idx++;
+  if(idx >= ROUNDS.length){ showResult(); return; }
+  loadRound();
+}
+
+function updateHud(){
+  $('hudScore').textContent = score.toLocaleString() + '점';
+  $('hudCombo').textContent = combo > 1 ? `🔥 ${combo}콤보` : '';
+}
+
+function showResult(){
+  $('viewGame').style.display = 'none';
+  $('viewResult').style.display = 'block';
+  $('resultHead').textContent = `${playerName} — IF–THEN–DO 챌린지 결과`;
+  $('finalScore').textContent = score.toLocaleString() + '점';
+  const totalQ = ROUNDS.length * 2;
+  $('statRate').textContent = Math.round(qCorrect / totalQ * 100) + '%';
+  const sec = Math.round((Date.now() - startTs) / 1000);
+  $('statTime').textContent = `${Math.floor(sec/60)}분 ${sec%60}초`;
+  $('statCombo').textContent = maxCombo + '연속';
+  $('resultMeta').textContent = `${new Date().toLocaleDateString('ko-KR')} · 2026 인공지능 활용 선도교사 연수 9과정 · ${qCorrect}/${totalQ}문항 정답`;
+  const perfect = results.filter(Boolean).length;
+  let title, comment;
+  if(perfect >= 9){ title = '데이터 읽기 마스터';
+    comment = '신호 뒤의 맥락까지 읽어내는 교사입니다. 이제 이 감각을 학습지 6(큐시트)의 IF–THEN–DO 열에 그대로 옮겨 적으세요.'; }
+  else if(perfect >= 6){ title = '신중한 관찰자';
+    comment = '단정을 잘 피하고 있습니다. 놓친 라운드의 "왜?"를 다시 읽고, 내 수업설계안의 데이터 확인 시점을 점검해 보세요.'; }
+  else { title = '성장하는 데이터 리더';
+    comment = '빠른 해석의 함정에 몇 번 걸렸습니다. 핵심은 하나 — 데이터가 보여주지 못하는 것을 먼저 묻기. 학습지 1의 "다른 가능성" 열부터 다시 채워 보세요.'; }
+  $('finalTitle').textContent = title;
+  $('finalComment').textContent = comment;
+  const rv = $('review'); rv.innerHTML = '';
+  results.forEach((ok,i)=>{
+    const d = document.createElement('div');
+    d.innerHTML = `<div class="ox ${ok?'o':'x'}">${ok?'O':'X'}</div>R${i+1} · ${ROUNDS[i].phase}`;
+    rv.appendChild(d);
+  });
+}
+
+$('saveBtn').onclick = () => {
+  html2canvas($('captureArea'), {backgroundColor:'#ffffff', scale:2}).then(cv=>{
+    const a = document.createElement('a');
+    a.download = `IF-THEN-DO_결과_${playerName}_${new Date().toISOString().slice(0,10)}.jpg`;
+    a.href = cv.toDataURL('image/jpeg', 0.92);
+    a.click();
+  });
+};
+</script>
+</body>
+</html>
