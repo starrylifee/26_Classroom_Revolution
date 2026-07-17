@@ -48,12 +48,20 @@ main{flex:1;display:flex;align-items:center;justify-content:center;padding:16px}
 .timerbar i.warn{background:#FCE303}
 .hud .score{font-size:22px;font-weight:900;color:var(--navy);white-space:nowrap}
 .hud .combo{font-size:14px;color:var(--orange);font-weight:700;white-space:nowrap}
-.signal{background:var(--navy);color:#fff;border-radius:14px;padding:24px 28px;margin-bottom:18px}
+.signal{background:var(--navy);color:#fff;border-radius:14px;padding:22px 26px;margin-bottom:14px;border-left:8px solid #FCE303}
 .signal .when{font-size:15px;color:#C9BEE8;font-weight:700;margin-bottom:8px}
-.signal .if{font-size:26px;font-weight:900;line-height:1.5}
+.signal .if{font-size:25px;font-weight:900;line-height:1.5}
 .signal .if b{color:#FCE303}
-.qlabel{font-size:17px;font-weight:900;color:var(--teal);margin-bottom:12px}
-.qlabel span{background:#ECDFF6;padding:3px 12px;border-radius:6px;margin-right:8px}
+.signal .tag{display:inline-block;background:#FCE303;color:var(--navy);font-size:15px;font-weight:900;padding:2px 12px;border-radius:6px;margin-right:10px;vertical-align:middle}
+.qblock{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 18px}
+.qblock.then{border-left:8px solid #8F86DD}
+.qblock.do{border-left:8px solid #E85FA5}
+.qblock.answered{background:#FAFAFE}
+.qlabel{font-size:17px;font-weight:900;color:var(--navy);margin-bottom:12px}
+.qlabel .tag{color:#fff;padding:3px 12px;border-radius:6px;margin-right:10px;font-size:15px}
+.qblock.then .qlabel .tag{background:#8F86DD}
+.qblock.do .qlabel .tag{background:#E85FA5}
+.connector{margin:2px 0 2px 34px;height:22px;border-left:3px dashed #C9BEE8}
 .opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .opt{background:#fff;border:2px solid var(--line);border-radius:12px;padding:18px 20px;font-size:18px;font-weight:500;line-height:1.55;text-align:left;cursor:pointer;font-family:inherit;transition:.12s}
 .opt:hover{border-color:var(--sky);background:#FBF7FE}
@@ -116,8 +124,16 @@ main{flex:1;display:flex;align-items:center;justify-content:center;padding:16px}
       <div class="when" id="sigWhen"></div>
       <div class="if" id="sigIf"></div>
     </div>
-    <div class="qlabel" id="qLabel"></div>
-    <div class="opts" id="opts"></div>
+    <div class="connector"></div>
+    <div class="qblock then" id="blockThen">
+      <div class="qlabel"><span class="tag">THEN · 해석</span><span id="qTextThen"></span></div>
+      <div class="opts" id="optsThen"></div>
+    </div>
+    <div class="connector" id="connDo" style="display:none"></div>
+    <div class="qblock do" id="blockDo" style="display:none">
+      <div class="qlabel"><span class="tag">DO · 교사 행동</span><span id="qTextDo"></span></div>
+      <div class="opts" id="optsDo"></div>
+    </div>
     <div class="explain" id="explain"></div>
     <button class="nextbtn" id="nextBtn">다음 신호 ▶</button>
   </div>
@@ -286,17 +302,22 @@ function loadRound(){
   $('hudRound').textContent = `${idx+1}/${ROUNDS.length}`;
   $('hudPhase').textContent = r.phase;
   $('sigWhen').textContent = '📡 ' + r.when;
-  $('sigIf').innerHTML = 'IF · ' + r.sig;
+  $('sigIf').innerHTML = '<span class="tag">IF</span>' + r.sig;
   $('explain').style.display = 'none';
   $('nextBtn').style.display = 'none';
-  renderQ(r.q1, 'THEN · 해석');
+  $('blockThen').classList.remove('answered');
+  $('blockDo').classList.remove('answered');
+  $('blockDo').style.display = 'none';
+  $('connDo').style.display = 'none';
+  renderQ(r.q1, 'Then');
   startTimer();
   updateHud();
 }
 
-function renderQ(q, label){
-  $('qLabel').innerHTML = `<span>${label}</span>${q.q}`;
-  const box = $('opts'); box.innerHTML = '';
+// which: 'Then' | 'Do' — THEN 블록은 답해도 사라지지 않고 아래로 DO가 이어진다
+function renderQ(q, which){
+  $('qText'+which).textContent = q.q;
+  const box = $('opts'+which); box.innerHTML = '';
   // 보기 순서 섞기
   const order = q.opts.map((_,i)=>i).sort(()=>Math.random()-0.5);
   order.forEach(i=>{
@@ -319,12 +340,15 @@ function startTimer(){
   }, 200);
 }
 
+function curBlock(){ return phaseQ === 1 ? 'Then' : 'Do'; }
+
 function answer(btn, ok, q){
   clearInterval(timer);
-  document.querySelectorAll('.opt').forEach(b=>{
+  document.querySelectorAll('#opts'+curBlock()+' .opt').forEach(b=>{
     b.disabled = true;
     if(b.textContent === q.opts[q.correct]) b.classList.add('correct');
   });
+  $('block'+curBlock()).classList.add('answered');
   if(ok){
     combo++; qCorrect++;
     if(combo > maxCombo) maxCombo = combo;
@@ -334,19 +358,24 @@ function answer(btn, ok, q){
     combo = 0; roundOK = false;
   }
   updateHud();
-  setTimeout(()=> phaseQ === 1 ? toQ2() : endRound(), ok ? 700 : 1400);
+  setTimeout(()=> phaseQ === 1 ? toQ2() : endRound(), ok ? 500 : 1100);
 }
 
 function timeOut(){
-  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  document.querySelectorAll('#opts'+curBlock()+' .opt').forEach(b=>b.disabled=true);
+  $('block'+curBlock()).classList.add('answered');
   combo = 0; roundOK = false;
   updateHud();
   setTimeout(()=> phaseQ === 1 ? toQ2() : endRound(), 800);
 }
 
+// THEN은 그대로 둔 채 아래로 DO 블록이 이어져 나타난다
 function toQ2(){
   phaseQ = 2;
-  renderQ(ROUNDS[idx].q2, 'DO · 교사 행동');
+  $('connDo').style.display = 'block';
+  $('blockDo').style.display = 'block';
+  renderQ(ROUNDS[idx].q2, 'Do');
+  $('blockDo').scrollIntoView({behavior:'smooth', block:'nearest'});
   startTimer();
 }
 
