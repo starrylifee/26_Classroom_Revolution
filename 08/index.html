@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수업 설계안 프로파일링 · 8과정</title>
+<meta property="og:title" content="수업 설계안 프로파일링">
+<meta property="og:description" content="학생 참여형 수업 5가지 핵심 원리로 내 수업 설계안을 진단해 보세요.">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E2841'/%3E%3Cpath d='M32 10 52 25 44 50H20L12 25Z' fill='none' stroke='%230F9ED5' stroke-width='5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='33' r='6' fill='%23E97132'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata@2.2.3/dist/chartjs-plugin-dragdata.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0E2841; --teal:#156082; --sky:#0F9ED5; --orange:#E97132;
+  --bg:#F4F7FA; --line:#D8E0E8; --text:#1B2A3A; --muted:#5B6B7C;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--navy);color:#fff;padding:14px 28px;display:flex;align-items:center;gap:14px}
+header .badge{background:var(--sky);color:#fff;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+header h1{font-size:22px;font-weight:700;letter-spacing:-.02em}
+header .sub{margin-left:auto;font-size:13px;color:#AFC3D4;white-space:nowrap}
+main{flex:1;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;padding:20px 28px;max-width:1400px;width:100%;margin:0 auto}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05)}
+.chart-card{display:flex;flex-direction:column;padding:20px}
+#captureArea{flex:1;display:flex;flex-direction:column;min-height:0;background:#fff;border-radius:10px}
+.chart-wrap{position:relative;flex:1;min-height:340px}
+.chart-title{text-align:center;font-weight:700;font-size:17px;color:var(--navy);padding:4px 0 0}
+.btn-row{display:flex;gap:10px;margin-top:14px}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:500;transition:.15s}
+.btn-outline{flex:1;padding:12px;background:#fff;border:1.5px solid var(--line);color:var(--text)}
+.btn-outline:hover{border-color:var(--teal);color:var(--teal)}
+.btn-primary{flex:1;padding:12px;background:var(--teal);color:#fff}
+.btn-primary:hover{background:#124F6B}
+.btn-primary:disabled{background:#A9BAC7;cursor:not-allowed}
+.panel{display:flex;flex-direction:column;overflow:hidden}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tab{flex:1;padding:15px 8px;text-align:center;font-size:16px;font-weight:700;color:var(--muted);background:#FAFCFD;border-bottom:3px solid transparent}
+.tab.active{color:var(--navy);border-bottom-color:var(--sky);background:#fff}
+.panel-body{flex:1;padding:22px;overflow-y:auto}
+.guide{background:#EBF4FA;border:1px solid #CBE2F0;border-radius:12px;padding:20px;text-align:center}
+.guide h2{color:var(--teal);font-size:19px;margin-bottom:10px}
+.guide p{font-size:16px;line-height:1.7}
+.guide .tip{display:inline-block;margin-top:12px;background:#DCEBF5;color:var(--teal);font-size:14px;padding:6px 14px;border-radius:8px}
+.labels-list{margin-top:16px;display:grid;gap:8px}
+.labels-list div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-size:15px;text-align:left}
+.drop{border:2px dashed #B9CFDE;border-radius:12px;padding:26px;text-align:center;background:#FAFCFE;position:relative;transition:.15s}
+.drop.hover{border-color:var(--sky);background:#EFF7FC}
+.drop input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.drop .big{font-size:16px;font-weight:500}
+.drop .small{font-size:13px;color:var(--muted);margin-top:6px}
+#fileInfo{display:none;margin-top:12px;background:#EBF4FA;color:var(--teal);border-radius:8px;padding:8px 12px;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#analyzeBtn{width:100%;margin-top:14px;padding:14px;background:var(--orange);color:#fff;font-size:16px;font-weight:700}
+#analyzeBtn:hover{background:#D4642A}
+#analyzeBtn:disabled{background:#E5B79E;cursor:not-allowed}
+.loading{display:none;margin-top:16px;text-align:center}
+.spinner{width:34px;height:34px;border:4px solid #E2ECF3;border-top-color:var(--orange);border-radius:50%;margin:0 auto 10px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{color:var(--orange);font-size:15px;font-weight:500}
+#aiResult{display:none;margin-top:18px}
+#aiResult h3{font-size:16px;color:var(--navy);border-bottom:2px solid var(--line);padding-bottom:8px;margin-bottom:10px}
+#aiResult .general{font-size:15px;line-height:1.75;margin-bottom:14px}
+#aiResult ul{list-style:none;display:grid;gap:8px}
+#aiResult li{background:#FDF6F1;border-left:3px solid var(--orange);border-radius:0 8px 8px 0;padding:10px 14px;font-size:14px;line-height:1.6}
+.modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
+.modal h3{font-size:18px;color:var(--navy);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);margin-bottom:14px}
+.modal input{width:100%;padding:13px;font-size:16px;border:1.5px solid var(--line);border-radius:9px;outline:none;font-family:inherit}
+.modal input:focus{border-color:var(--sky)}
+.modal .err{display:none;color:#C0392B;font-size:13px;margin-top:8px}
+.modal .row{display:flex;gap:10px;margin-top:16px}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none}
+.toast.show{opacity:1;transform:none}
+@media (max-width:900px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">8과정</span>
+  <h1>수업 설계안 프로파일링</h1>
+  <span class="sub">2026 인공지능 활용 선도교사 연수 · AI·디지털 기반 교육 실천 이해</span>
+</header>
+
+<main>
+  <!-- 왼쪽: 차트 -->
+  <section class="card chart-card">
+    <div id="captureArea">
+      <div class="chart-title">학생 참여형 수업 5가지 핵심 원리</div>
+      <div class="chart-wrap"><canvas id="radar"></canvas></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-outline" id="resetBtn">셀프 점수 초기화</button>
+      <button class="btn-primary" id="saveBtn">결과 PNG 저장</button>
+    </div>
+  </section>
+
+  <!-- 오른쪽: 탭 패널 -->
+  <section class="card panel">
+    <div class="tabs">
+      <button class="tab active" id="tabSelf">✏️ 셀프 진단</button>
+      <button class="tab" id="tabAI">🤖 AI 진단</button>
+    </div>
+    <div class="panel-body">
+
+      <div id="panelSelf">
+        <div class="guide">
+          <h2>파란 점을 드래그해 보세요</h2>
+          <p>내 수업 설계안을 떠올리며<br><strong>차트의 점을 끌어</strong> 원리별 점수(0~10)를 매깁니다.</p>
+          <span class="tip">그래프가 찌그러진 곳 = AI·디지털이 보조할 지점</span>
+        </div>
+        <div class="labels-list">
+          <div><strong>① 학습자 주도성</strong> · 학생이 스스로 질문·선택·계획하는가</div>
+          <div><strong>② 의미 있는 과제</strong> · 실생활과 연결된 과제인가</div>
+          <div><strong>③ 구조화된 상호작용</strong> · 협력·토의가 구조화됐는가</div>
+          <div><strong>④ 가시적 학습·즉각 피드백</strong> · 배움이 보이고 피드백이 빠른가</div>
+          <div><strong>⑤ 개별화·맞춤형 지원</strong> · 수준·속도에 맞는 지원이 있는가</div>
+        </div>
+      </div>
+
+      <div id="panelAI" style="display:none">
+        <div class="drop" id="drop">
+          <input type="file" id="fileInput" accept=".pdf,.pptx,.docx,.hwp,.hwpx,.png,.jpg,.jpeg">
+          <div class="big">설계안 파일을 올리면 AI가 진단합니다</div>
+          <div class="small">PDF · PPTX · DOCX · HWP/HWPX · PNG · JPG (3MB 이하)</div>
+          <div id="fileInfo"></div>
+        </div>
+        <button id="analyzeBtn" disabled>AI 진단 시작</button>
+        <div class="loading" id="loading"><div class="spinner"></div><p id="loadingText">문서를 읽는 중입니다...</p></div>
+        <div id="aiResult">
+          <h3>AI 종합 평가</h3>
+          <div class="general" id="aiGeneral"></div>
+          <h3>항목별 근거</h3>
+          <ul id="aiDetails"></ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<!-- 비밀번호 모달 -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>🔒 AI 진단 활성화</h3>
+    <p>강사가 안내한 비밀번호를 입력하세요.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호">
+    <div class="err" id="pwErr">비밀번호가 일치하지 않습니다.</div>
+    <div class="row">
+      <button class="btn-outline" id="pwCancel">취소</button>
+      <button class="btn-primary" id="pwOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const LABELS = ['① 학습자 주도성','② 의미 있는 과제','③ 구조화된 상호작용','④ 가시적 학습·즉각 피드백','⑤ 개별화·맞춤형 지원'];
+const PASSWORD = '20260717';
+let selfScores = [5,5,5,5,5];
+let unlocked = false, selfMode = true, currentFile = null, chart;
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+Chart.defaults.font.family = "'Noto Sans KR', sans-serif";
+chart = new Chart(document.getElementById('radar'), {
+  type:'radar',
+  data:{ labels:LABELS, datasets:[
+    { label:'셀프 진단', data:selfScores,
+      backgroundColor:'rgba(15,158,213,0.22)', borderColor:'#156082',
+      pointBackgroundColor:'#156082', pointBorderColor:'#fff',
+      pointRadius:7, pointHoverRadius:9, pointHitRadius:22, borderWidth:3 },
+    { label:'AI 진단', data:[0,0,0,0,0], hidden:true,
+      backgroundColor:'rgba(233,113,50,0.20)', borderColor:'#E97132',
+      pointBackgroundColor:'#E97132', pointBorderColor:'#fff',
+      pointRadius:5, pointHoverRadius:7, borderWidth:2.5 }
+  ]},
+  options:{
+    responsive:true, maintainAspectRatio:false, layout:{padding:14},
+    scales:{ r:{ min:0, max:10,
+      angleLines:{color:'rgba(14,40,65,.12)'}, grid:{color:'rgba(14,40,65,.10)'},
+      pointLabels:{font:{size:15,weight:'700'}, color:'#1B2A3A'},
+      ticks:{stepSize:2, display:false} } },
+    plugins:{
+      legend:{position:'bottom', labels:{usePointStyle:true, padding:18, font:{size:14}}},
+      tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw}점`}},
+      dragData:{ round:0, showTooltip:true,
+        onDragStart:(e,dsIdx)=>{ if(!selfMode || dsIdx===1) return false; },
+        onDragEnd:(e,dsIdx,idx,v)=>{ if(dsIdx===0) selfScores[idx]=Math.round(v); } }
+    },
+    onHover:(e)=>{
+      const pts = e.chart.getElementsAtEventForMode(e,'nearest',{intersect:true},false);
+      e.native.target.style.cursor = (pts.length && selfMode && pts[0].datasetIndex===0) ? 'grab' : 'default';
+    }
+  }
+});
+
+// 탭 전환
+const tabSelf=document.getElementById('tabSelf'), tabAI=document.getElementById('tabAI');
+const panelSelf=document.getElementById('panelSelf'), panelAI=document.getElementById('panelAI');
+function switchTab(mode){
+  selfMode = (mode==='self');
+  tabSelf.classList.toggle('active', selfMode);
+  tabAI.classList.toggle('active', !selfMode);
+  panelSelf.style.display = selfMode?'':'none';
+  panelAI.style.display = selfMode?'none':'';
+}
+tabSelf.onclick = ()=>switchTab('self');
+tabAI.onclick = ()=>{
+  if(unlocked){ switchTab('ai'); return; }
+  document.getElementById('modalBg').style.display='flex';
+  const inp=document.getElementById('pwInput'); inp.value=''; inp.focus();
+  document.getElementById('pwErr').style.display='none';
+};
+
+// 비밀번호
+function checkPw(){
+  if(document.getElementById('pwInput').value===PASSWORD){
+    unlocked=true;
+    document.getElementById('modalBg').style.display='none';
+    tabAI.textContent='🤖 AI 진단 ✓';
+    toast('AI 진단이 활성화되었습니다.');
+    switchTab('ai');
+  } else { document.getElementById('pwErr').style.display='block'; }
+}
+document.getElementById('pwOk').onclick=checkPw;
+document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkPw();});
+document.getElementById('pwCancel').onclick=()=>document.getElementById('modalBg').style.display='none';
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')e.target.style.display='none';});
+
+// 파일 업로드
+const drop=document.getElementById('drop'), fileInput=document.getElementById('fileInput');
+const analyzeBtn=document.getElementById('analyzeBtn');
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('hover');}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('hover');}));
+drop.addEventListener('drop',e=>handleFile(e.dataTransfer.files[0]));
+fileInput.addEventListener('change',()=>handleFile(fileInput.files[0]));
+function handleFile(f){
+  if(!f) return;
+  const ok=['pdf','pptx','docx','hwp','hwpx','png','jpg','jpeg'];
+  if(!ok.includes(f.name.split('.').pop().toLowerCase())){ toast('지원하지 않는 형식입니다.'); return; }
+  if(f.size > 3*1024*1024){ toast('3MB를 초과합니다. PDF로 변환해 다시 올려주세요.'); return; }
+  currentFile=f;
+  const info=document.getElementById('fileInfo');
+  info.style.display='block'; info.textContent='📄 '+f.name;
+  analyzeBtn.disabled=false;
+}
+
+// AI 분석
+const MSGS=['문서를 읽는 중입니다...','학습자 주도성을 살피는 중...','상호작용 구조를 평가하는 중...','종합 의견을 정리하는 중...'];
+analyzeBtn.onclick = async ()=>{
+  if(!currentFile) return;
+  analyzeBtn.disabled=true;
+  document.getElementById('loading').style.display='block';
+  document.getElementById('aiResult').style.display='none';
+  let i=0; const h=setInterval(()=>{document.getElementById('loadingText').textContent=MSGS[++i%MSGS.length];},2000);
+  try{
+    const b64 = await new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=()=>res(r.result.split(',')[1]); r.onerror=rej;
+      r.readAsDataURL(currentFile);
+    });
+    const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({filename:currentFile.name, mime:currentFile.type, data:b64})});
+    const data = await resp.json();
+    if(!resp.ok) throw new Error(data.error||'분석 실패');
+    chart.data.datasets[1].data = data.scores;
+    chart.data.datasets[1].hidden = false;
+    chart.update();
+    document.getElementById('aiGeneral').textContent = data.generalFeedback||'';
+    const ul=document.getElementById('aiDetails'); ul.innerHTML='';
+    (data.details||[]).forEach(d=>{const li=document.createElement('li');li.textContent=d;ul.appendChild(li);});
+    document.getElementById('aiResult').style.display='block';
+    toast('AI 진단 완료! 셀프 진단과 비교해 보세요.');
+  }catch(err){
+    toast('오류: '+err.message);
+  }finally{
+    clearInterval(h);
+    document.getElementById('loading').style.display='none';
+    analyzeBtn.disabled=false;
+    analyzeBtn.textContent='다시 진단하기';
+  }
+};
+
+// 초기화 & PNG 저장
+document.getElementById('resetBtn').onclick=()=>{
+  selfScores=[5,5,5,5,5];
+  chart.data.datasets[0].data=selfScores;
+  chart.update();
+};
+document.getElementById('saveBtn').onclick=()=>{
+  html2canvas(document.getElementById('captureArea'),{backgroundColor:'#ffffff',scale:2}).then(cv=>{
+    const a=document.createElement('a');
+    a.download=`수업설계안_프로파일링_${new Date().toISOString().slice(0,10)}.png`;
+    a.href=cv.toDataURL('image/png'); a.click();
+    toast('PNG로 저장했습니다.');
+  });
+};
+
+document.fonts.ready.then(()=>chart.update());
+</script>
+</body>
+</html>
