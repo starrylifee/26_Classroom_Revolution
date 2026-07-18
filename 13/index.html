@@ -82,6 +82,9 @@ label.fl{display:block;font-size:13px;font-weight:700;color:var(--navy);margin:0
 .goal-box{margin-top:18px;background:linear-gradient(90deg,#F3F0FE,#FEF0F8);border:1.5px solid #E3D8F2;border-radius:12px;padding:16px}
 .goal-box .fl{font-size:15px}
 .goal-box .fl b{color:var(--pink)}
+.goal-row{display:flex;gap:10px;align-items:center}
+.goal-row input{flex:1}
+.goal-hint{font-size:12.5px;color:var(--muted);margin-top:8px}
 
 /* 3단계: 로드맵 표 */
 table{border-collapse:collapse;width:100%}
@@ -202,7 +205,12 @@ td textarea:focus{background:#FBF7FE}
       </div>
       <div class="goal-box">
         <label class="fl">★ 최우선 성장 목표 (A×B 연결) — <b>포트폴리오 '역량 개발 목표' 칸에 들어갑니다</b></label>
-        <input type="text" data-k="goal" placeholder="예) 생성형 AI를 활용해 느린 학습자 맞춤 문제를 만드는 교사 되기 (C·F 역량 보완)">
+        <div class="goal-row">
+          <input type="text" data-k="goal" placeholder="예) 생성형 AI를 활용해 느린 학습자 맞춤 문제를 만드는 교사 되기 (C·F 역량 보완)">
+          <button class="btn-grad" id="goalAiBtn" style="padding:11px 20px;white-space:nowrap">🤖 AI로 문장 만들기</button>
+          <div class="spin" id="goalSpin"></div>
+        </div>
+        <p class="goal-hint">위에 학생의 필요·나의 흥미를 1개 이상 적으면, AI가 둘을 연결한 목표 문장을 제안합니다. 제안 문장은 자유롭게 고쳐 쓰세요.</p>
       </div>
       <div class="nav-row"><button class="btn-outline" onclick="go(1)">← 이전</button><button class="btn-grad" onclick="go(3)">다음 · 성장 로드맵 →</button></div>
     </section>
@@ -414,26 +422,64 @@ renderScale(); renderRadar();
 
 // ---------- 3단계: 예시 + AI ----------
 function toggleExample(){ document.getElementById('example').classList.toggle('show'); }
-let unlocked=false, enteredPw='';
+let unlocked=false, enteredPw='', pendingAI='roadmap';
 const modalBg=document.getElementById('modalBg'), pwInput=document.getElementById('pwInput');
-document.getElementById('aiBtn').onclick=()=>{
+function hasNeedWant(){
   const hasNeed=[data.need1,data.need2,data.need3].some(v=>v&&v.trim());
   const hasWant=[data.want1,data.want2,data.want3].some(v=>v&&v.trim());
-  const hasGoal=(data.goal||'').trim();
-  if(!hasNeed||!hasWant||!hasGoal){
+  return hasNeed&&hasWant;
+}
+function askAI(kind){
+  pendingAI=kind;
+  if(unlocked){ kind==='goal'?runGoalAI():runAI(); }
+  else {modalBg.style.display='flex'; pwInput.value=''; document.getElementById('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50);}
+}
+document.getElementById('aiBtn').onclick=()=>{
+  if(!hasNeedWant()||!(data.goal||'').trim()){
     toast('② 성장 목표를 먼저 채워 주세요 — 학생의 필요·나의 흥미 각 1개 이상과 목표 문장이 AI 초안의 재료가 됩니다 ✏️');
     go(2); return;
   }
-  if(unlocked) runAI(); else {modalBg.style.display='flex'; pwInput.value=''; document.getElementById('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50);}
+  askAI('roadmap');
+};
+document.getElementById('goalAiBtn').onclick=()=>{
+  if(!hasNeedWant()){
+    toast('학생의 필요와 나의 흥미를 각 1개 이상 먼저 적어 주세요 — AI가 그 둘을 연결합니다 ✏️');
+    return;
+  }
+  askAI('goal');
 };
 document.getElementById('pwCancel').onclick=()=>modalBg.style.display='none';
 function tryPw(){
   enteredPw=pwInput.value.trim();
   if(!enteredPw){ document.getElementById('pwErr').style.display='block'; return; }
-  unlocked=true; modalBg.style.display='none'; runAI();
+  unlocked=true; modalBg.style.display='none';
+  pendingAI==='goal'?runGoalAI():runAI();
 }
 document.getElementById('pwOk').onclick=tryPw;
 pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
+
+async function runGoalAI(){
+  const btn=document.getElementById('goalAiBtn'), spin=document.getElementById('goalSpin');
+  const sw=strengthsWeaknesses();
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const res=await fetch('/api/roadmap',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        pw:enteredPw, mode:'goal',
+        weak:sw?sw.weak.map(x=>x.c+' '+x.n).join(', '):'',
+        need:[data.need1,data.need2,data.need3].filter(Boolean).join(' / '),
+        want:[data.want1,data.want2,data.want3].filter(Boolean).join(' / ')
+      })});
+    const j=await res.json();
+    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    if(j.goal){
+      data.goal=j.goal; save();
+      const el=document.querySelector('[data-k=goal]'); if(el) el.value=j.goal;
+      toast('목표 문장을 제안했어요. 내 말투로 자유롭게 고치세요 ✏️');
+    }
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
 
 async function runAI(){
   const btn=document.getElementById('aiBtn'), spin=document.getElementById('aiSpin'), st=document.getElementById('aiStatus');
