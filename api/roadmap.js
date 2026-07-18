@@ -10,6 +10,102 @@ module.exports = async function handler(req, res) {
     // 화면 잠금과 별개로 서버에서도 비밀번호를 검사해 무단 API 호출을 막는다
     if (pw !== 'tlsekq') { res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' }); return; }
 
+    // mode 'kpt': 한 줄 회고를 재료로 KPT(Keep/Problem/Try) 초안 생성
+    if (mode === 'kpt') {
+      const reviews = String(req.body.reviews ?? '').trim().slice(0, 1500);
+      if (!reviews) { res.status(400).json({ error: '한 줄 회고를 먼저 1개 이상 적어 주세요.' }); return; }
+
+      const kPrompt = `당신은 교사 연수 회고를 돕는 퍼실리테이터입니다.
+한 교사가 12개 과정 연수를 돌아보며 쓴 한 줄 회고입니다.
+
+<한 줄 회고>
+${reviews}
+</한 줄 회고>
+
+이 회고를 재료로 KPT 회고 초안을 쓰세요.
+- Keep: 잘된 것·이어갈 것 / Problem: 아쉬운 것·문제 / Try: 새로 시도할 것
+- 각 칸 2~3줄, 한 줄에 하나씩 줄바꿈(\\n)으로 구분. 교사가 쓴 회고의 표현을 최대한 살릴 것.
+- 회고에 없는 내용을 지어내지 말 것. 회고가 짧으면 초안도 짧게.
+
+{"keep":"...","problem":"...","try":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
+      const kRes = await fetch('https://api.upstage.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'solar-pro2',
+          messages: [{ role: 'user', content: kPrompt }],
+          temperature: 0.4,
+          max_tokens: 800,
+        }),
+      });
+      if (!kRes.ok) {
+        const t = await kRes.text();
+        res.status(502).json({ error: `AI 초안 생성 실패 (${kRes.status})`, detail: t.slice(0, 300) });
+        return;
+      }
+      const kChat = await kRes.json();
+      const kRaw = (kChat.choices && kChat.choices[0] && kChat.choices[0].message.content) || '';
+      const ks = kRaw.indexOf('{'); const ke = kRaw.lastIndexOf('}');
+      if (ks === -1 || ke === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');
+      const kDraft = JSON.parse(kRaw.slice(ks, ke + 1));
+      res.status(200).json({
+        keep: String(kDraft.keep ?? '').slice(0, 500),
+        problem: String(kDraft.problem ?? '').slice(0, 500),
+        try: String(kDraft.try ?? '').slice(0, 500),
+      });
+      return;
+    }
+
+    // mode 'ba': 한 줄 회고·KPT를 재료로 Before & After 초안 생성
+    if (mode === 'ba') {
+      const reviews = String(req.body.reviews ?? '').trim().slice(0, 1500);
+      const kpt = String(req.body.kpt ?? '').trim().slice(0, 800);
+      if (!reviews && !kpt) { res.status(400).json({ error: '한 줄 회고나 KPT를 먼저 적어 주세요.' }); return; }
+
+      const bPrompt = `당신은 교사 연수 회고를 돕는 퍼실리테이터입니다.
+한 교사의 연수 회고 기록입니다.
+
+<한 줄 회고>
+${reviews || '없음'}
+</한 줄 회고>
+<KPT 회고>
+${kpt || '없음'}
+</KPT 회고>
+
+연수 전(Before)과 후(After)의 변화를 세 영역으로 정리한 초안을 쓰세요.
+- 영역: 마음가짐 / 수업 설계 / 동료 관계
+- 각 칸은 한 문장(20자 내외). 예) Before "AI가 두려웠다" → After "AI가 수업 파트너로 느껴진다"
+- 회고 기록에서 근거를 찾을 수 있는 내용만. 지어내지 말고, 근거가 없으면 그 칸은 빈 문자열로.
+
+{"mind_b":"","mind_a":"","design_b":"","design_a":"","peer_b":"","peer_a":""} JSON으로만 출력하세요. 다른 텍스트 금지.`;
+      const bRes = await fetch('https://api.upstage.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'solar-pro2',
+          messages: [{ role: 'user', content: bPrompt }],
+          temperature: 0.4,
+          max_tokens: 600,
+        }),
+      });
+      if (!bRes.ok) {
+        const t = await bRes.text();
+        res.status(502).json({ error: `AI 초안 생성 실패 (${bRes.status})`, detail: t.slice(0, 300) });
+        return;
+      }
+      const bChat = await bRes.json();
+      const bRaw = (bChat.choices && bChat.choices[0] && bChat.choices[0].message.content) || '';
+      const bs = bRaw.indexOf('{'); const be = bRaw.lastIndexOf('}');
+      if (bs === -1 || be === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');
+      const bDraft = JSON.parse(bRaw.slice(bs, be + 1));
+      const out = {};
+      for (const k of ['mind_b', 'mind_a', 'design_b', 'design_a', 'peer_b', 'peer_a']) {
+        out[k] = String(bDraft[k] ?? '').slice(0, 200);
+      }
+      res.status(200).json(out);
+      return;
+    }
+
     // mode 'solutions': 예상 장애물 1개에 대한 극복 방안 5개 제안
     if (mode === 'solutions') {
       const obstacle = String(req.body.obstacle ?? '').trim().slice(0, 300);

@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>12개 과정 한 줄 회고 · 13과정</title>
-<meta property="og:title" content="12개 과정 한 줄 회고">
-<meta property="og:description" content="1~12번 연수를 돌아보며 과정별로 '내가 얻은 것'을 한 줄로 기록합니다.">
+<title>연수 돌아보기 워크북 · 13과정</title>
+<meta property="og:title" content="연수 돌아보기 워크북">
+<meta property="og:description" content="한 줄 회고 → KPT → Before&After → 체인지 메이커 선언까지, 연수 돌아보기 활동 모음.">
 <meta property="og:image" content="/og.png">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2C59'/%3E%3Cpath d='M32 10 52 25 44 50H20L12 25Z' fill='none' stroke='%23F6C2E4' stroke-width='5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='33' r='6' fill='%23FCE303'/%3E%3C/svg%3E">
@@ -28,17 +28,27 @@ header .clear:hover{background:#FDEDEB}
 header .home{color:#52609B;text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px}
 header .home:hover{color:var(--navy)}
 
-main{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:20px 28px 28px;display:flex;flex-direction:column;gap:14px}
-.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05);padding:22px 24px}
-h2{font-size:19px;color:var(--navy);margin-bottom:4px}
-.hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.6}
-.hint b{color:var(--pink)}
+main{flex:1;max-width:1140px;width:100%;margin:0 auto;padding:18px 28px 26px;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05)}
+.tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{padding:14px 16px;font-size:15px;font-weight:700;color:var(--muted);background:#FAFAFE;border:none;border-bottom:3px solid transparent;white-space:nowrap;cursor:pointer;font-family:inherit}
+.tab.active{color:var(--navy);border-bottom-color:var(--sky);background:#fff}
+.step{display:none;padding:22px 24px}
+.step.active{display:block}
+.step h2{font-size:19px;color:var(--navy);margin-bottom:4px}
+.step .hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.step .hint b{color:var(--pink)}
+
 button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:700;transition:.15s}
 .btn-grad{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;padding:12px 26px;border-radius:999px}
 .btn-grad:hover{filter:brightness(.93)}
+.btn-grad:disabled{background:#CBA9C6;filter:none;cursor:not-allowed}
 .btn-navy{background:var(--teal);color:#fff;padding:12px 22px}
 .btn-navy:hover{background:#5C2253}
-.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn-outline{background:#fff;border:1.5px solid var(--line);color:#1B2A3A;font-weight:500;padding:12px 18px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.spin{display:none;width:22px;height:22px;border:3px solid #E8E2F2;border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 table{border-collapse:collapse;width:100%}
 th{background:var(--navy);color:#fff;font-size:14px;font-weight:700;padding:11px 8px;border:1px solid #3A466F}
@@ -49,38 +59,165 @@ td textarea{width:100%;border:none;padding:4px;min-height:36px;background:transp
 td textarea:focus{background:#FBF7FE}
 td textarea::placeholder{color:#C0BACF}
 
+/* KPT */
+.kpt-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:820px){.kpt-grid{grid-template-columns:1fr}}
+.kpt-col{border-radius:12px;padding:16px;border:1.5px solid}
+.kpt-col h3{font-size:16px;margin-bottom:2px}
+.kpt-col p{font-size:12.5px;color:var(--muted);margin-bottom:10px}
+.kpt-col textarea{width:100%;min-height:150px;border:1.5px solid rgba(0,0,0,.08);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14.5px;line-height:1.7;resize:vertical;outline:none;background:#fff}
+.kpt-keep{background:#F0F9F4;border-color:#BFE3CE}.kpt-keep h3{color:#1E7A4F}
+.kpt-prob{background:#FDF1F6;border-color:#F2C4DA}.kpt-prob h3{color:#C2447A}
+.kpt-try{background:#F1F6FE;border-color:#C4D7F2}.kpt-try h3{color:#2E5AA8}
+.sheet-title{display:none;text-align:center;font-size:20px;font-weight:900;color:var(--navy);padding:6px 0 18px}
+.capture .sheet-title{display:block}
+
+/* Before & After */
+.ba-table td textarea{min-height:44px}
+
+/* 선언 */
+.declare-edit{max-width:720px}
+.declare-edit .row2{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px}
+.declare-edit .row2>div{flex:1;min-width:200px}
+label.fl{display:block;font-size:13px;font-weight:700;color:var(--navy);margin:0 0 5px}
+input[type=text]{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;outline:none;background:#fff}
+input[type=text]:focus{border-color:var(--sky);background:#FEFBFE}
+.declare-card{margin-top:20px;background:linear-gradient(160deg,#FFFDFB,#FDF4FA);border:2px solid #E9D9EE;border-radius:16px;padding:30px 34px;max-width:720px;box-shadow:0 4px 18px rgba(120,46,110,.08)}
+.declare-card h3{text-align:center;color:var(--navy);font-size:18px;letter-spacing:.06em;margin-bottom:16px}
+.declare-card .body{font-size:16px;line-height:2;color:#33304A}
+.declare-card .body b{color:var(--pink);border-bottom:2px solid #F6C2E4;padding:0 3px}
+.declare-card .sign{text-align:right;margin-top:16px;font-size:15px;color:var(--navy);font-weight:700}
+
 .toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
 .toast.show{opacity:1;transform:none}
+
+.modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
+.modal h3{font-size:18px;color:var(--navy);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);margin-bottom:14px}
+.modal input{width:100%;padding:13px;font-size:16px;border:1.5px solid var(--line);border-radius:9px;outline:none;font-family:inherit}
+.modal input:focus{border-color:var(--sky)}
+.modal .err{display:none;color:#C0392B;font-size:13px;margin-top:8px}
+.modal .row{display:flex;gap:10px;margin-top:16px}
+.modal .row button{flex:1;padding:12px}
 </style>
 </head>
 <body>
 <header>
   <span class="badge">13과정</span>
-  <h1>12개 과정 한 줄 회고</h1>
+  <h1>연수 돌아보기 워크북</h1>
   <span class="sub">2026 인공지능 활용 선도교사 연수 · 활동1 돌아보기 &nbsp;|&nbsp; <a href="/13/">🧭 성장 로드맵 워크북 →</a></span>
   <button class="clear" onclick="clearAll()">🗑 내용 지우기</button>
   <a class="home" href="/">🏠 홈</a>
 </header>
 
 <main>
-  <div class="card" id="sheet">
-    <h2>각 과정에서 '내가 얻은 것'을 한 줄로 적어 봅니다</h2>
-    <p class="hint">12개 과정은 흩어진 연수가 아니라 A~G 역량을 키워 온 하나의 여정입니다. 여기서 모은 <b>강점·아쉬움·변화</b>가 사후 진단 해석과 성장 로드맵의 재료가 됩니다.</p>
-    <table>
-      <tr><th style="width:150px">과정</th><th style="width:33%">핵심 배움 (요약)</th><th>나의 한 줄 회고</th></tr>
-      <tr><td class="label">① 본질 이해</td><td class="sum">AI 시대 교육 방향·역할 매트릭스</td><td><textarea data-k="rv1" placeholder="한 줄로 적어 보세요"></textarea></td></tr>
-      <tr><td class="label">②③ 가치관·윤리</td><td class="sum">가치관 선언문·윤리 체크리스트</td><td><textarea data-k="rv2"></textarea></td></tr>
-      <tr><td class="label">④⑤ 데이터·설계</td><td class="sum">데이터 해석·수업설계 뼈대</td><td><textarea data-k="rv3"></textarea></td></tr>
-      <tr><td class="label">⑥⑦ 도구·평가</td><td class="sum">도구 맥락 활용·과정중심평가 설계</td><td><textarea data-k="rv4"></textarea></td></tr>
-      <tr><td class="label">⑧⑨⑩ 집합 실행</td><td class="sum">팀 설계·마이크로티칭 실행</td><td><textarea data-k="rv5"></textarea></td></tr>
-      <tr><td class="label">⑪⑫ 분석·환류</td><td class="sum">학습데이터 분석·환류 설계</td><td><textarea data-k="rv6"></textarea></td></tr>
-    </table>
-    <div class="tools">
-      <button class="btn-grad" onclick="copyAll()">📋 전체 복사</button>
-      <button class="btn-navy" onclick="saveImage()">🖼 이미지 저장</button>
-    </div>
+  <div class="card" style="flex:1;display:flex;flex-direction:column">
+    <div class="tabs" id="tabs"></div>
+
+    <!-- ① 한 줄 회고 -->
+    <section class="step" id="step1">
+      <h2>① 12개 과정 한 줄 회고</h2>
+      <p class="hint">각 과정에서 <b>'내가 얻은 것'</b>을 한 줄로 적어 보세요. 여기 적은 회고가 다음 탭의 KPT·Before&amp;After AI 초안의 재료가 됩니다.</p>
+      <div id="rvSheet">
+        <div class="sheet-title">12개 과정 한 줄 회고</div>
+        <table>
+          <tr><th style="width:150px">과정</th><th style="width:32%">핵심 배움 (요약)</th><th>나의 한 줄 회고</th></tr>
+          <tr><td class="label">① 본질 이해</td><td class="sum">AI 시대 교육 방향·역할 매트릭스</td><td><textarea data-k="rv1" placeholder="한 줄로 적어 보세요"></textarea></td></tr>
+          <tr><td class="label">②③ 가치관·윤리</td><td class="sum">가치관 선언문·윤리 체크리스트</td><td><textarea data-k="rv2"></textarea></td></tr>
+          <tr><td class="label">④⑤ 데이터·설계</td><td class="sum">데이터 해석·수업설계 뼈대</td><td><textarea data-k="rv3"></textarea></td></tr>
+          <tr><td class="label">⑥⑦ 도구·평가</td><td class="sum">도구 맥락 활용·과정중심평가 설계</td><td><textarea data-k="rv4"></textarea></td></tr>
+          <tr><td class="label">⑧⑨⑩ 집합 실행</td><td class="sum">팀 설계·마이크로티칭 실행</td><td><textarea data-k="rv5"></textarea></td></tr>
+          <tr><td class="label">⑪⑫ 분석·환류</td><td class="sum">학습데이터 분석·환류 설계</td><td><textarea data-k="rv6"></textarea></td></tr>
+        </table>
+      </div>
+      <div class="tools">
+        <button class="btn-grad" onclick="copyReview()">📋 전체 복사</button>
+        <button class="btn-navy" onclick="savePng('rvSheet','12개과정_한줄회고')">🖼 이미지 저장</button>
+      </div>
+    </section>
+
+    <!-- ② KPT -->
+    <section class="step" id="step2">
+      <h2>② KPT 회고</h2>
+      <p class="hint">12개 과정을 <b>Keep(잘된 것) · Problem(아쉬운 것) · Try(새로 시도할 것)</b>로 정리합니다. 완성하면 <b>PNG로 저장해 패들렛에 올려</b> 동료와 공유하세요.</p>
+      <div id="kptSheet">
+        <div class="sheet-title">나의 KPT 회고</div>
+        <div class="kpt-grid">
+          <div class="kpt-col kpt-keep"><h3>Keep</h3><p>잘된 것 · 이어갈 것</p><textarea data-k="kpK" placeholder="예) 수업 설계에 데이터 확인 시점을 넣는 습관"></textarea></div>
+          <div class="kpt-col kpt-prob"><h3>Problem</h3><p>아쉬운 것 · 문제</p><textarea data-k="kpP" placeholder="예) 도구를 써 봤지만 평가와 연결이 약했다"></textarea></div>
+          <div class="kpt-col kpt-try"><h3>Try</h3><p>새로 시도할 것</p><textarea data-k="kpT" placeholder="예) 2학기 한 단원에서 AI 피드백 적용"></textarea></div>
+        </div>
+      </div>
+      <div class="tools">
+        <button class="btn-grad" onclick="savePng('kptSheet','나의_KPT_회고')">🖼 PNG 저장 → 패들렛에 올리기</button>
+        <button class="btn-navy" id="kptAiBtn">🤖 AI 초안 (한 줄 회고 기반)</button>
+        <div class="spin" id="kptSpin"></div>
+        <button class="btn-outline" onclick="copyKpt()">📋 복사</button>
+      </div>
+    </section>
+
+    <!-- ③ Before & After -->
+    <section class="step" id="step3">
+      <h2>③ 1차시의 나 vs 지금의 나 (Before &amp; After)</h2>
+      <p class="hint">연수 전과 후, 나의 변화를 세 영역으로 비교해 적습니다. 예) "AI가 두려웠다" → "AI가 수업 파트너로 느껴진다"</p>
+      <div id="baSheet">
+        <div class="sheet-title">연수 전과 후, 나의 변화</div>
+        <table class="ba-table">
+          <tr><th style="width:130px">구분</th><th>Before (이전의 나)</th><th>After (지금의 나)</th></tr>
+          <tr><td class="label">마음가짐</td><td><textarea data-k="baM1" placeholder="예) AI가 두렵고 귀찮았다"></textarea></td><td><textarea data-k="baM2" placeholder="예) AI가 수업 파트너로 느껴진다"></textarea></td></tr>
+          <tr><td class="label">수업 설계</td><td><textarea data-k="baD1" placeholder="예) 교과서 진도 나가기 급급"></textarea></td><td><textarea data-k="baD2"></textarea></td></tr>
+          <tr><td class="label">동료 관계</td><td><textarea data-k="baP1"></textarea></td><td><textarea data-k="baP2"></textarea></td></tr>
+        </table>
+      </div>
+      <div class="tools">
+        <button class="btn-navy" id="baAiBtn">🤖 AI 초안 (회고·KPT 기반)</button>
+        <div class="spin" id="baSpin"></div>
+        <button class="btn-grad" onclick="savePng('baSheet','연수_Before_After')">🖼 이미지 저장</button>
+        <button class="btn-outline" onclick="copyBa()">📋 복사</button>
+      </div>
+    </section>
+
+    <!-- ④ 체인지 메이커 선언 -->
+    <section class="step" id="step4">
+      <h2>④ 체인지 메이커 선언</h2>
+      <p class="hint">연수의 마지막 다짐입니다. 빈칸을 채우면 선언문 카드가 완성됩니다. 카드를 이미지로 저장해 간직하거나 공유하세요.</p>
+      <div class="declare-edit">
+        <div><label class="fl">나는 동료와 함께 ( ______ ) 하는 교사로 계속 성장하겠습니다</label><input type="text" data-k="cmBlank" placeholder="예) 데이터로 학생을 이해하고 배움을 나누는"></div>
+        <div style="margin-top:12px"><label class="fl">나의 다음 첫 발자국 (Action Item)</label><input type="text" data-k="cmAction" placeholder="예) 9월 첫 주, 우리 반 수업 1개에 AI 피드백 적용해 보기"></div>
+        <div class="row2">
+          <div><label class="fl">이름</label><input type="text" data-k="cmName" placeholder="예) 김선생"></div>
+          <div><label class="fl">날짜</label><input type="text" data-k="cmDate" placeholder="예) 2026. 7. 19."></div>
+        </div>
+      </div>
+      <div class="declare-card" id="cmCard">
+        <h3>[ 체인지 메이커(Change Maker) 선언문 ]</h3>
+        <div class="body">
+          이 연수는 끝이 아니라 새로운 시작입니다.<br>
+          나는 동료와 함께 <b id="pvBlank">(&nbsp;&nbsp;&nbsp;&nbsp;)</b> 하는 교사로 계속 성장하겠습니다.<br><br>
+          나의 다음 첫 발자국 : <b id="pvAction">(&nbsp;&nbsp;&nbsp;&nbsp;)</b>
+        </div>
+        <div class="sign"><span id="pvDate">20&nbsp;&nbsp;.&nbsp;&nbsp;.&nbsp;&nbsp;.</span> &nbsp; 교사 <span id="pvName">(&nbsp;&nbsp;&nbsp;&nbsp;)</span> ✍</div>
+      </div>
+      <div class="tools">
+        <button class="btn-grad" onclick="savePng('cmCard','체인지메이커_선언문')">🖼 선언문 카드 저장</button>
+      </div>
+    </section>
   </div>
 </main>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>🔒 AI 초안 활성화</h3>
+    <p>강사가 안내한 비밀번호를 입력하세요.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호">
+    <div class="err" id="pwErr">비밀번호가 일치하지 않습니다.</div>
+    <div class="row">
+      <button class="btn-outline" id="pwCancel">취소</button>
+      <button class="btn-navy" id="pwOk">확인</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -89,35 +226,136 @@ td textarea::placeholder{color:#C0BACF}
 <script>
 const LS_KEY='p13-review';
 const LABELS=['① 본질 이해','②③ 가치관·윤리','④⑤ 데이터·설계','⑥⑦ 도구·평가','⑧⑨⑩ 집합 실행','⑪⑫ 분석·환류'];
+const STEPS=['① 한 줄 회고','② KPT 회고','③ Before & After','④ 체인지 메이커 선언'];
 let data={};
 try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); if(s) data=s; }catch(e){}
+function save(){ localStorage.setItem(LS_KEY,JSON.stringify(data)); }
+
+const tabsEl=document.getElementById('tabs');
+STEPS.forEach((t,i)=>{
+  const b=document.createElement('button');
+  b.className='tab'; b.dataset.i=i+1; b.textContent=t;
+  b.onclick=()=>go(i+1);
+  tabsEl.appendChild(b);
+});
+function go(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',+t.dataset.i===n));
+  window.scrollTo({top:0});
+}
 
 document.querySelectorAll('[data-k]').forEach(el=>{
   const k=el.dataset.k;
   if(data[k]) el.value=data[k];
-  el.addEventListener('input',()=>{ data[k]=el.value; localStorage.setItem(LS_KEY,JSON.stringify(data)); });
+  el.addEventListener('input',()=>{ data[k]=el.value; save(); if(k.startsWith('cm')) renderCm(); });
 });
 
-function copyAll(){
-  const lines=['[12개 과정 한 줄 회고]'];
-  LABELS.forEach((l,i)=>{ const v=(data['rv'+(i+1)]||'').trim(); if(v) lines.push(`${l}: ${v}`); });
-  if(lines.length===1){ toast('아직 적은 회고가 없어요 ✏️'); return; }
-  navigator.clipboard.writeText(lines.join('\n')).then(()=>toast('복사했어요 📋'));
+function reviewsText(){
+  return LABELS.map((l,i)=>{ const v=(data['rv'+(i+1)]||'').trim(); return v?`${l}: ${v}`:null; }).filter(Boolean).join('\n');
 }
-function saveImage(){
+
+// ---------- AI (비밀번호 공용) ----------
+let unlocked=false, enteredPw='', pendingAI='kpt';
+const modalBg=document.getElementById('modalBg'), pwInput=document.getElementById('pwInput');
+function askAI(kind){
+  pendingAI=kind;
+  if(unlocked){ kind==='kpt'?runKptAI():runBaAI(); }
+  else {modalBg.style.display='flex'; pwInput.value=''; document.getElementById('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50);}
+}
+document.getElementById('pwCancel').onclick=()=>modalBg.style.display='none';
+function tryPw(){
+  enteredPw=pwInput.value.trim();
+  if(!enteredPw){ document.getElementById('pwErr').style.display='block'; return; }
+  unlocked=true; modalBg.style.display='none';
+  pendingAI==='kpt'?runKptAI():runBaAI();
+}
+document.getElementById('pwOk').onclick=tryPw;
+pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
+
+document.getElementById('kptAiBtn').onclick=()=>{
+  if(!reviewsText()){ toast('① 한 줄 회고를 먼저 1개 이상 적어 주세요 ✏️'); go(1); return; }
+  askAI('kpt');
+};
+document.getElementById('baAiBtn').onclick=()=>{
+  if(!reviewsText() && !['kpK','kpP','kpT'].some(k=>(data[k]||'').trim())){ toast('①·② 탭을 먼저 채워 주세요 — AI가 그걸 재료로 씁니다 ✏️'); go(1); return; }
+  askAI('ba');
+};
+
+async function runKptAI(){
+  const btn=document.getElementById('kptAiBtn'), spin=document.getElementById('kptSpin');
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const res=await fetch('/api/roadmap',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw, mode:'kpt', reviews:reviewsText()})});
+    const j=await res.json();
+    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    const fill=(k,v)=>{ if(!v) return; data[k]=v; const el=document.querySelector(`[data-k=${k}]`); if(el) el.value=v; };
+    fill('kpK',j.keep); fill('kpP',j.problem); fill('kpT',j.try); save();
+    toast('KPT 초안을 채웠어요. 내 말로 고친 뒤 PNG로 저장하세요 ✏️');
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+async function runBaAI(){
+  const btn=document.getElementById('baAiBtn'), spin=document.getElementById('baSpin');
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const kpt=['Keep: '+(data.kpK||''),'Problem: '+(data.kpP||''),'Try: '+(data.kpT||'')].join('\n');
+    const res=await fetch('/api/roadmap',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw, mode:'ba', reviews:reviewsText(), kpt})});
+    const j=await res.json();
+    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    const fill=(k,v)=>{ if(!v) return; data[k]=v; const el=document.querySelector(`[data-k=${k}]`); if(el) el.value=v; };
+    fill('baM1',j.mind_b); fill('baM2',j.mind_a);
+    fill('baD1',j.design_b); fill('baD2',j.design_a);
+    fill('baP1',j.peer_b); fill('baP2',j.peer_a); save();
+    toast('Before & After 초안을 채웠어요. 자유롭게 고치세요 ✏️');
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+
+// ---------- 선언 카드 ----------
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function renderCm(){
+  const blank='(&nbsp;&nbsp;&nbsp;&nbsp;)';
+  document.getElementById('pvBlank').innerHTML=data.cmBlank?esc(data.cmBlank):blank;
+  document.getElementById('pvAction').innerHTML=data.cmAction?esc(data.cmAction):blank;
+  document.getElementById('pvName').innerHTML=data.cmName?esc(data.cmName):blank;
+  document.getElementById('pvDate').innerHTML=data.cmDate?esc(data.cmDate):'20&nbsp;&nbsp;.&nbsp;&nbsp;.&nbsp;&nbsp;.';
+}
+renderCm();
+
+// ---------- 복사·이미지 ----------
+function copyReview(){
+  const t=reviewsText();
+  if(!t){ toast('아직 적은 회고가 없어요 ✏️'); return; }
+  navigator.clipboard.writeText('[12개 과정 한 줄 회고]\n'+t).then(()=>toast('복사했어요 📋'));
+}
+function copyKpt(){
+  if(!['kpK','kpP','kpT'].some(k=>(data[k]||'').trim())){ toast('아직 적은 KPT가 없어요 ✏️'); return; }
+  navigator.clipboard.writeText(`[KPT 회고]\nKeep: ${data.kpK||''}\nProblem: ${data.kpP||''}\nTry: ${data.kpT||''}`).then(()=>toast('복사했어요 📋'));
+}
+function copyBa(){
+  if(!['baM1','baM2','baD1','baD2','baP1','baP2'].some(k=>(data[k]||'').trim())){ toast('아직 적은 내용이 없어요 ✏️'); return; }
+  navigator.clipboard.writeText(`[연수 Before & After]\n마음가짐: ${data.baM1||''} → ${data.baM2||''}\n수업 설계: ${data.baD1||''} → ${data.baD2||''}\n동료 관계: ${data.baP1||''} → ${data.baP2||''}`).then(()=>toast('복사했어요 📋'));
+}
+function savePng(id,name){
   toast('이미지를 만드는 중…');
-  html2canvas(document.getElementById('sheet'),{scale:2,backgroundColor:'#ffffff',
-    onclone:doc=>{ const t=doc.querySelector('.tools'); if(t) t.style.display='none'; }}).then(cv=>{
+  const el=document.getElementById(id);
+  el.classList.add('capture');
+  html2canvas(el,{scale:2,backgroundColor:'#ffffff'}).then(cv=>{
+    el.classList.remove('capture');
     const a=document.createElement('a');
-    a.download='12개과정_한줄회고.png';
+    a.download=name+(data.cmName?'_'+data.cmName:'')+'.png';
     a.href=cv.toDataURL('image/png'); a.click();
-    toast('이미지로 저장했어요 🖼');
-  });
+    toast('이미지로 저장했어요 🖼 패들렛·포트폴리오에 올려 보세요');
+  }).catch(()=>{ el.classList.remove('capture'); toast('⚠ 이미지 저장에 실패했어요'); });
 }
 function clearAll(){
   if(!confirm('모든 입력 내용을 지울까요? 되돌릴 수 없습니다.')) return;
   data={}; localStorage.removeItem(LS_KEY);
   document.querySelectorAll('[data-k]').forEach(el=>el.value='');
+  renderCm();
   toast('내용을 지웠어요');
 }
 function toast(msg){
@@ -125,6 +363,7 @@ function toast(msg){
   t.textContent=msg; t.classList.add('show');
   clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600);
 }
+go(1);
 </script>
 </body>
 </html>
