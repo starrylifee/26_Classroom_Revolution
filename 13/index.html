@@ -85,6 +85,11 @@ label.fl{display:block;font-size:13px;font-weight:700;color:var(--navy);margin:0
 .goal-row{display:flex;gap:10px;align-items:center}
 .goal-row input{flex:1}
 .goal-hint{font-size:12.5px;color:var(--muted);margin-top:8px}
+.cand{display:flex;gap:8px;align-items:center;margin-top:8px}
+.cand .lbl{flex:0 0 auto;background:#fff;border:1px solid #E3D8F2;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;color:var(--teal);white-space:nowrap}
+.cand input{flex:1;font-size:14px;padding:8px 11px}
+.cand .use{background:var(--teal);color:#fff;padding:9px 16px;font-size:13.5px;white-space:nowrap}
+.cand .use:hover{background:#5C2253}
 
 /* 3단계: 로드맵 표 */
 table{border-collapse:collapse;width:100%}
@@ -210,7 +215,8 @@ td textarea:focus{background:#FBF7FE}
           <button class="btn-grad" id="goalAiBtn" style="padding:11px 20px;white-space:nowrap">🤖 AI로 문장 만들기</button>
           <div class="spin" id="goalSpin"></div>
         </div>
-        <p class="goal-hint">위에 학생의 필요·나의 흥미를 1개 이상 적으면, AI가 둘을 연결한 목표 문장을 제안합니다. 제안 문장은 자유롭게 고쳐 쓰세요.</p>
+        <p class="goal-hint">위에 학생의 필요·나의 흥미를 1개 이상 적으면, AI가 적은 개수만큼 <b>모든 조합(필요×흥미)의 문장</b>을 만들어 줍니다. 문장을 고쳐 쓴 뒤 "사용"을 누르면 목표 칸에 들어갑니다.</p>
+        <div id="goalCands"></div>
       </div>
       <div class="nav-row"><button class="btn-outline" onclick="go(1)">← 이전</button><button class="btn-grad" onclick="go(3)">다음 · 성장 로드맵 →</button></div>
     </section>
@@ -461,25 +467,49 @@ pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
 async function runGoalAI(){
   const btn=document.getElementById('goalAiBtn'), spin=document.getElementById('goalSpin');
   const sw=strengthsWeaknesses();
+  const needs=[data.need1,data.need2,data.need3].map(v=>(v||'').trim()).filter(Boolean);
+  const wants=[data.want1,data.want2,data.want3].map(v=>(v||'').trim()).filter(Boolean);
+  if(!needs.length||!wants.length){ toast('학생의 필요와 나의 흥미를 각 1개 이상 먼저 적어 주세요 ✏️'); return; }
   btn.disabled=true; spin.style.display='block';
   try{
     const res=await fetch('/api/roadmap',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         pw:enteredPw, mode:'goal',
         weak:sw?sw.weak.map(x=>x.c+' '+x.n).join(', '):'',
-        need:[data.need1,data.need2,data.need3].filter(Boolean).join(' / '),
-        want:[data.want1,data.want2,data.want3].filter(Boolean).join(' / ')
+        needs, wants
       })});
     const j=await res.json();
     if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
-    if(j.goal){
-      data.goal=j.goal; save();
-      const el=document.querySelector('[data-k=goal]'); if(el) el.value=j.goal;
-      toast('목표 문장을 제안했어요. 내 말투로 자유롭게 고치세요 ✏️');
-    }
+    const goals=Array.isArray(j.goals)?j.goals:[];
+    const cands=[];
+    needs.forEach((n,ni)=>wants.forEach((w,wi)=>{
+      const text=(goals[ni*wants.length+wi]||'').trim();
+      if(text) cands.push({lbl:`필요${ni+1}×흥미${wi+1}`,text});
+    }));
+    if(!cands.length) throw new Error('AI가 문장을 만들지 못했어요. 다시 시도해 주세요.');
+    data.goalCands=cands; save(); renderCands();
+    toast(`조합별 문장 ${cands.length}개를 만들었어요. 고쳐 쓴 뒤 '사용'을 누르세요 ✏️`);
   }catch(e){ toast('⚠ '+e.message); }
   finally{ btn.disabled=false; spin.style.display='none'; }
 }
+function renderCands(){
+  const box=document.getElementById('goalCands');
+  box.innerHTML='';
+  (data.goalCands||[]).forEach((c,i)=>{
+    const row=document.createElement('div'); row.className='cand';
+    const lbl=document.createElement('span'); lbl.className='lbl'; lbl.textContent=c.lbl;
+    const inp=document.createElement('input'); inp.type='text'; inp.value=c.text;
+    inp.addEventListener('input',()=>{ data.goalCands[i].text=inp.value; save(); });
+    const use=document.createElement('button'); use.className='use'; use.textContent='사용';
+    use.onclick=()=>{
+      data.goal=inp.value.trim(); save();
+      const el=document.querySelector('[data-k=goal]'); if(el) el.value=data.goal;
+      toast('목표 칸에 넣었어요 ⭐');
+    };
+    row.append(lbl,inp,use); box.appendChild(row);
+  });
+}
+renderCands();
 
 async function runAI(){
   const btn=document.getElementById('aiBtn'), spin=document.getElementById('aiSpin'), st=document.getElementById('aiStatus');
@@ -590,7 +620,7 @@ function clearAll(){
   if(!confirm('모든 입력 내용을 지울까요? 되돌릴 수 없습니다.')) return;
   data={scores:[0,0,0,0,0,0]}; save();
   document.querySelectorAll('[data-k]').forEach(el=>el.value='');
-  renderScale(); renderRadar(); renderDecl(); renderFinal();
+  renderScale(); renderRadar(); renderDecl(); renderFinal(); renderCands();
   toast('내용을 지웠어요');
 }
 function toast(msg){
