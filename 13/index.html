@@ -171,13 +171,13 @@ td textarea:focus{background:#FBF7FE}
           </div>
         </div>
       </div>
-      <div class="nav-row"><span></span><button class="btn-grad" onclick="go(2)">다음 · 스윗 스팟 →</button></div>
+      <div class="nav-row"><span></span><button class="btn-grad" onclick="go(2)">다음 · 성장 목표 →</button></div>
     </section>
 
     <!-- 2단계: 성장 스윗 스팟 -->
     <section class="step" id="step2">
-      <h2>② 성장 스윗 스팟 찾기</h2>
-      <p class="hint"><b>학생의 필요(Need)</b>와 <b>나의 흥미(Want)</b>를 각각 적고, 두 가지가 만나는 지점에서 최우선 성장 목표를 한 문장으로 만드세요. 예) “생성형 AI를 활용해(Want) 느린 학습자 맞춤 문제(Need) 만들기”</p>
+      <h2>② 성장 목표 찾기 — 학생의 필요 × 나의 흥미</h2>
+      <p class="hint"><b>학생의 필요(Need)</b>와 <b>나의 흥미(Want)</b>를 각각 적고, 두 가지가 겹치는 지점에서 최우선 성장 목표를 한 문장으로 만드세요. 예) “생성형 AI를 활용해(Want) 느린 학습자 맞춤 문제(Need) 만들기” (교안에서는 이 교집합을 '성장 스윗 스팟'이라고 부릅니다)</p>
       <div class="spot-grid">
         <div class="spot-col need">
           <h3>[A] 학생의 필요 (Need)</h3>
@@ -204,7 +204,7 @@ td textarea:focus{background:#FBF7FE}
     <!-- 3단계: 연간 성장 로드맵 -->
     <section class="step" id="step3">
       <h2>③ 나의 연간 성장 로드맵</h2>
-      <p class="hint">6개월 실행 계획을 중심으로, 시기별 <b>구체적 실행 계획(Action Item)</b>을 적으세요. 막히면 예시를 보거나 AI에게 초안을 요청한 뒤 내 상황에 맞게 고치면 됩니다.</p>
+      <p class="hint">6개월 실행 계획을 중심으로, 시기별 <b>구체적 실행 계획(Action Item)</b>을 적으세요. 막히면 예시를 보거나 AI에게 초안을 요청한 뒤 내 상황에 맞게 고치면 됩니다. AI 초안은 ①·②에서 적은 진단·성장 목표를 재료로 씁니다.</p>
       <div class="roadmap-tools">
         <button class="btn-outline" id="exBtn" onclick="toggleExample()">📖 작성 예시 보기</button>
         <button class="btn-grad" id="aiBtn">🤖 AI 초안 제안</button>
@@ -321,7 +321,7 @@ const COMP=[
  {c:'E',n:'실행',q:'수업 중 기기 문제·학생 상호작용을 유연하게 조율하는가?'},
  {c:'F',n:'평가',q:'과정중심평가에 AI 도구로 즉각 피드백을 주는가?'}
 ];
-const STEPS=['① 자가 진단','② 스윗 스팟','③ 성장 로드맵','④ 걸림돌·자원','⑤ 성장 선언','⑥ 완성본'];
+const STEPS=['① 자가 진단','② 성장 목표','③ 성장 로드맵','④ 걸림돌·자원','⑤ 성장 선언','⑥ 완성본'];
 let data={scores:[0,0,0,0,0,0]};
 try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); if(s&&Array.isArray(s.scores)) data=s; }catch(e){}
 
