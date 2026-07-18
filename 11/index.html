@@ -104,6 +104,21 @@ label.fl{display:block;font-size:13.5px;font-weight:700;color:var(--navy);margin
 .comment b{color:#1E7A4F}
 .pre{white-space:pre-wrap}
 
+/* 가이드 판독 */
+.mode-tabs{display:flex;gap:8px;margin-bottom:14px}
+.mode-tab{padding:10px 20px;border-radius:999px;font-size:14.5px;font-weight:700;background:#F1EFF8;color:#8A87A8;border:1.5px solid transparent}
+.mode-tab.active{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff}
+.chip{display:inline-block;background:#F1EBF8;color:var(--teal);border-radius:999px;padding:4px 14px;font-size:13px;font-weight:700}
+.chat{display:flex;flex-direction:column;gap:10px;margin:14px 0;max-height:420px;overflow-y:auto;padding-right:4px}
+.msg{max-width:85%;padding:11px 15px;border-radius:14px;font-size:14.5px;line-height:1.7;white-space:pre-wrap}
+.msg.coach{align-self:flex-start;background:#F4F1FB;border:1.5px solid #E2DAF2;color:#33304A;border-bottom-left-radius:4px}
+.msg.coach b{color:var(--teal)}
+.msg.me{align-self:flex-end;background:linear-gradient(135deg,#8F86DD,#EC6FB2);color:#fff;border-bottom-right-radius:4px}
+.msg.model{align-self:flex-start;background:#F0F9F4;border:1.5px solid #BFE3CE;color:#215C3C;border-bottom-left-radius:4px}
+.msg.model b{color:#1E7A4F}
+.chat-input{display:flex;gap:10px}
+.chat-input textarea{flex:1;min-height:52px}
+.wfocus{outline:3px solid #EC6FB2;outline-offset:3px;border-radius:12px;transition:outline .2s}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
 .toast.show{opacity:1;transform:none}
 .modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
@@ -143,20 +158,41 @@ label.fl{display:block;font-size:13.5px;font-weight:700;color:var(--navy);margin
   <div id="dash">
     <div class="kpis" id="kpis"></div>
     <div class="grid">
-      <div class="widget"><h3>성취영역별 점수 분포 (최근 회차)</h3><div class="read">읽는 법 | <b>상자가 길고 아래 수염이 깊으면</b> 평균이 무난해도 하위권 뭉치가 숨어 있다는 뜻</div><svg id="boxSvg" viewBox="0 0 520 230" style="width:100%"></svg></div>
+      <div class="widget" id="wBox"><h3>성취영역별 점수 분포 (최근 회차)</h3><div class="read">읽는 법 | <b>상자가 길고 아래 수염이 깊으면</b> 평균이 무난해도 하위권 뭉치가 숨어 있다는 뜻</div><svg id="boxSvg" viewBox="0 0 520 230" style="width:100%"></svg></div>
       <div class="widget"><h3>회차별 평균 점수 추이</h3><div class="read">읽는 법 | 평평한 평균 뒤에 <b>특정 영역·특정 학생의 급등락</b>이 숨어 있을 수 있음 — 꺾인 영역부터 확인</div><svg id="trendSvg" viewBox="0 0 520 230" style="width:100%"></svg><div class="legend" id="trendLegend"></div></div>
-      <div class="widget"><h3>학습 행동 히트맵 (주차 × 요일, 평균 접속 분)</h3><div class="read">읽는 법 | <b>색이 갑자기 옅어진 구간 = 학습 공백 신호</b> — 단, 그 주에 무슨 일이 있었는지 먼저 확인</div><div id="heatBox"></div></div>
+      <div class="widget" id="wHeat"><h3>학습 행동 히트맵 (주차 × 요일, 평균 접속 분)</h3><div class="read">읽는 법 | <b>색이 갑자기 옅어진 구간 = 학습 공백 신호</b> — 단, 그 주에 무슨 일이 있었는지 먼저 확인</div><div id="heatBox"></div></div>
       <div class="widget"><h3>영상 완주율 분포</h3><div class="read">읽는 법 | 분포가 <b>두 덩어리로 갈라지면</b> 학급 안에 서로 다른 두 집단이 있다는 뜻</div><div class="hist" id="histBox"></div></div>
       <div class="widget"><h3>형성평가 오답 유형</h3><div class="read">읽는 법 | 가장 큰 항목이 <b>학급 공통 지도 1순위</b> — 비율이 비슷하면 개별 접근</div><div class="bars" id="errBox"></div></div>
       <div class="widget"><h3>정의적 영역 사전 · 사후</h3><div class="read">읽는 법 | 면적이 <b>넓어진 방향 = 성장</b>, 줄어든 방향 = 점검 (학업스트레스는 낮아질수록 양호)</div><svg id="radarSvg" viewBox="0 0 340 250" style="width:100%;max-width:360px;display:block;margin:0 auto"></svg><div class="legend" style="justify-content:center"><span><i style="background:#C9C2E8"></i>사전</span><span><i style="background:#E85FA5"></i>사후</span></div></div>
     </div>
     <div class="grid" style="margin-top:14px">
-      <div class="widget"><h3>주목 학생 요약 (일부)</h3><div class="read">읽는 법 | 숫자가 좋아도 <b>시간·완주율·관찰 메모와 교차 확인</b> — 한 지표로 단정하지 않기</div><table id="stuTable"></table></div>
-      <div class="widget"><h3>교사 관찰 메모</h3><div class="read">읽는 법 | 대시보드가 보여주지 못하는 것 — <b>디지털 데이터 + 교사 관찰의 교차 검증</b>이 판독의 핵심</div><div class="memo-list" id="memoBox"></div></div>
+      <div class="widget" id="wStu"><h3>주목 학생 요약 (일부)</h3><div class="read">읽는 법 | 숫자가 좋아도 <b>시간·완주율·관찰 메모와 교차 확인</b> — 한 지표로 단정하지 않기</div><table id="stuTable"></table></div>
+      <div class="widget" id="wMemo"><h3>교사 관찰 메모</h3><div class="read">읽는 법 | 대시보드가 보여주지 못하는 것 — <b>디지털 데이터 + 교사 관찰의 교차 검증</b>이 판독의 핵심</div><div class="memo-list" id="memoBox"></div></div>
     </div>
   </div>
 
-  <div class="card" id="interpCard">
+  <div class="card">
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="mtGuide" onclick="setMode('guide')">🧭 가이드 판독 (5문항)</button>
+      <button class="mode-tab" id="mtFree" onclick="setMode('free')">✍ 자유 판독</button>
+    </div>
+    <div id="guideCard">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <h2>🧭 수석교사와 함께 읽기</h2>
+        <span class="chip" id="stepChip">문항 1 / 5</span>
+      </div>
+      <p class="hint" style="margin:6px 0 0">문항마다 <b>봐야 할 위젯이 분홍 테두리</b>로 표시됩니다. 답이 빗나가면 정답 대신 힌트를 드리고, 두 번 막히면 정답을 설명하고 넘어갑니다. (가이드는 기본 학급 전용)</p>
+      <div class="chat" id="chatLog"></div>
+      <div class="chat-input">
+        <textarea id="chatInput" placeholder="여기에 답을 적고 보내기를 누르세요"></textarea>
+        <button class="btn-grad" id="sendBtn">보내기</button>
+        <div class="spin" id="chatSpin"></div>
+      </div>
+      <div class="tools" style="margin-top:12px">
+        <button class="btn-outline" onclick="restartGuide()">↺ 처음부터 다시</button>
+      </div>
+    </div>
+  <div id="interpCard" style="display:none">
     <h2>✍ 나의 판독</h2>
     <p class="hint" style="margin:6px 0 14px">데이터와 메모를 교차해서 읽고 적어 보세요. 정답 맞히기가 아니라 <b>근거를 들어 해석하는 연습</b>입니다.</p>
     <div class="interp-grid">
@@ -167,6 +203,7 @@ label.fl{display:block;font-size:13.5px;font-weight:700;color:var(--navy);margin
       <button class="btn-navy" id="cmpBtn">🤖 AI 해석과 비교하기</button>
       <div class="spin" id="cmpSpin"></div>
     </div>
+  </div>
   </div>
 
   <div class="card" id="compareCard">
@@ -355,9 +392,10 @@ render();
 // ---------- 비밀번호 ----------
 let unlocked=false, enteredPw='', pendingAI='new';
 const modalBg=document.getElementById('modalBg'), pwInput=document.getElementById('pwInput');
+function runByKind(kind){ if(kind==='new') runNew(); else if(kind==='step') runStep(); else runCompare(); }
 function askAI(kind){
   pendingAI=kind;
-  if(unlocked){ kind==='new'?runNew():runCompare(); }
+  if(unlocked){ runByKind(kind); }
   else {modalBg.style.display='flex'; pwInput.value=''; document.getElementById('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50);}
 }
 document.getElementById('pwCancel').onclick=()=>modalBg.style.display='none';
@@ -365,7 +403,7 @@ function tryPw(){
   enteredPw=pwInput.value.trim();
   if(!enteredPw){ document.getElementById('pwErr').style.display='block'; return; }
   unlocked=true; modalBg.style.display='none';
-  pendingAI==='new'?runNew():runCompare();
+  runByKind(pendingAI);
 }
 document.getElementById('pwOk').onclick=tryPw;
 pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
@@ -384,11 +422,11 @@ async function runNew(){
       body:JSON.stringify({pw:enteredPw, mode:'class_scenario', seed:String(Math.floor(Math.random()*100000))})});
     const j=await res.json();
     if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
-    data.sc=j; data.individual=''; data.classAdj=''; data.ai=null; save();
+    data.sc=j; data.custom=true; data.individual=''; data.classAdj=''; data.ai=null; save();
     document.querySelectorAll('[data-k]').forEach(el=>el.value='');
     document.getElementById('compareCard').style.display='none';
-    render();
-    toast('새 학급 대시보드가 도착했어요. 함정 3개를 찾아보세요 🪤');
+    render(); setMode('free');
+    toast('새 학급 대시보드가 도착했어요. 자유 판독으로 함정 3개를 찾아보세요 🪤');
   }catch(e){ toast('⚠ '+e.message); }
   finally{ btn.disabled=false; spin.style.display='none'; }
 }
@@ -435,6 +473,116 @@ function renderCompare(){
 }
 renderCompare();
 
+// ---------- 가이드 판독 (5문항 고정) ----------
+const GUIDE=[
+ {focus:'kpis',
+  q:'먼저 위의 KPI 카드 4장을 보세요. 평균 73.2점, 제출률 86% — 이 학급은 문제가 없다고 판단해도 될까요? 판단하기 전에 어떤 화면을 더 봐야 할까요?',
+  key:'평균·제출률 같은 대푯값만으로 판단하면 안 되고, 영역별 분포(상자그림)·개별 학생·관찰 메모를 봐야 한다는 점을 짚으면 정답.',
+  model:'평균은 대푯값일 뿐이라 이것만으로는 판단할 수 없습니다. 영역별 분포(상자그림)와 개별 학생, 관찰 메모까지 봐야 학급이 보입니다.'},
+ {focus:'wBox',
+  q:'상자그림에서 다섯 영역 중 가장 걱정되는 영역은 어디인가요? 그래프의 어떤 ‘모양’이 그 근거인가요?',
+  key:'도형 영역 — 중앙값(71)은 무난하지만 상자가 길고 아래 수염이 28점까지 깊어 하위권 뭉치(양극화)가 있다는 점. 회차 추이에서 도형만 3회차에 하락한 것도 보조 근거.',
+  model:'도형입니다. 중앙값은 71점으로 무난하지만 상자가 길고 아래 수염이 28점까지 내려가 있어, 평균 뒤에 하위권 뭉치(양극화)가 숨어 있습니다. 추이에서도 도형만 3회차에 꺾였습니다.'},
+ {focus:'wHeat',
+  q:'히트맵을 보면 5주차 학습시간이 뚝 떨어져 있습니다. 학습 이탈 신호로 보고 개입해야 할까요?',
+  key:'개입 불필요 — 관찰 메모 1번(수·목·금 현장체험학습)이 원인. 데이터 공백은 맥락부터 확인해야 한다는 점을 짚으면 정답.',
+  model:'아니요. 관찰 메모 1번에 5주차 수·목·금은 현장체험학습이었다고 적혀 있습니다. 공백은 이탈이 아니라 일정 때문이니, 숫자보다 맥락을 먼저 확인해야 합니다.'},
+ {focus:'wStu',
+  q:'학생03(96점 · 주당 64분)과 학생07(44점 · 주당 238분) — 개별 지원이 더 급한 학생은 누구인가요? 근거도 함께 적어 주세요.',
+  key:'학생07 — 학습시간이 가장 많은데 성취가 낮고, 메모 4의 정서 신호(표정이 어두워짐). 학생03은 점수는 높지만 즉시 제출 습관(메모 2)이라 성취로 단정할 수 없다는 점까지 짚으면 완벽.',
+  model:'학생07입니다. 시간을 가장 많이 쓰는데 점수가 낮고, 메모 4에서 정서 신호까지 보입니다. 반대로 학생03은 96점이지만 문제를 열자마자 제출하는 습관(메모 2)이 있어 점수만으로 성취를 단정할 수 없습니다.'},
+ {focus:'wMemo',
+  q:'마지막 문항입니다. 학생12의 영상 완주율은 45%인데, 학습 결손으로 기록해야 할까요? 그리고 이 학급 전체를 위한 수업 조정 한 가지를 정해 보세요.',
+  key:'학생12는 가정 기기 고장(메모 3)이라 결손이 아님. 학급 조정은 도형 하위권 대상 구체물·단계별 지도, 또는 최다 오답인 문제 해석 오류(34%)를 줄이는 지문 읽기 지도를 제시하면 정답.',
+  model:'학생12는 가정 기기 고장(메모 3)으로 영상 대신 종이 자료로 학습했으니 결손이 아닙니다. 학급 조정으로는 도형 하위권을 위한 구체물·단계별 지도, 또는 오답의 34%를 차지하는 문제 해석 오류를 줄이는 지문 읽기 지도가 우선입니다.'}
+];
+if(!data.g) data.g={i:0,tries:0,log:[],mode:'guide',done:false};
+function pushLog(who,text){ data.g.log.push({who,text}); save(); }
+function focusWidget(){
+  document.querySelectorAll('.wfocus').forEach(el=>el.classList.remove('wfocus'));
+  if(data.g.mode!=='guide'||data.g.done) return;
+  const g=GUIDE[data.g.i];
+  if(g){ const el=document.getElementById(g.focus); if(el){ el.classList.add('wfocus'); } }
+}
+function renderChat(){
+  const box=document.getElementById('chatLog');
+  box.innerHTML=data.g.log.map(m=>{
+    const cls=m.who==='me'?'me':(m.who==='model'?'model':'coach');
+    const prefix=m.who==='model'?'<b>📌 정답 정리</b><br>':(m.who==='coach'?'':'');
+    return `<div class="msg ${cls}">${prefix}${esc(m.text)}</div>`;
+  }).join('');
+  box.scrollTop=box.scrollHeight;
+  document.getElementById('stepChip').textContent=data.g.done?'완주! 🎉':`문항 ${Math.min(data.g.i+1,5)} / 5`;
+  document.getElementById('chatInput').disabled=data.g.done;
+  document.getElementById('sendBtn').disabled=data.g.done;
+}
+function startGuideIfEmpty(){
+  if(data.g.log.length===0){
+    pushLog('coach','안녕하세요, 오늘 대시보드 읽기를 함께할 수석교사입니다. 정답이 있는 다섯 문항을 차례로 풀어 볼게요. 분홍 테두리가 생긴 위젯을 보고 답해 주세요.');
+    pushLog('coach','문항 1. '+GUIDE[0].q);
+  }
+}
+function setMode(m){
+  data.g.mode=m; save();
+  document.getElementById('mtGuide').classList.toggle('active',m==='guide');
+  document.getElementById('mtFree').classList.toggle('active',m==='free');
+  document.getElementById('guideCard').style.display=m==='guide'?'block':'none';
+  document.getElementById('interpCard').style.display=m==='free'?'block':'none';
+  if(m==='guide'){
+    if(data.custom){ data.sc=DEFAULT_SC; data.custom=false; save(); render(); toast('가이드 판독은 기본 학급으로 진행합니다'); }
+    startGuideIfEmpty(); renderChat(); focusWidget();
+  } else {
+    document.querySelectorAll('.wfocus').forEach(el=>el.classList.remove('wfocus'));
+  }
+}
+function restartGuide(){
+  if(!confirm('가이드 대화를 처음부터 다시 시작할까요?')) return;
+  data.g={i:0,tries:0,log:[],mode:'guide',done:false}; save();
+  startGuideIfEmpty(); renderChat(); focusWidget();
+}
+document.getElementById('sendBtn').onclick=sendAnswer;
+document.getElementById('chatInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendAnswer(); }
+});
+function sendAnswer(){
+  const inp=document.getElementById('chatInput');
+  const ans=inp.value.trim();
+  if(!ans){ toast('답을 적어 주세요 ✏️'); return; }
+  if(data.g.done) return;
+  pendingAns=ans;
+  askAI('step');
+}
+let pendingAns='';
+async function runStep(){
+  const btn=document.getElementById('sendBtn'), spin=document.getElementById('chatSpin'), inp=document.getElementById('chatInput');
+  const g=GUIDE[data.g.i];
+  const reveal=data.g.tries>=2;
+  pushLog('me',pendingAns); renderChat();
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw, mode:'class_step', scenario:scenarioText(), question:g.q, keyHint:g.key, answer:pendingAns, reveal})});
+    const j=await res.json();
+    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    inp.value='';
+    pushLog('coach',j.reply||'');
+    if(j.verdict==='pass'){
+      pushLog('model',g.model);
+      data.g.i++; data.g.tries=0;
+      if(data.g.i>=GUIDE.length){
+        data.g.done=true;
+        pushLog('coach','다섯 문항 완주! 🎉 핵심은 하나였어요 — 숫자 하나로 단정하지 말고, 분포·추이·관찰 메모를 교차해서 읽기. 이제 ‘자유 판독’ 탭에서 스스로 정리해 보거나, 새 학급을 받아 연습해 보세요.');
+      } else {
+        pushLog('coach',`문항 ${data.g.i+1}. `+GUIDE[data.g.i].q);
+      }
+    } else {
+      data.g.tries++;
+    }
+    save(); renderChat(); focusWidget();
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=data.g.done; spin.style.display='none'; }
+}
+
 // ---------- 공용 ----------
 function savePng(id,name){
   toast('이미지를 만드는 중…');
@@ -462,11 +610,11 @@ function savePng(id,name){
   }).catch(()=>toast('⚠ 이미지 저장에 실패했어요'));
 }
 function clearAll(){
-  if(!confirm('입력한 판독과 AI 결과를 지우고 기본 학급으로 되돌릴까요?')) return;
-  data={sc:DEFAULT_SC}; localStorage.removeItem(LS_KEY);
+  if(!confirm('입력한 판독과 가이드 대화를 지우고 기본 학급으로 되돌릴까요?')) return;
+  data={sc:DEFAULT_SC, g:{i:0,tries:0,log:[],mode:'guide',done:false}}; localStorage.removeItem(LS_KEY);
   document.querySelectorAll('textarea[data-k]').forEach(el=>el.value='');
   document.getElementById('compareCard').style.display='none';
-  render();
+  render(); setMode('guide');
   toast('기본 학급으로 되돌렸어요');
 }
 function toast(msg){
@@ -474,6 +622,7 @@ function toast(msg){
   t.textContent=msg; t.classList.add('show');
   clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600);
 }
+setMode(data.g.mode||'guide');
 </script>
 </body>
 </html>

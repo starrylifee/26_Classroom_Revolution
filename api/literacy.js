@@ -114,6 +114,40 @@ module.exports = async function handler(req, res) {
       return;
     }
 
+    // 11과정: 가이드 판독 — 단계별 학습자 답을 판정하고 힌트/정답을 대화로 제공
+    if (mode === 'class_step') {
+      const scenario = String(req.body.scenario ?? '').trim().slice(0, 4000);
+      const question = String(req.body.question ?? '').trim().slice(0, 300);
+      const answer = String(req.body.answer ?? '').trim().slice(0, 600);
+      const keyHint = String(req.body.keyHint ?? '').trim().slice(0, 400);
+      const reveal = req.body.reveal === true;
+      if (!scenario || !question) { res.status(400).json({ error: '단계 정보가 없습니다.' }); return; }
+      if (!answer) { res.status(400).json({ error: '답을 먼저 적어 주세요.' }); return; }
+
+      const prompt = `당신은 초등 교사 연수에서 학급 대시보드 판독을 지도하는 다정한 수석교사입니다. 소크라테스식으로 짧게 대화합니다.
+
+<학급 대시보드 데이터 (함정 해설 포함, 학습자에게는 안 보임)>
+${scenario}
+</학급 대시보드 데이터>
+
+지금 단계의 질문: ${question}
+이 단계에서 짚어야 할 핵심(채점 기준): ${keyHint || '함정 해설을 참고해 판단'}
+학습자의 답: ${answer}
+
+${reveal
+  ? '학습자가 두 번 막혔습니다. 이번에는 verdict를 "pass"로 하고, 정답을 근거와 함께 명확히 설명한 뒤 괜찮다고 격려해 주세요.'
+  : `판정 규칙:
+- 학습자의 답이 이 단계의 핵심을 짚었으면 verdict "pass" — 칭찬하고 정답 요지를 한 문장으로 보강.
+- 핵심을 놓쳤거나 함정에 빠졌으면 verdict "retry" — 정답을 직접 말하지 말고, 어디를 다시 보라는 힌트를 1~2문장으로. (예: "관찰 메모 1번을 다시 읽어 보세요", "상자의 길이를 비교해 보세요")`}
+- reply는 3문장 이내, 존댓말. 훈계하지 말 것.
+
+{"verdict":"pass 또는 retry","reply":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
+      const d = await ask(prompt, 400, 0.4);
+      const verdict = d.verdict === 'pass' ? 'pass' : 'retry';
+      res.status(200).json({ verdict: reveal ? 'pass' : verdict, reply: String(d.reply ?? '').slice(0, 500) });
+      return;
+    }
+
     // 11과정: 교사의 대시보드 해석과 AI 해석 비교
     if (mode === 'class_compare') {
       const scenario = String(req.body.scenario ?? '').trim().slice(0, 4000);
