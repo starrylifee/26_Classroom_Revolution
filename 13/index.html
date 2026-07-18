@@ -66,8 +66,9 @@ button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-siz
 .tag.weak{background:#FDEEF5;color:#C2447A}
 
 /* 공용 입력 */
-textarea,input[type=text]{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;outline:none;background:#fff;line-height:1.55;resize:vertical}
-textarea:focus,input[type=text]:focus{border-color:var(--sky);background:#FEFBFE}
+textarea,input[type=text],select{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;outline:none;background:#fff;line-height:1.55;resize:vertical;color:inherit}
+textarea:focus,input[type=text]:focus,select:focus{border-color:var(--sky);background:#FEFBFE}
+select:disabled{background:#F4F3F8;color:#A8A4BC;cursor:not-allowed}
 label.fl{display:block;font-size:13px;font-weight:700;color:var(--navy);margin:0 0 5px}
 
 /* 2단계: 스윗 스팟 */
@@ -283,8 +284,11 @@ td textarea:focus{background:#FBF7FE}
       <p class="hint">빈칸을 채우면 아래에 나의 선언문 카드가 완성됩니다. 1년 뒤의 나에게 남기는 오늘의 약속입니다.</p>
       <div class="declare-edit">
         <div class="row2">
-          <div><label class="fl">집중적으로 키울 역량</label><input type="text" data-k="dRole" placeholder="예) C 분석 · F 평가"></div>
-          <div><label class="fl">도울 학생의 모습</label><input type="text" data-k="dHelp" placeholder="예) 자기 속도로 배우는 힘"></div>
+          <div><label class="fl">집중적으로 키울 역량 (1개 선택)</label><select id="roleSel"></select></div>
+          <div><label class="fl">도울 학생의 모습 (역량을 고르면 어울리는 모습이 나옵니다)</label>
+            <select id="helpSel"></select>
+            <input type="text" id="helpCustom" placeholder="직접 입력 — 예) 자기 속도로 배우는 힘" style="display:none;margin-top:8px">
+          </div>
         </div>
         <div class="row2" style="margin-top:10px">
           <div><label class="fl">이름</label><input type="text" data-k="dName" placeholder="예) 김선생"></div>
@@ -538,6 +542,44 @@ async function runAI(){
   finally{ btn.disabled=false; spin.style.display='none'; }
 }
 
+// ---------- 5단계: 역량·학생 모습 선택 ----------
+const HELP_SUGGEST={
+ A:['배움의 이유를 아는 학습 태도','디지털 세상을 바르게 이해하는 눈','AI와 더불어 배우는 힘','새로운 기술을 두려워하지 않는 자신감','미래를 스스로 그려 보는 꿈'],
+ B:['안전하게 디지털을 쓰는 습관','저작권과 개인정보를 지키는 책임감','AI를 비판적으로 바라보는 눈','서로 존중하는 온라인 소통 태도','건강한 디지털 생활 균형'],
+ C:['자기 학습 상태를 아는 힘','강점과 약점을 아는 자기 이해','뒤처지기 전에 도움받는 배움','데이터로 확인하는 성장 경험','제때 받는 맞춤 지원'],
+ D:['자기 속도로 배우는 힘','스스로 선택하는 배움의 재미','수업에 몰입하는 즐거움','저마다 다른 배움의 길','참여하고 표현하는 기회'],
+ E:['수업에 적극 참여하는 용기','친구와 협력하는 힘','질문하고 표현하는 자신감','막힘 없이 배우는 몰입','함께 만드는 배움의 즐거움'],
+ F:['즉각적인 피드백으로 자라는 힘','과정을 인정받는 성취감','실수에서 배우는 태도','스스로 돌아보는 성찰 습관','성장을 확인하는 자신감']
+};
+const roleSel=document.getElementById('roleSel'), helpSel=document.getElementById('helpSel'), helpCustom=document.getElementById('helpCustom');
+roleSel.innerHTML='<option value="">역량 선택</option>'+COMP.map(cp=>`<option value="${cp.c} ${cp.n}">${cp.c} ${cp.n} — ${cp.q}</option>`).join('');
+function fillHelpOptions(){
+  const code=(data.dRole||'').trim().charAt(0);
+  const list=HELP_SUGGEST[code];
+  if(!list){
+    helpSel.innerHTML='<option value="">먼저 역량을 선택하세요</option>';
+    helpSel.disabled=true; helpCustom.style.display='none';
+    return;
+  }
+  helpSel.disabled=false;
+  helpSel.innerHTML='<option value="">학생 모습 선택</option>'
+    +list.map(t=>`<option value="${t}">${t}</option>`).join('')
+    +'<option value="__custom">✏️ 직접 입력…</option>';
+  const cur=(data.dHelp||'').trim();
+  if(cur && list.includes(cur)){ helpSel.value=cur; helpCustom.style.display='none'; }
+  else if(cur){ helpSel.value='__custom'; helpCustom.value=cur; helpCustom.style.display='block'; }
+  else { helpSel.value=''; helpCustom.style.display='none'; }
+}
+roleSel.addEventListener('change',()=>{ data.dRole=roleSel.value; save(); fillHelpOptions(); renderDecl(); });
+helpSel.addEventListener('change',()=>{
+  if(helpSel.value==='__custom'){ helpCustom.style.display='block'; data.dHelp=helpCustom.value.trim(); helpCustom.focus(); }
+  else { helpCustom.style.display='none'; data.dHelp=helpSel.value; }
+  save(); renderDecl();
+});
+helpCustom.addEventListener('input',()=>{ data.dHelp=helpCustom.value; save(); renderDecl(); });
+if(data.dRole && [...roleSel.options].some(o=>o.value===data.dRole)) roleSel.value=data.dRole;
+fillHelpOptions();
+
 // ---------- 5단계: 선언문 미리보기 ----------
 function renderDecl(){
   const blank='(&nbsp;&nbsp;&nbsp;&nbsp;)';
@@ -620,6 +662,7 @@ function clearAll(){
   if(!confirm('모든 입력 내용을 지울까요? 되돌릴 수 없습니다.')) return;
   data={scores:[0,0,0,0,0,0]}; save();
   document.querySelectorAll('[data-k]').forEach(el=>el.value='');
+  roleSel.value=''; helpCustom.value=''; fillHelpOptions();
   renderScale(); renderRadar(); renderDecl(); renderFinal(); renderCands();
   toast('내용을 지웠어요');
 }
