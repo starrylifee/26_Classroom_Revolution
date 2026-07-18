@@ -566,10 +566,11 @@ async function runAI(){
     if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
     const fill=(k,v)=>{ if(!v) return; data[k]=v; const el=document.querySelector(`[data-k=${k}]`); if(el) el.value=v; };
     fill('rShort',j.short); fill('rMid',j.mid); fill('rLong',j.long);
-    fill('ob1',j.ob1); fill('sol1',j.sol1); fill('ob2',j.ob2); fill('sol2',j.sol2);
+    // 극복 방안(sol1·sol2)은 채우지 않는다 — 교사가 직접 쓰거나 ④의 AI 제안 버튼을 쓰도록 비워 둔다
+    fill('ob1',j.ob1); fill('ob2',j.ob2);
     if(!data.goal && j.goal) fill('goal',j.goal);
     save(); st.textContent='';
-    toast('초안을 채웠어요. 내 상황에 맞게 자유롭게 고치세요 ✏️');
+    toast('초안을 채웠어요. 내 상황에 맞게 자유롭게 고치세요 ✏️ (극복 방안은 ④에서 직접·AI로)');
   }catch(e){ st.textContent='⚠ '+e.message; }
   finally{ btn.disabled=false; spin.style.display='none'; }
 }

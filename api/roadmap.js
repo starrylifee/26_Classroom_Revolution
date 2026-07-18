@@ -125,8 +125,8 @@ ${pairs.join('\n')}
 - 한국 초·중등 학교 현장에서 실제 가능한 수준으로. 화려한 기술 나열 금지.
 - 장애물은 학기 초 업무, 시간 부족처럼 현실적인 것으로.
 
-아래 JSON으로만 출력하세요. 다른 텍스트 금지.
-{"goal":"성장 목표 한 문장(입력된 목표가 있으면 그대로)","short":"단기(1학기·기초 다지기) 계획 2~3줄","mid":"중기(2학기·현장 적용) 계획 2~3줄","long":"장기(1년 후·확산/심화) 계획 2~3줄","ob1":"예상 장애물 1","sol1":"극복 방안 1","ob2":"예상 장애물 2","sol2":"극복 방안 2"}`;
+아래 JSON으로만 출력하세요. 다른 텍스트 금지. (극복 방안은 만들지 않는다 — 교사가 직접 작성)
+{"goal":"성장 목표 한 문장(입력된 목표가 있으면 그대로)","short":"단기(1학기·기초 다지기) 계획 2~3줄","mid":"중기(2학기·현장 적용) 계획 2~3줄","long":"장기(1년 후·확산/심화) 계획 2~3줄","ob1":"예상 장애물 1","ob2":"예상 장애물 2"}`;
 
     const chatRes = await fetch('https://api.upstage.ai/v1/chat/completions', {
       method: 'POST',
@@ -151,7 +151,7 @@ ${pairs.join('\n')}
     const draft = JSON.parse(raw.slice(start, end + 1));
 
     const out = {};
-    for (const k of ['goal', 'short', 'mid', 'long', 'ob1', 'sol1', 'ob2', 'sol2']) {
+    for (const k of ['goal', 'short', 'mid', 'long', 'ob1', 'ob2']) {
       out[k] = String(draft[k] ?? '').slice(0, 500);
     }
     res.status(200).json(out);
