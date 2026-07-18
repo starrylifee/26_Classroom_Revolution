@@ -93,6 +93,9 @@ td textarea:focus{background:#FBF7FE}
 .spin{display:none;width:22px;height:22px;border:3px solid #E8E2F2;border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #aiStatus{font-size:14px;color:var(--teal);font-weight:500}
+.ai-info{background:#F3F6FE;border:1.5px solid #CBD9F2;border-radius:12px;padding:13px 16px;font-size:13.5px;line-height:1.8;margin-bottom:14px;color:#3A4668}
+.ai-info>b{color:var(--navy)}
+.ai-info .chip{display:inline-block;background:#fff;border:1px solid #CBD9F2;border-radius:999px;padding:1px 10px;font-weight:700;color:var(--navy);font-size:12.5px}
 .example{display:none;background:#F7F5FC;border:1.5px dashed #CDC3E8;border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.7;margin-bottom:14px;color:#4A4468}
 .example.show{display:block}
 .example b{color:var(--navy)}
@@ -204,7 +207,13 @@ td textarea:focus{background:#FBF7FE}
     <!-- 3단계: 연간 성장 로드맵 -->
     <section class="step" id="step3">
       <h2>③ 나의 연간 성장 로드맵</h2>
-      <p class="hint">6개월 실행 계획을 중심으로, 시기별 <b>구체적 실행 계획(Action Item)</b>을 적으세요. 막히면 예시를 보거나 AI에게 초안을 요청한 뒤 내 상황에 맞게 고치면 됩니다. AI 초안은 ①·②에서 적은 진단·성장 목표를 재료로 씁니다.</p>
+      <p class="hint">6개월 실행 계획을 중심으로, 시기별 <b>구체적 실행 계획(Action Item)</b>을 적으세요. 막히면 예시를 보거나 AI에게 초안을 요청한 뒤 내 상황에 맞게 고치면 됩니다.</p>
+      <div class="ai-info">
+        <b>🤖 AI 초안은 이렇게 만들어져요</b><br>
+        <span class="chip">① 자가 진단</span> A~F 점수와 강점·보완 역량 &nbsp;+&nbsp; <span class="chip">② 성장 목표</span> 학생의 필요 × 나의 흥미, 목표 문장을 AI가 읽고
+        → <b>보완 역량과 성장 목표에 집중한</b> 단기·중기·장기 계획과 예상 걸림돌·극복 방안(④)까지 초안을 채웁니다.
+        그래서 <b>② 성장 목표를 먼저 완성해야</b> 버튼이 작동하며, 초안은 출발점일 뿐 내 교실 상황에 맞게 고쳐 쓰는 것이 완성입니다.
+      </div>
       <div class="roadmap-tools">
         <button class="btn-outline" id="exBtn" onclick="toggleExample()">📖 작성 예시 보기</button>
         <button class="btn-grad" id="aiBtn">🤖 AI 초안 제안</button>
@@ -404,7 +413,16 @@ renderScale(); renderRadar();
 function toggleExample(){ document.getElementById('example').classList.toggle('show'); }
 let unlocked=false, enteredPw='';
 const modalBg=document.getElementById('modalBg'), pwInput=document.getElementById('pwInput');
-document.getElementById('aiBtn').onclick=()=>{ if(unlocked) runAI(); else {modalBg.style.display='flex'; pwInput.value=''; document.getElementById('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50);} };
+document.getElementById('aiBtn').onclick=()=>{
+  const hasNeed=[data.need1,data.need2,data.need3].some(v=>v&&v.trim());
+  const hasWant=[data.want1,data.want2,data.want3].some(v=>v&&v.trim());
+  const hasGoal=(data.goal||'').trim();
+  if(!hasNeed||!hasWant||!hasGoal){
+    toast('② 성장 목표를 먼저 채워 주세요 — 학생의 필요·나의 흥미 각 1개 이상과 목표 문장이 AI 초안의 재료가 됩니다 ✏️');
+    go(2); return;
+  }
+  if(unlocked) runAI(); else {modalBg.style.display='flex'; pwInput.value=''; document.getElementById('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50);}
+};
 document.getElementById('pwCancel').onclick=()=>modalBg.style.display='none';
 function tryPw(){
   enteredPw=pwInput.value.trim();
