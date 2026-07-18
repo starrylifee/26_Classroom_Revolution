@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대시보드 판독 훈련 · 11과정</title>
+<meta property="og:title" content="대시보드 판독 훈련">
+<meta property="og:description" content="완성된 학급 대시보드를 읽는 힘을 기릅니다. 함정 3개, 관찰 메모 교차 확인, AI 해석 비교.">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2C59'/%3E%3Cpath d='M32 10 52 25 44 50H20L12 25Z' fill='none' stroke='%23F6C2E4' stroke-width='5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='33' r='6' fill='%23FCE303'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E2C59;--teal:#7A2E6E;--sky:#F6C2E4;--pink:#E85FA5;--bg:#F7F9FF;--line:#DDE1EB;--muted:#5B6B7C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:#1B2A3A;min-height:100vh;display:flex;flex-direction:column}
+header{background:linear-gradient(90deg,#C9C4F2 0%,#F9C8E8 100%);color:var(--navy);padding:14px 28px;display:flex;align-items:center;gap:14px}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(420px 420px at 6% 16%,rgba(178,158,240,.30),transparent 70%),radial-gradient(520px 520px at 2% 78%,rgba(120,205,242,.22),transparent 70%),radial-gradient(400px 400px at 14% 46%,rgba(250,150,205,.22),transparent 70%)}
+header,main,footer{position:relative;z-index:1}
+footer{background:#E7F2FB;color:#6B7A99;font-size:13px;padding:10px 28px}
+header .badge{background:#fff;color:#C2447A;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+header h1{font-size:22px;font-weight:700}
+header .sub{margin-left:auto;font-size:13px;color:#52609B;white-space:nowrap}
+header .clear{color:#C0392B;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit}
+header .clear:hover{background:#FDEDEB}
+header .home{color:#52609B;text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px}
+header .home:hover{color:var(--navy)}
+
+main{flex:1;max-width:1280px;width:100%;margin:0 auto;padding:18px 28px 26px;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05);padding:18px 22px}
+h2{font-size:18px;color:var(--navy)}
+.hint{font-size:13.5px;color:var(--muted);line-height:1.6}
+.hint b{color:var(--pink)}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:700;transition:.15s}
+.btn-grad{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;padding:12px 24px;border-radius:999px}
+.btn-grad:hover{filter:brightness(.93)}
+.btn-grad:disabled{background:#CBA9C6;filter:none;cursor:not-allowed}
+.btn-navy{background:var(--teal);color:#fff;padding:12px 20px}
+.btn-navy:hover{background:#5C2253}
+.btn-navy:disabled{background:#B99DB4;cursor:not-allowed}
+.btn-outline{background:#fff;border:1.5px solid var(--line);color:#1B2A3A;font-weight:500;padding:12px 16px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spin{display:none;width:22px;height:22px;border:3px solid #E8E2F2;border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.intro{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.intro .ctx{background:#F1EBF8;color:var(--navy);font-weight:700;font-size:15px;border-radius:9px;padding:10px 16px}
+.intro .hint{flex:1;min-width:260px}
+
+/* 대시보드 */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 16px}
+.kpi .kl{font-size:12.5px;color:var(--muted);font-weight:700}
+.kpi .kv{font-size:26px;font-weight:900;color:var(--navy)}
+.kpi .kv small{font-size:13px;font-weight:700;color:var(--muted)}
+.kpi .kd{font-size:12px;font-weight:700}
+.kd.down{color:#C0392B}.kd.up{color:#1E7A4F}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.widget{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.widget h3{font-size:14.5px;color:var(--navy);margin-bottom:2px}
+.widget .read{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5}
+.widget .read b{color:var(--teal)}
+svg text{font-family:'Noto Sans KR',sans-serif}
+.heat-grid{display:grid;gap:3px;margin-top:4px}
+.heat-cell{border-radius:4px;height:26px;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#39476B}
+.heat-lab{font-size:11px;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.bars .brow{margin-bottom:8px}
+.bars .bn{display:flex;justify-content:space-between;font-size:12.5px;color:#33415C;margin-bottom:2px}
+.bars .bn b{color:var(--navy)}
+.bar{height:14px;background:#F1EFF8;border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#8F86DD,#EC6FB2)}
+.hist{display:flex;align-items:flex-end;gap:6px;height:130px;margin-top:6px}
+.hist .hcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.hist .hbar{width:100%;background:linear-gradient(180deg,#8F86DD,#B9A8E8);border-radius:6px 6px 0 0;min-height:2px}
+.hist .hl{font-size:10px;color:var(--muted);margin-top:4px;white-space:nowrap}
+.hist .hv{font-size:11px;font-weight:700;color:var(--navy);margin-bottom:2px}
+table{border-collapse:collapse;width:100%}
+th{background:var(--navy);color:#fff;font-size:12.5px;font-weight:700;padding:8px 6px;border:1px solid #3A466F}
+td{border:1px solid var(--line);padding:7px 8px;font-size:13px;text-align:center;background:#fff}
+.memo-list{font-size:13.5px;line-height:1.8;color:#5B4A2E}
+.memo-list div{background:#FFF9EC;border:1.5px dashed #E8D5A0;border-radius:9px;padding:8px 12px;margin-bottom:8px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+
+/* 해석 */
+textarea{width:100%;font-family:inherit;font-size:14.5px;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;outline:none;background:#fff;line-height:1.6;resize:vertical;min-height:76px}
+textarea:focus{border-color:var(--sky);background:#FEFBFE}
+label.fl{display:block;font-size:13.5px;font-weight:700;color:var(--navy);margin:0 0 5px}
+.interp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.interp-grid{grid-template-columns:1fr}}
+#compareCard{display:none}
+.cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:820px){.cmp-grid{grid-template-columns:1fr}}
+.cmp-col{border-radius:10px;padding:13px 15px;font-size:13.5px;line-height:1.7;border:1.5px solid}
+.cmp-col h4{font-size:14px;margin-bottom:6px}
+.cmp-mine{background:#F4F8FF;border-color:#C6D8F5}.cmp-mine h4{color:#2E5AA8}
+.cmp-ai{background:#FFF5FA;border-color:#F5C6E0}.cmp-ai h4{color:#C2447A}
+.caution{background:#FDF1F1;border:1.5px solid #EFC1C1;border-radius:10px;padding:12px 15px;font-size:13.5px;line-height:1.7;color:#8A3030;margin-bottom:12px}
+.caution b{color:#B23B3B}
+.comment{background:#F0F9F4;border:1.5px solid #BFE3CE;border-radius:10px;padding:12px 15px;font-size:13.5px;line-height:1.7;color:#215C3C}
+.comment b{color:#1E7A4F}
+.pre{white-space:pre-wrap}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
+.toast.show{opacity:1;transform:none}
+.modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
+.modal h3{font-size:18px;color:var(--navy);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);margin-bottom:14px}
+.modal input{width:100%;padding:13px;font-size:16px;border:1.5px solid var(--line);border-radius:9px;outline:none;font-family:inherit}
+.modal input:focus{border-color:var(--sky)}
+.modal .err{display:none;color:#C0392B;font-size:13px;margin-top:8px}
+.modal .row{display:flex;gap:10px;margin-top:16px}
+.modal .row button{flex:1;padding:12px}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">11과정</span>
+  <h1>대시보드 판독 훈련</h1>
+  <span class="sub">2026 인공지능 활용 선도교사 연수 · 데이터를 읽고 다음을 그리다</span>
+  <button class="clear" onclick="clearAll()">🗑 내용 지우기</button>
+  <a class="home" href="/">🏠 홈</a>
+</header>
+
+<main>
+  <div class="card intro">
+    <div>
+      <h2>📊 가상 학급 대시보드</h2>
+      <div class="ctx" id="ctx" style="margin-top:8px"></div>
+    </div>
+    <p class="hint">에듀테크 도구가 보여주는 학급 대시보드입니다. 여러분이 만들 것은 차트가 아니라 <b>해석</b>입니다. 이 학급에는 <b>숫자만 보면 틀리게 읽히는 함정이 3개</b> 숨어 있습니다 — 관찰 메모까지 교차해서 읽고, 아래에 해석을 적은 뒤 AI 해석과 비교해 보세요.</p>
+    <div class="tools">
+      <button class="btn-grad" id="newBtn">🎲 새 학급 받기 (AI)</button>
+      <div class="spin" id="newSpin"></div>
+      <button class="btn-outline" onclick="savePng('dash','학급_대시보드')">🖼 대시보드 저장</button>
+    </div>
+  </div>
+
+  <div id="dash">
+    <div class="kpis" id="kpis"></div>
+    <div class="grid">
+      <div class="widget"><h3>성취영역별 점수 분포 (최근 회차)</h3><div class="read">읽는 법 | <b>상자가 길고 아래 수염이 깊으면</b> 평균이 무난해도 하위권 뭉치가 숨어 있다는 뜻</div><svg id="boxSvg" viewBox="0 0 520 230" style="width:100%"></svg></div>
+      <div class="widget"><h3>회차별 평균 점수 추이</h3><div class="read">읽는 법 | 평평한 평균 뒤에 <b>특정 영역·특정 학생의 급등락</b>이 숨어 있을 수 있음 — 꺾인 영역부터 확인</div><svg id="trendSvg" viewBox="0 0 520 230" style="width:100%"></svg><div class="legend" id="trendLegend"></div></div>
+      <div class="widget"><h3>학습 행동 히트맵 (주차 × 요일, 평균 접속 분)</h3><div class="read">읽는 법 | <b>색이 갑자기 옅어진 구간 = 학습 공백 신호</b> — 단, 그 주에 무슨 일이 있었는지 먼저 확인</div><div id="heatBox"></div></div>
+      <div class="widget"><h3>영상 완주율 분포</h3><div class="read">읽는 법 | 분포가 <b>두 덩어리로 갈라지면</b> 학급 안에 서로 다른 두 집단이 있다는 뜻</div><div class="hist" id="histBox"></div></div>
+      <div class="widget"><h3>형성평가 오답 유형</h3><div class="read">읽는 법 | 가장 큰 항목이 <b>학급 공통 지도 1순위</b> — 비율이 비슷하면 개별 접근</div><div class="bars" id="errBox"></div></div>
+      <div class="widget"><h3>정의적 영역 사전 · 사후</h3><div class="read">읽는 법 | 면적이 <b>넓어진 방향 = 성장</b>, 줄어든 방향 = 점검 (학업스트레스는 낮아질수록 양호)</div><svg id="radarSvg" viewBox="0 0 340 250" style="width:100%;max-width:360px;display:block;margin:0 auto"></svg><div class="legend" style="justify-content:center"><span><i style="background:#C9C2E8"></i>사전</span><span><i style="background:#E85FA5"></i>사후</span></div></div>
+    </div>
+    <div class="grid" style="margin-top:14px">
+      <div class="widget"><h3>주목 학생 요약 (일부)</h3><div class="read">읽는 법 | 숫자가 좋아도 <b>시간·완주율·관찰 메모와 교차 확인</b> — 한 지표로 단정하지 않기</div><table id="stuTable"></table></div>
+      <div class="widget"><h3>교사 관찰 메모</h3><div class="read">읽는 법 | 대시보드가 보여주지 못하는 것 — <b>디지털 데이터 + 교사 관찰의 교차 검증</b>이 판독의 핵심</div><div class="memo-list" id="memoBox"></div></div>
+    </div>
+  </div>
+
+  <div class="card" id="interpCard">
+    <h2>✍ 나의 판독</h2>
+    <p class="hint" style="margin:6px 0 14px">데이터와 메모를 교차해서 읽고 적어 보세요. 정답 맞히기가 아니라 <b>근거를 들어 해석하는 연습</b>입니다.</p>
+    <div class="interp-grid">
+      <div><label class="fl">개별 지원이 필요한 학생과 그 이유</label><textarea data-k="individual" placeholder="예) 학생07 — 학습시간은 가장 많은데 점수가 낮고, 메모에서 정서 신호가 보임"></textarea></div>
+      <div><label class="fl">학급 차원의 수업 조정 지점</label><textarea data-k="classAdj" placeholder="예) 도형 영역 — 평균은 무난하지만 하위권 뭉치가 있어 구체물 활동으로 보완"></textarea></div>
+    </div>
+    <div class="tools" style="margin-top:14px">
+      <button class="btn-navy" id="cmpBtn">🤖 AI 해석과 비교하기</button>
+      <div class="spin" id="cmpSpin"></div>
+    </div>
+  </div>
+
+  <div class="card" id="compareCard">
+    <h2>🔍 나의 판독 vs AI 판독</h2>
+    <p class="hint" style="margin:6px 0 14px">서로 다른 관점을 발견하는 것이 목적입니다. 최종 판단은 언제나 교사의 몫입니다.</p>
+    <div class="cmp-grid">
+      <div class="cmp-col cmp-mine"><h4>✍ 나 — 개별 지원</h4><div class="pre" id="myInd"></div></div>
+      <div class="cmp-col cmp-ai"><h4>🤖 AI — 개별 지원</h4><div class="pre" id="aiInd"></div></div>
+      <div class="cmp-col cmp-mine"><h4>✍ 나 — 학급 조정</h4><div class="pre" id="myCls"></div></div>
+      <div class="cmp-col cmp-ai"><h4>🤖 AI — 학급 조정</h4><div class="pre" id="aiCls"></div></div>
+    </div>
+    <div class="caution"><b>🪤 숨어 있던 함정</b><br><span class="pre" id="aiMissed"></span></div>
+    <div class="comment"><b>💬 동료 관점의 한마디</b><br><span class="pre" id="aiComment"></span></div>
+    <div class="tools" style="margin-top:14px"><button class="btn-outline" onclick="savePng('compareCard','판독_비교')">🖼 결과 저장</button></div>
+  </div>
+</main>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>🔒 AI 기능 활성화</h3>
+    <p>강사가 안내한 비밀번호를 입력하세요.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호">
+    <div class="err" id="pwErr">비밀번호가 일치하지 않습니다.</div>
+    <div class="row">
+      <button class="btn-outline" id="pwCancel">취소</button>
+      <button class="btn-navy" id="pwOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>2026년 인공지능 활용 선도교사 연수 · 11과정 데이터를 읽고 다음을 그리다 — 대시보드는 도구가 그리고, 해석은 교사가 합니다</footer>
+
+<script>
+const LS_KEY='p11-dash';
+const COLORS=['#8F86DD','#EC6FB2','#5FA8E8','#58BE8C','#E8B85A'];
+const DEFAULT_SC={
+ context:'4학년 수학 · 3단원 분수 · 24명 · 8주 운영 · 평가 3회',
+ kpi:{avg:73.2,delta:-0.9,ab:58,study:187,submit:86},
+ areas:['수와연산','도형','측정','규칙성','자료와가능성'],
+ box:[
+  {area:'수와연산',min:45,q1:62,med:74,q3:84,max:96},
+  {area:'도형',min:28,q1:38,med:71,q3:88,max:97},
+  {area:'측정',min:50,q1:63,med:72,q3:80,max:92},
+  {area:'규칙성',min:48,q1:60,med:70,q3:79,max:95},
+  {area:'자료와가능성',min:52,q1:66,med:75,q3:83,max:94}
+ ],
+ trend:[
+  {area:'수와연산',values:[71,75,76]},
+  {area:'도형',values:[70,72,66]},
+  {area:'측정',values:[70,71,73]},
+  {area:'규칙성',values:[69,72,71]},
+  {area:'자료와가능성',values:[72,74,75]}
+ ],
+ heat:[[38,42,40,35,41],[36,40,43,38,39],[41,39,42,40,44],[37,42,38,41,40],[9,11,4,3,5],[40,43,41,39,42],[38,41,44,40,43],[42,40,39,43,41]],
+ hist:[1,1,2,2,3,4,8,3],
+ errors:[{type:'문제 해석 오류',pct:34},{type:'개념 오적용',pct:26},{type:'계산 실수',pct:22},{type:'단위 누락',pct:10},{type:'기타',pct:8}],
+ radar:{axes:['흥미','자신감','효능감','협력','학업스트레스'],pre:[3.1,2.8,3.0,3.4,3.2],post:[3.6,3.2,3.4,3.8,2.9]},
+ students:[
+  {id:'학생03',score:96,time:64,complete:91},
+  {id:'학생07',score:44,time:238,complete:95},
+  {id:'학생12',score:78,time:180,complete:45},
+  {id:'학생15',score:31,time:95,complete:60},
+  {id:'학생18',score:75,time:190,complete:88},
+  {id:'학생21',score:85,time:170,complete:90}
+ ],
+ memos:[
+  '5주차는 수·목·금 현장체험학습이라 LMS 수업이 없었다.',
+  '학생03은 문제를 열자마자 제출하는 일이 잦다. 오답이어도 다시 풀지 않는다.',
+  '학생12의 가정 태블릿이 고장 나서 영상은 학교에서 종이 자료로 대체했다.',
+  '학생07은 쉬는 시간에도 남아 분수 문제를 붙잡고 있는데, 표정이 점점 어두워진다.'
+ ],
+ traps:[
+  '도형 영역은 중앙값이 무난하지만 상자가 길고 아래 수염이 깊다 — 평균 뒤에 하위권 뭉치(양극화)가 숨어 있고, 추이에서도 도형만 3회차에 하락했다.',
+  '5주차 히트맵의 공백은 학습 이탈이 아니라 현장체험학습(메모 1)이다 — 개입 대상이 아니다.',
+  '학생03은 점수가 가장 높지만 학습시간이 비정상적으로 짧고 즉시 제출 습관(메모 2)이 있어 성취로 단정할 수 없다. 학생12의 낮은 완주율은 기기 문제(메모 3)로 결손이 아니다. 정작 개별 지원이 필요한 것은 시간 대비 성취가 낮고 정서 신호(메모 4)가 있는 학생07이다.'
+ ]
+};
+let data={sc:DEFAULT_SC};
+try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); if(s&&s.sc) data=s; }catch(e){}
+function save(){ localStorage.setItem(LS_KEY,JSON.stringify(data)); }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+document.querySelectorAll('[data-k]').forEach(el=>{
+  const k=el.dataset.k;
+  if(data[k]) el.value=data[k];
+  el.addEventListener('input',()=>{ data[k]=el.value; save(); });
+});
+
+// ---------- 렌더링 ----------
+function render(){
+  const sc=data.sc;
+  document.getElementById('ctx').textContent=sc.context;
+  // KPI
+  const d=sc.kpi.delta;
+  document.getElementById('kpis').innerHTML=`
+   <div class="kpi"><div class="kl">평균 점수 (최근 회차)</div><div class="kv">${sc.kpi.avg}<small>점</small></div><div class="kd ${d<0?'down':'up'}">${d<0?'▼':'▲'} ${Math.abs(d)}점 (1회차 대비)</div></div>
+   <div class="kpi"><div class="kl">A·B 성취수준 비율</div><div class="kv">${sc.kpi.ab}<small>%</small></div><div class="kd" style="color:var(--muted)">상위 성취 학생 비중</div></div>
+   <div class="kpi"><div class="kl">주당 평균 학습시간</div><div class="kv">${sc.kpi.study}<small>분</small></div><div class="kd" style="color:var(--muted)">LMS 접속 기준</div></div>
+   <div class="kpi"><div class="kl">과제 제출률</div><div class="kv">${sc.kpi.submit}<small>%</small></div><div class="kd" style="color:var(--muted)">전체 과제 기준</div></div>`;
+  renderBox(sc); renderTrend(sc); renderHeat(sc); renderHist(sc); renderErr(sc); renderRadar(sc); renderStu(sc); renderMemo(sc);
+}
+function y100(v,top,h){ return top+h-(v/100)*h; }
+function renderBox(sc){
+  const svg=document.getElementById('boxSvg'); const top=14,h=170,w0=60,gap=92;
+  let s='';
+  [0,25,50,75,100].forEach(g=>{ const y=y100(g,top,h); s+=`<line x1="40" x2="510" y1="${y}" y2="${y}" stroke="#EFECF6"/><text x="34" y="${y+4}" text-anchor="end" font-size="10" fill="#8A87A8">${g}</text>`; });
+  sc.box.forEach((b,i)=>{
+    const cx=w0+40+i*gap, bw=34;
+    const yMin=y100(b.min,top,h), yQ1=y100(b.q1,top,h), yMed=y100(b.med,top,h), yQ3=y100(b.q3,top,h), yMax=y100(b.max,top,h);
+    s+=`<line x1="${cx}" x2="${cx}" y1="${yMax}" y2="${yQ3}" stroke="#8F86DD" stroke-width="2"/>`;
+    s+=`<line x1="${cx}" x2="${cx}" y1="${yQ1}" y2="${yMin}" stroke="#8F86DD" stroke-width="2"/>`;
+    s+=`<line x1="${cx-10}" x2="${cx+10}" y1="${yMax}" y2="${yMax}" stroke="#8F86DD" stroke-width="2"/>`;
+    s+=`<line x1="${cx-10}" x2="${cx+10}" y1="${yMin}" y2="${yMin}" stroke="#8F86DD" stroke-width="2"/>`;
+    s+=`<rect x="${cx-bw/2}" y="${yQ3}" width="${bw}" height="${Math.max(2,yQ1-yQ3)}" rx="4" fill="rgba(143,134,221,.25)" stroke="#8F86DD" stroke-width="1.5"/>`;
+    s+=`<line x1="${cx-bw/2}" x2="${cx+bw/2}" y1="${yMed}" y2="${yMed}" stroke="#E85FA5" stroke-width="2.5"/>`;
+    s+=`<text x="${cx}" y="${top+h+22}" text-anchor="middle" font-size="11" font-weight="700" fill="#1E2C59">${esc(b.area)}</text>`;
+  });
+  svg.innerHTML=s;
+}
+function renderTrend(sc){
+  const svg=document.getElementById('trendSvg'); const top=14,h=170,x0=60,xw=400;
+  let s='';
+  [0,25,50,75,100].forEach(g=>{ const y=y100(g,top,h); s+=`<line x1="40" x2="510" y1="${y}" y2="${y}" stroke="#EFECF6"/><text x="34" y="${y+4}" text-anchor="end" font-size="10" fill="#8A87A8">${g}</text>`; });
+  const n=sc.trend[0].values.length;
+  for(let r=0;r<n;r++){ const x=x0+ (n===1?xw/2 : r*(xw/(n-1))); s+=`<text x="${x}" y="${top+h+22}" text-anchor="middle" font-size="11" fill="#5B6B7C">${r+1}회차</text>`; }
+  sc.trend.forEach((t,i)=>{
+    const pts=t.values.map((v,r)=>{ const x=x0+(n===1?xw/2:r*(xw/(n-1))); return [x,y100(v,top,h)]; });
+    s+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${COLORS[i%COLORS.length]}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    pts.forEach(p=>{ s+=`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${COLORS[i%COLORS.length]}"/>`; });
+  });
+  svg.innerHTML=s;
+  document.getElementById('trendLegend').innerHTML=sc.trend.map((t,i)=>`<span><i style="background:${COLORS[i%COLORS.length]}"></i>${esc(t.area)}</span>`).join('');
+}
+function renderHeat(sc){
+  const box=document.getElementById('heatBox');
+  const weeks=sc.heat.length, days=['월','화','수','목','금'];
+  let html=`<div class="heat-grid" style="grid-template-columns:34px repeat(${weeks},1fr)">`;
+  html+=`<div class="heat-lab"></div>`;
+  for(let w=0;w<weeks;w++) html+=`<div class="heat-lab">${w+1}주</div>`;
+  for(let di=0;di<5;di++){
+    html+=`<div class="heat-lab">${days[di]}</div>`;
+    for(let w=0;w<weeks;w++){
+      const v=(sc.heat[w]&&sc.heat[w][di])||0;
+      const a=Math.min(1,v/50);
+      html+=`<div class="heat-cell" style="background:rgba(143,134,221,${(0.08+a*0.85).toFixed(2)});color:${a>0.55?'#fff':'#39476B'}">${v}</div>`;
+    }
+  }
+  html+='</div>';
+  box.innerHTML=html;
+}
+function renderHist(sc){
+  const max=Math.max(...sc.hist,1);
+  const labels=['0-12','13-25','26-37','38-50','51-62','63-75','76-87','88-100'];
+  document.getElementById('histBox').innerHTML=sc.hist.map((v,i)=>`
+    <div class="hcol"><div class="hv">${v}</div><div class="hbar" style="height:${(v/max*100).toFixed(0)}%"></div><div class="hl">${labels[i]||''}</div></div>`).join('');
+}
+function renderErr(sc){
+  const max=Math.max(...sc.errors.map(e=>e.pct),1);
+  document.getElementById('errBox').innerHTML=sc.errors.map(e=>`
+    <div class="brow"><div class="bn"><span>${esc(e.type)}</span><b>${e.pct}%</b></div><div class="bar"><i style="width:${(e.pct/max*100).toFixed(0)}%"></i></div></div>`).join('');
+}
+function renderRadar(sc){
+  const svg=document.getElementById('radarSvg');
+  const axes=sc.radar.axes, N=axes.length, cx=170, cy=128, R=88;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/N;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];};
+  let s='';
+  for(let lv=1;lv<=5;lv++){ const pts=Array.from({length:N},(_,i)=>pt(i,R*lv/5).join(',')).join(' '); s+=`<polygon points="${pts}" fill="none" stroke="${lv===5?'#C9C2DF':'#E8E4F2'}"/>`; }
+  for(let i=0;i<N;i++){ const [x,y]=pt(i,R); s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#E8E4F2"/>`; const [lx,ly]=pt(i,R+24); s+=`<text x="${lx}" y="${ly+3}" text-anchor="middle" font-size="11" font-weight="700" fill="#1E2C59">${esc(axes[i])}</text>`; }
+  const poly=(vals,fill,stroke,wd)=>{ const pts=vals.map((v,i)=>pt(i,R*Math.max(v,0.2)/5).join(',')).join(' '); return `<polygon points="${pts}" fill="${fill}" stroke="${stroke}" stroke-width="${wd}" stroke-linejoin="round"/>`; };
+  s+=poly(sc.radar.pre,'rgba(201,194,232,.30)','#C9C2E8',2);
+  s+=poly(sc.radar.post,'rgba(232,95,165,.22)','#E85FA5',2.5);
+  svg.innerHTML=s;
+}
+function renderStu(sc){
+  document.getElementById('stuTable').innerHTML=
+   `<tr><th>학생</th><th>최근 점수</th><th>주당 학습시간(분)</th><th>영상 완주율</th></tr>`+
+   sc.students.map(st=>`<tr><td><b>${esc(st.id)}</b></td><td>${st.score}점</td><td>${st.time}분</td><td>${st.complete}%</td></tr>`).join('');
+}
+function renderMemo(sc){
+  document.getElementById('memoBox').innerHTML=sc.memos.map((m,i)=>`<div>📝 ${esc(m)}</div>`).join('');
+}
+render();
+
+// ---------- 비밀번호 ----------
+let unlocked=false, enteredPw='', pendingAI='new';
+const modalBg=document.getElementById('modalBg'), pwInput=document.getElementById('pwInput');
+function askAI(kind){
+  pendingAI=kind;
+  if(unlocked){ kind==='new'?runNew():runCompare(); }
+  else {modalBg.style.display='flex'; pwInput.value=''; document.getElementById('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50);}
+}
+document.getElementById('pwCancel').onclick=()=>modalBg.style.display='none';
+function tryPw(){
+  enteredPw=pwInput.value.trim();
+  if(!enteredPw){ document.getElementById('pwErr').style.display='block'; return; }
+  unlocked=true; modalBg.style.display='none';
+  pendingAI==='new'?runNew():runCompare();
+}
+document.getElementById('pwOk').onclick=tryPw;
+pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
+
+document.getElementById('newBtn').onclick=()=>askAI('new');
+document.getElementById('cmpBtn').onclick=()=>{
+  if(!((data.individual||'').trim()||(data.classAdj||'').trim())){ toast('나의 판독을 먼저 적어 주세요 ✏️'); return; }
+  askAI('cmp');
+};
+
+async function runNew(){
+  const btn=document.getElementById('newBtn'), spin=document.getElementById('newSpin');
+  btn.disabled=true; spin.style.display='block'; toast('AI가 새 학급을 만드는 중… (10초쯤 걸려요)');
+  try{
+    const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw, mode:'class_scenario', seed:String(Math.floor(Math.random()*100000))})});
+    const j=await res.json();
+    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    data.sc=j; data.individual=''; data.classAdj=''; data.ai=null; save();
+    document.querySelectorAll('[data-k]').forEach(el=>el.value='');
+    document.getElementById('compareCard').style.display='none';
+    render();
+    toast('새 학급 대시보드가 도착했어요. 함정 3개를 찾아보세요 🪤');
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+function scenarioText(){
+  const sc=data.sc;
+  return [
+   sc.context,
+   'KPI: 평균 '+sc.kpi.avg+'점('+sc.kpi.delta+'), A·B비율 '+sc.kpi.ab+'%, 주당학습 '+sc.kpi.study+'분, 제출률 '+sc.kpi.submit+'%',
+   '상자그림: '+sc.box.map(b=>`${b.area}(min${b.min}/q1 ${b.q1}/중앙 ${b.med}/q3 ${b.q3}/max${b.max})`).join(', '),
+   '회차 추이: '+sc.trend.map(t=>`${t.area} ${t.values.join('→')}`).join(', '),
+   '히트맵(주차별 평균분): '+sc.heat.map((w,i)=>`${i+1}주 ${Math.round(w.reduce((a,b)=>a+b,0)/w.length)}분`).join(', '),
+   '완주율 분포(8구간): '+sc.hist.join(','),
+   '오답유형: '+sc.errors.map(e=>`${e.type} ${e.pct}%`).join(', '),
+   '정의적(사전→사후): '+sc.radar.axes.map((a,i)=>`${a} ${sc.radar.pre[i]}→${sc.radar.post[i]}`).join(', '),
+   '학생: '+sc.students.map(s=>`${s.id}(점수${s.score}/시간${s.time}분/완주${s.complete}%)`).join(', '),
+   '관찰 메모: '+sc.memos.join(' | '),
+   '[함정 해설(내부)] '+sc.traps.join(' | ')
+  ].join('\n');
+}
+async function runCompare(){
+  const btn=document.getElementById('cmpBtn'), spin=document.getElementById('cmpSpin');
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw, mode:'class_compare', scenario:scenarioText(), individual:data.individual||'', classAdj:data.classAdj||''})});
+    const j=await res.json();
+    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    data.ai=j; save(); renderCompare();
+    document.getElementById('compareCard').scrollIntoView({behavior:'smooth'});
+    toast('AI 판독이 도착했어요. 관점의 차이를 찾아보세요 🔍');
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+function renderCompare(){
+  const card=document.getElementById('compareCard');
+  if(!data.ai){ card.style.display='none'; return; }
+  card.style.display='block';
+  document.getElementById('myInd').textContent=data.individual||'—';
+  document.getElementById('myCls').textContent=data.classAdj||'—';
+  document.getElementById('aiInd').textContent=data.ai.ai_individual||'—';
+  document.getElementById('aiCls').textContent=data.ai.ai_class||'—';
+  document.getElementById('aiMissed').textContent=data.ai.missed||'—';
+  document.getElementById('aiComment').textContent=data.ai.comment||'—';
+}
+renderCompare();
+
+// ---------- 공용 ----------
+function savePng(id,name){
+  toast('이미지를 만드는 중…');
+  const el=document.getElementById(id);
+  html2canvas(el,{scale:2,backgroundColor:'#F7F9FF',
+    onclone:doc=>{
+      doc.querySelectorAll('.tools').forEach(t=>t.style.display='none');
+      doc.querySelectorAll('textarea').forEach(t=>{
+        const src=t.dataset.k?document.querySelector(`textarea[data-k="${t.dataset.k}"]`):null;
+        const cs=getComputedStyle(src||t);
+        const d=doc.createElement('div');
+        d.textContent=(src?src.value:t.value);
+        d.style.whiteSpace='pre-wrap'; d.style.wordBreak='break-word'; d.style.width='100%';
+        d.style.minHeight=(src?src.clientHeight:40)+'px';
+        d.style.fontFamily=cs.fontFamily; d.style.fontSize=cs.fontSize; d.style.lineHeight=cs.lineHeight;
+        d.style.padding=cs.padding; d.style.border=cs.border; d.style.borderRadius=cs.borderRadius;
+        d.style.background='#fff'; d.style.color='#1B2A3A';
+        t.replaceWith(d);
+      });
+    }}).then(cv=>{
+    const a=document.createElement('a');
+    a.download=name+'.png';
+    a.href=cv.toDataURL('image/png'); a.click();
+    toast('이미지로 저장했어요 🖼');
+  }).catch(()=>toast('⚠ 이미지 저장에 실패했어요'));
+}
+function clearAll(){
+  if(!confirm('입력한 판독과 AI 결과를 지우고 기본 학급으로 되돌릴까요?')) return;
+  data={sc:DEFAULT_SC}; localStorage.removeItem(LS_KEY);
+  document.querySelectorAll('textarea[data-k]').forEach(el=>el.value='');
+  document.getElementById('compareCard').style.display='none';
+  render();
+  toast('기본 학급으로 되돌렸어요');
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600);
+}
+</script>
+</body>
+</html>

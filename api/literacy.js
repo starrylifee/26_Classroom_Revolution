@@ -10,14 +10,14 @@ module.exports = async function handler(req, res) {
     // 화면 잠금과 별개로 서버에서도 비밀번호를 검사해 무단 API 호출을 막는다
     if (pw !== 'tlsekq') { res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' }); return; }
 
-    const ask = async (prompt, maxTokens) => {
+    const ask = async (prompt, maxTokens, temp) => {
       const r = await fetch('https://api.upstage.ai/v1/chat/completions', {
         method: 'POST',
         headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'solar-pro2',
           messages: [{ role: 'user', content: prompt }],
-          temperature: 0.8,
+          temperature: temp ?? 0.8,
           max_tokens: maxTokens,
         }),
       });
@@ -51,6 +51,102 @@ module.exports = async function handler(req, res) {
         context: String(d.context ?? '').slice(0, 120),
         metrics,
         memo: String(d.memo ?? '').slice(0, 300),
+      });
+      return;
+    }
+
+    // 11과정: 사연이 심긴 학급 대시보드 시나리오 생성
+    if (mode === 'class_scenario') {
+      const seed = String(req.body.seed ?? '').slice(0, 50);
+      const prompt = `당신은 교사 연수용 '가상 학급 대시보드' 시나리오를 만드는 설계자입니다.
+초등 한 학급(20~26명)의 한 단원 운영 데이터를 만드세요. (변화 시드: ${seed || '무작위'})
+
+원칙:
+- 학급에는 서사가 있어야 합니다. "숫자만 보면 틀리게 해석되는 함정"을 정확히 3개 심고, 그 진실은 관찰 메모(memos)에 단서로 남기세요.
+  함정 예시: 평균은 무난하지만 특정 영역 양극화 / 히트맵의 학습 공백이 사실은 현장학습 / 정답률 높은데 풀이시간이 비정상적으로 짧은 학생 / 완주율 낮은 학생이 사실은 기기 문제.
+- 과목은 초등 국어·수학·과학·사회 중 하나. areas는 그 과목의 성취영역 5개.
+- 모든 수치는 초등 현실 범위. 점수 0~100, 시간(분) 0~60(요일별), radar는 1~5.
+- students는 6명만 — 주목할 후보(함정 대상 포함)와 평범한 학생을 섞어서. flag는 빈 문자열로.
+- memos는 교사 관찰 기록 4개. 함정의 단서를 담되 답을 직접 말하지 말 것.
+- traps는 함정 3개의 정답 해설(내부용, 화면에 안 보임).
+
+아래 JSON 스키마로만 출력하세요. 다른 텍스트 금지.
+{"context":"4학년 수학 · 3단원 분수 · 24명 · 8주 운영 · 평가 3회","kpi":{"avg":73.2,"delta":-0.9,"ab":58,"study":187,"submit":86},"areas":["수와연산","도형","측정","규칙성","자료와가능성"],"box":[{"area":"수와연산","min":30,"q1":55,"med":72,"q3":85,"max":98}],"trend":[{"area":"수와연산","values":[70,74,72]}],"heat":[[38,42,40,35,41]],"hist":[1,0,2,3,6,8,3,1],"errors":[{"type":"문제 해석 오류","pct":34}],"radar":{"axes":["흥미","자신감","효능감","협력","학업스트레스"],"pre":[3.1,2.8,3.0,3.4,3.2],"post":[3.6,3.2,3.4,3.8,2.9]},"students":[{"id":"학생03","score":95,"time":210,"complete":88,"flag":""}],"memos":["..."],"traps":["..."]}
+- box와 trend는 areas 5개 각각 1항목씩(총 5개). heat는 8주×5요일(월~금) 분 단위. hist는 영상 완주율 8구간(0-12.5%부터). errors는 4~5개(pct 합계 100). students 6명.`;
+      const d = await ask(prompt, 2600, 0.75);
+      // 형태 보정: 필수 구조가 없으면 실패 처리, 수치는 범위로 클램프
+      const num = (v, lo, hi) => Math.max(lo, Math.min(hi, Number(v) || 0));
+      const out = {
+        context: String(d.context ?? '').slice(0, 120),
+        kpi: {
+          avg: num(d.kpi && d.kpi.avg, 0, 100), delta: num(d.kpi && d.kpi.delta, -30, 30),
+          ab: num(d.kpi && d.kpi.ab, 0, 100), study: num(d.kpi && d.kpi.study, 0, 600), submit: num(d.kpi && d.kpi.submit, 0, 100),
+        },
+        areas: (Array.isArray(d.areas) ? d.areas : []).slice(0, 5).map((a) => String(a).slice(0, 12)),
+        box: (Array.isArray(d.box) ? d.box : []).slice(0, 5).map((b) => ({
+          area: String((b && b.area) ?? '').slice(0, 12),
+          min: num(b && b.min, 0, 100), q1: num(b && b.q1, 0, 100), med: num(b && b.med, 0, 100), q3: num(b && b.q3, 0, 100), max: num(b && b.max, 0, 100),
+        })),
+        trend: (Array.isArray(d.trend) ? d.trend : []).slice(0, 5).map((t) => ({
+          area: String((t && t.area) ?? '').slice(0, 12),
+          values: (Array.isArray(t && t.values) ? t.values : []).slice(0, 3).map((v) => num(v, 0, 100)),
+        })),
+        heat: (Array.isArray(d.heat) ? d.heat : []).slice(0, 8).map((w) => (Array.isArray(w) ? w : []).slice(0, 5).map((v) => num(v, 0, 60))),
+        hist: (Array.isArray(d.hist) ? d.hist : []).slice(0, 8).map((v) => num(v, 0, 30)),
+        errors: (Array.isArray(d.errors) ? d.errors : []).slice(0, 5).map((e) => ({ type: String((e && e.type) ?? '').slice(0, 20), pct: num(e && e.pct, 0, 100) })),
+        radar: {
+          axes: (Array.isArray(d.radar && d.radar.axes) ? d.radar.axes : []).slice(0, 5).map((a) => String(a).slice(0, 10)),
+          pre: (Array.isArray(d.radar && d.radar.pre) ? d.radar.pre : []).slice(0, 5).map((v) => num(v, 0, 5)),
+          post: (Array.isArray(d.radar && d.radar.post) ? d.radar.post : []).slice(0, 5).map((v) => num(v, 0, 5)),
+        },
+        students: (Array.isArray(d.students) ? d.students : []).slice(0, 6).map((s) => ({
+          id: String((s && s.id) ?? '').slice(0, 10), score: num(s && s.score, 0, 100),
+          time: num(s && s.time, 0, 600), complete: num(s && s.complete, 0, 100), flag: '',
+        })),
+        memos: (Array.isArray(d.memos) ? d.memos : []).slice(0, 4).map((m) => String(m).slice(0, 150)),
+        traps: (Array.isArray(d.traps) ? d.traps : []).slice(0, 3).map((t) => String(t).slice(0, 200)),
+      };
+      if (out.areas.length < 5 || out.box.length < 5 || out.trend.length < 5 || out.heat.length < 8 || out.students.length < 6 || out.memos.length < 3) {
+        res.status(502).json({ error: 'AI가 학급 데이터를 완전하게 만들지 못했어요. 다시 시도해 주세요.' });
+        return;
+      }
+      res.status(200).json(out);
+      return;
+    }
+
+    // 11과정: 교사의 대시보드 해석과 AI 해석 비교
+    if (mode === 'class_compare') {
+      const scenario = String(req.body.scenario ?? '').trim().slice(0, 4000);
+      const individual = String(req.body.individual ?? '').trim().slice(0, 800);
+      const classAdj = String(req.body.classAdj ?? '').trim().slice(0, 800);
+      if (!scenario) { res.status(400).json({ error: '대시보드 데이터가 없습니다.' }); return; }
+      if (!individual && !classAdj) { res.status(400).json({ error: '나의 해석을 먼저 적어 주세요.' }); return; }
+
+      const prompt = `당신은 학급 대시보드를 함께 읽는 수석교사입니다.
+
+<학급 대시보드 데이터 (함정 해설 포함)>
+${scenario}
+</학급 대시보드 데이터>
+
+<교사의 해석>
+개별 지원이 필요한 학생: ${individual || '미입력'}
+학급 차원의 수업 조정: ${classAdj || '미입력'}
+</교사의 해석>
+
+교사의 해석과 비교해 주세요. 원칙:
+- ai_individual: 데이터+관찰 메모를 교차해 개별 지원이 필요한 학생 2~3명과 이유. 줄바꿈(\\n) 구분.
+- ai_class: 학급 차원의 수업 조정 지점 2개. 줄바꿈 구분.
+- missed: 이 대시보드에 심긴 함정 중 교사가 놓쳤거나 잘못 해석한 것. 교사가 다 찾았다면 그렇다고 인정. 2~3줄.
+- comment: 교사 해석에서 좋았던 점 1가지 + 더 생각해 볼 관점 1가지. 동료 관점으로 2~3문장.
+- 훈계하지 말고, 데이터의 근거를 함께 제시할 것.
+
+{"ai_individual":"...","ai_class":"...","missed":"...","comment":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
+      const d = await ask(prompt, 1000, 0.4);
+      res.status(200).json({
+        ai_individual: String(d.ai_individual ?? '').slice(0, 700),
+        ai_class: String(d.ai_class ?? '').slice(0, 500),
+        missed: String(d.missed ?? '').slice(0, 500),
+        comment: String(d.comment ?? '').slice(0, 400),
       });
       return;
     }
