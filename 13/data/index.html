@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>데이터 리터러시 연습 · 13과정</title>
+<meta property="og:title" content="데이터 리터러시 연습">
+<meta property="og:description" content="가상 수업 분석 데이터를 해석하고 AI 해석과 비교하는 훈련. 감이 아닌 데이터로 수업 보기.">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2C59'/%3E%3Cpath d='M32 10 52 25 44 50H20L12 25Z' fill='none' stroke='%23F6C2E4' stroke-width='5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='33' r='6' fill='%23FCE303'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E2C59;--teal:#7A2E6E;--sky:#F6C2E4;--pink:#E85FA5;--bg:#F7F9FF;--line:#DDE1EB;--muted:#5B6B7C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:#1B2A3A;min-height:100vh;display:flex;flex-direction:column}
+header{background:linear-gradient(90deg,#C9C4F2 0%,#F9C8E8 100%);color:var(--navy);padding:14px 28px;display:flex;align-items:center;gap:14px}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(420px 420px at 6% 16%,rgba(178,158,240,.30),transparent 70%),radial-gradient(520px 520px at 2% 78%,rgba(120,205,242,.22),transparent 70%),radial-gradient(400px 400px at 14% 46%,rgba(250,150,205,.22),transparent 70%)}
+header,main,footer{position:relative;z-index:1}
+footer{background:#E7F2FB;color:#6B7A99;font-size:13px;padding:10px 28px}
+header .badge{background:#fff;color:#C2447A;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+header h1{font-size:22px;font-weight:700}
+header .sub{margin-left:auto;font-size:13px;color:#52609B;white-space:nowrap}
+header .sub a{color:#C2447A;text-decoration:none;font-weight:700}
+header .clear{color:#C0392B;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit}
+header .clear:hover{background:#FDEDEB}
+header .home{color:#52609B;text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px}
+header .home:hover{color:var(--navy)}
+
+main{flex:1;max-width:1240px;width:100%;margin:0 auto;padding:18px 28px 26px;display:flex;flex-direction:column;gap:14px}
+.grid{display:grid;grid-template-columns:1fr 1.15fr;gap:14px;align-items:start}
+@media(max-width:960px){.grid{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05);padding:20px 22px}
+h2{font-size:18px;color:var(--navy);margin-bottom:4px}
+.hint{font-size:13.5px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.hint b{color:var(--pink)}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:700;transition:.15s}
+.btn-grad{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;padding:12px 24px;border-radius:999px}
+.btn-grad:hover{filter:brightness(.93)}
+.btn-grad:disabled{background:#CBA9C6;filter:none;cursor:not-allowed}
+.btn-navy{background:var(--teal);color:#fff;padding:12px 20px}
+.btn-navy:hover{background:#5C2253}
+.btn-navy:disabled{background:#B99DB4;cursor:not-allowed}
+.btn-outline{background:#fff;border:1.5px solid var(--line);color:#1B2A3A;font-weight:500;padding:12px 16px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.spin{display:none;width:22px;height:22px;border:3px solid #E8E2F2;border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 분석 리포트 */
+.ctx{background:#F1EBF8;color:var(--navy);font-weight:700;font-size:14.5px;border-radius:9px;padding:10px 14px;margin-bottom:14px}
+.metric{margin-bottom:12px}
+.metric .mname{display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:#33415C;margin-bottom:4px}
+.metric .mname b{color:var(--navy)}
+.bar{height:18px;background:#F1EFF8;border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#8F86DD,#EC6FB2);transition:width .6s}
+.memo{margin-top:14px;background:#FFF9EC;border:1.5px dashed #E8D5A0;border-radius:10px;padding:11px 14px;font-size:13.5px;line-height:1.6;color:#6B5B2A}
+.memo b{color:#9C7A1E}
+
+/* 해석 입력 */
+label.fl{display:block;font-size:13.5px;font-weight:700;color:var(--navy);margin:12px 0 5px}
+label.fl:first-of-type{margin-top:0}
+textarea{width:100%;font-family:inherit;font-size:14.5px;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;outline:none;background:#fff;line-height:1.6;resize:vertical;min-height:60px}
+textarea:focus{border-color:var(--sky);background:#FEFBFE}
+
+/* 비교 결과 */
+#compareCard{display:none}
+.cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:820px){.cmp-grid{grid-template-columns:1fr}}
+.cmp-col{border-radius:10px;padding:13px 15px;font-size:13.5px;line-height:1.7;border:1.5px solid}
+.cmp-col h4{font-size:14px;margin-bottom:6px}
+.cmp-mine{background:#F4F8FF;border-color:#C6D8F5}.cmp-mine h4{color:#2E5AA8}
+.cmp-ai{background:#FFF5FA;border-color:#F5C6E0}.cmp-ai h4{color:#C2447A}
+.caution{background:#FDF1F1;border:1.5px solid #EFC1C1;border-radius:10px;padding:12px 15px;font-size:13.5px;line-height:1.7;color:#8A3030;margin-bottom:12px}
+.caution b{color:#B23B3B}
+.comment{background:#F0F9F4;border:1.5px solid #BFE3CE;border-radius:10px;padding:12px 15px;font-size:13.5px;line-height:1.7;color:#215C3C}
+.comment b{color:#1E7A4F}
+.pre{white-space:pre-wrap}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
+.toast.show{opacity:1;transform:none}
+.modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
+.modal h3{font-size:18px;color:var(--navy);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);margin-bottom:14px}
+.modal input{width:100%;padding:13px;font-size:16px;border:1.5px solid var(--line);border-radius:9px;outline:none;font-family:inherit}
+.modal input:focus{border-color:var(--sky)}
+.modal .err{display:none;color:#C0392B;font-size:13px;margin-top:8px}
+.modal .row{display:flex;gap:10px;margin-top:16px}
+.modal .row button{flex:1;padding:12px}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">13과정</span>
+  <h1>데이터 리터러시 연습</h1>
+  <span class="sub">감(感)이 아닌 데이터로 수업 보기 &nbsp;|&nbsp; <a href="/13/review/">📝 돌아보기</a> · <a href="/13/">🧭 워크북</a></span>
+  <button class="clear" onclick="clearAll()">🗑 내용 지우기</button>
+  <a class="home" href="/">🏠 홈</a>
+</header>
+
+<main>
+  <div class="grid">
+    <!-- 왼쪽: 가상 분석 리포트 -->
+    <div class="card" id="reportCard">
+      <h2>📊 가상 수업 분석 결과</h2>
+      <p class="hint">AI 수업 분석 도구가 만든 <b>가상 데이터</b>입니다. 숫자만 보지 말고 관찰 메모까지 함께 읽어 보세요.</p>
+      <div class="ctx" id="ctx">3학년 수학 · 분수 개념 도입 · 전체 설명 중심 수업</div>
+      <div id="metrics"></div>
+      <div class="memo" id="memo"><b>관찰 메모</b> · 교사가 개념을 설명하는 동안 학생들은 조용히 들었고, 발언은 앞줄의 몇몇 학생에게 몰렸다.</div>
+      <div class="tools">
+        <button class="btn-grad" id="newBtn">🎲 새 분석 데이터 받기 (AI)</button>
+        <div class="spin" id="newSpin"></div>
+      </div>
+    </div>
+
+    <!-- 오른쪽: 나의 해석 -->
+    <div class="card">
+      <h2>✍ 나의 해석</h2>
+      <p class="hint">데이터를 보고 <b>사실(Fact)</b>과 <b>개선 전략(Action)</b>을 적은 뒤, AI 해석과 비교해 보세요.</p>
+      <label class="fl">데이터가 말해주는 사실 (Fact)</label>
+      <textarea data-k="fact" placeholder="예) 수업 시간의 대부분을 교사가 말하고 있다. 학생끼리의 상호작용은 거의 없다."></textarea>
+      <label class="fl">개선 전략 (Action)</label>
+      <textarea data-k="action" placeholder="예) 설명 10분 후 짝 토의 3분을 넣어 상호작용 비율을 높인다."></textarea>
+      <label class="fl">내 수업에서 확인하고 싶은 데이터 &amp; 그 이유</label>
+      <textarea data-k="want" placeholder="예) 모둠 활동에서 발언 학생 비율 — 몇 명만 말하는지 궁금해서"></textarea>
+      <div class="tools">
+        <button class="btn-navy" id="cmpBtn">🤖 AI 해석과 비교하기</button>
+        <div class="spin" id="cmpSpin"></div>
+        <button class="btn-outline" onclick="saveImage()">🖼 이미지 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 비교 결과 -->
+  <div class="card" id="compareCard">
+    <h2>🔍 나의 해석 vs AI 해석</h2>
+    <p class="hint">정답 맞히기가 아닙니다. <b>서로 다른 관점</b>을 발견하는 것이 목적입니다.</p>
+    <div class="cmp-grid">
+      <div class="cmp-col cmp-mine"><h4>✍ 나의 사실(Fact)</h4><div class="pre" id="myFact"></div></div>
+      <div class="cmp-col cmp-ai"><h4>🤖 AI의 사실(Fact)</h4><div class="pre" id="aiFact"></div></div>
+      <div class="cmp-col cmp-mine"><h4>✍ 나의 전략(Action)</h4><div class="pre" id="myAction"></div></div>
+      <div class="cmp-col cmp-ai"><h4>🤖 AI의 전략(Action)</h4><div class="pre" id="aiAction"></div></div>
+    </div>
+    <div class="caution"><b>⚠ 숫자만 보면 놓치는 것</b><br><span class="pre" id="aiCaution"></span></div>
+    <div class="comment"><b>💬 동료 관점의 한마디</b><br><span class="pre" id="aiComment"></span></div>
+  </div>
+</main>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>🔒 AI 기능 활성화</h3>
+    <p>강사가 안내한 비밀번호를 입력하세요.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호">
+    <div class="err" id="pwErr">비밀번호가 일치하지 않습니다.</div>
+    <div class="row">
+      <button class="btn-outline" id="pwCancel">취소</button>
+      <button class="btn-navy" id="pwOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>2026년 인공지능 활용 선도교사 연수 · 활동4 데이터 기반 성찰</footer>
+
+<script>
+const LS_KEY='p13-data';
+const DEFAULT_SCENARIO={
+  context:'3학년 수학 · 분수 개념 도입 · 전체 설명 중심 수업',
+  metrics:[
+    {name:'교사 발화 점유율',value:70},
+    {name:'학생 침묵 비율',value:20},
+    {name:'학생 상호작용 비율',value:10},
+    {name:'발언 학생 비율',value:25}
+  ],
+  memo:'교사가 개념을 설명하는 동안 학생들은 조용히 들었고, 발언은 앞줄의 몇몇 학생에게 몰렸다.'
+};
+let data={scenario:DEFAULT_SCENARIO};
+try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); if(s&&s.scenario) data=s; }catch(e){}
+function save(){ localStorage.setItem(LS_KEY,JSON.stringify(data)); }
+
+document.querySelectorAll('[data-k]').forEach(el=>{
+  const k=el.dataset.k;
+  if(data[k]) el.value=data[k];
+  el.addEventListener('input',()=>{ data[k]=el.value; save(); });
+});
+
+function renderScenario(){
+  const s=data.scenario||DEFAULT_SCENARIO;
+  document.getElementById('ctx').textContent=s.context;
+  document.getElementById('metrics').innerHTML=s.metrics.map(m=>`
+    <div class="metric">
+      <div class="mname"><span>${esc(m.name)}</span><b>${m.value}%</b></div>
+      <div class="bar"><i style="width:${m.value}%"></i></div>
+    </div>`).join('');
+  document.getElementById('memo').innerHTML='<b>관찰 메모</b> · '+esc(s.memo);
+}
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function scenarioText(){
+  const s=data.scenario||DEFAULT_SCENARIO;
+  return `${s.context}\n`+s.metrics.map(m=>`${m.name}: ${m.value}%`).join(' · ')+`\n관찰 메모: ${s.memo}`;
+}
+renderScenario();
+renderCompare();
+
+// ---------- 비밀번호 ----------
+let unlocked=false, enteredPw='', pendingAI='scenario';
+const modalBg=document.getElementById('modalBg'), pwInput=document.getElementById('pwInput');
+function askAI(kind){
+  pendingAI=kind;
+  if(unlocked){ kind==='scenario'?runScenario():runCompare(); }
+  else {modalBg.style.display='flex'; pwInput.value=''; document.getElementById('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50);}
+}
+document.getElementById('pwCancel').onclick=()=>modalBg.style.display='none';
+function tryPw(){
+  enteredPw=pwInput.value.trim();
+  if(!enteredPw){ document.getElementById('pwErr').style.display='block'; return; }
+  unlocked=true; modalBg.style.display='none';
+  pendingAI==='scenario'?runScenario():runCompare();
+}
+document.getElementById('pwOk').onclick=tryPw;
+pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
+
+document.getElementById('newBtn').onclick=()=>askAI('scenario');
+document.getElementById('cmpBtn').onclick=()=>{
+  if(!((data.fact||'').trim()||(data.action||'').trim())){ toast('사실(Fact)이나 전략(Action)을 먼저 적어 주세요 ✏️'); return; }
+  askAI('compare');
+};
+
+async function runScenario(){
+  const btn=document.getElementById('newBtn'), spin=document.getElementById('newSpin');
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw, mode:'scenario', seed:String(Math.floor(Math.random()*100000))})});
+    const j=await res.json();
+    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    data.scenario=j;
+    // 새 데이터를 받으면 이전 해석·비교는 초기화한다
+    data.fact=''; data.action=''; data.ai=null; save();
+    document.querySelectorAll('[data-k]').forEach(el=>{ if(el.dataset.k!=='want') el.value=''; });
+    renderScenario(); renderCompare();
+    toast('새 분석 데이터가 도착했어요. 관찰 메모까지 읽고 해석해 보세요 📊');
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+async function runCompare(){
+  const btn=document.getElementById('cmpBtn'), spin=document.getElementById('cmpSpin');
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw, mode:'compare', scenario:scenarioText(), fact:data.fact||'', action:data.action||''})});
+    const j=await res.json();
+    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    data.ai=j; save(); renderCompare();
+    document.getElementById('compareCard').scrollIntoView({behavior:'smooth'});
+    toast('AI 해석이 도착했어요. 관점의 차이를 찾아보세요 🔍');
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+function renderCompare(){
+  const card=document.getElementById('compareCard');
+  if(!data.ai){ card.style.display='none'; return; }
+  card.style.display='block';
+  document.getElementById('myFact').textContent=data.fact||'—';
+  document.getElementById('myAction').textContent=data.action||'—';
+  document.getElementById('aiFact').textContent=data.ai.ai_fact||'—';
+  document.getElementById('aiAction').textContent=data.ai.ai_action||'—';
+  document.getElementById('aiCaution').textContent=data.ai.ai_caution||'—';
+  document.getElementById('aiComment').textContent=data.ai.comment||'—';
+}
+
+function saveImage(){
+  toast('이미지를 만드는 중…');
+  const target=data.ai?document.querySelector('main'):document.getElementById('reportCard');
+  html2canvas(target,{scale:2,backgroundColor:'#F7F9FF',
+    onclone:doc=>{
+      doc.querySelectorAll('.tools').forEach(t=>t.style.display='none');
+      doc.querySelectorAll('textarea').forEach(t=>{
+        const src=t.dataset.k?document.querySelector(`textarea[data-k="${t.dataset.k}"]`):null;
+        const cs=getComputedStyle(src||t);
+        const d=doc.createElement('div');
+        d.textContent=(src?src.value:t.value);
+        d.style.whiteSpace='pre-wrap'; d.style.wordBreak='break-word'; d.style.width='100%';
+        d.style.minHeight=(src?src.clientHeight:40)+'px';
+        d.style.fontFamily=cs.fontFamily; d.style.fontSize=cs.fontSize; d.style.lineHeight=cs.lineHeight;
+        d.style.padding=cs.padding; d.style.border=cs.border; d.style.borderRadius=cs.borderRadius;
+        d.style.background='#fff'; d.style.color='#1B2A3A';
+        t.replaceWith(d);
+      });
+    }}).then(cv=>{
+    const a=document.createElement('a');
+    a.download='데이터리터러시_연습.png';
+    a.href=cv.toDataURL('image/png'); a.click();
+    toast('이미지로 저장했어요 🖼');
+  });
+}
+function clearAll(){
+  if(!confirm('모든 입력 내용을 지울까요? 되돌릴 수 없습니다.')) return;
+  data={scenario:DEFAULT_SCENARIO}; localStorage.removeItem(LS_KEY);
+  document.querySelectorAll('[data-k]').forEach(el=>el.value='');
+  renderScenario(); renderCompare();
+  toast('내용을 지웠어요');
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600);
+}
+</script>
+</body>
+</html>
