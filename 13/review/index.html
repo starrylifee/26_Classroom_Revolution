@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12개 과정 한 줄 회고 · 13과정</title>
+<meta property="og:title" content="12개 과정 한 줄 회고">
+<meta property="og:description" content="1~12번 연수를 돌아보며 과정별로 '내가 얻은 것'을 한 줄로 기록합니다.">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2C59'/%3E%3Cpath d='M32 10 52 25 44 50H20L12 25Z' fill='none' stroke='%23F6C2E4' stroke-width='5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='33' r='6' fill='%23FCE303'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E2C59;--teal:#7A2E6E;--sky:#F6C2E4;--pink:#E85FA5;--bg:#F7F9FF;--line:#DDE1EB;--muted:#5B6B7C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:#1B2A3A;min-height:100vh;display:flex;flex-direction:column}
+header{background:linear-gradient(90deg,#C9C4F2 0%,#F9C8E8 100%);color:var(--navy);padding:14px 28px;display:flex;align-items:center;gap:14px}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(420px 420px at 6% 16%,rgba(178,158,240,.30),transparent 70%),radial-gradient(520px 520px at 2% 78%,rgba(120,205,242,.22),transparent 70%),radial-gradient(400px 400px at 14% 46%,rgba(250,150,205,.22),transparent 70%)}
+header,main,footer{position:relative;z-index:1}
+footer{background:#E7F2FB;color:#6B7A99;font-size:13px;padding:10px 28px}
+header .badge{background:#fff;color:#C2447A;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+header h1{font-size:22px;font-weight:700}
+header .sub{margin-left:auto;font-size:13px;color:#52609B;white-space:nowrap}
+header .sub a{color:#C2447A;text-decoration:none;font-weight:700}
+header .clear{color:#C0392B;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit}
+header .clear:hover{background:#FDEDEB}
+header .home{color:#52609B;text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px}
+header .home:hover{color:var(--navy)}
+
+main{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:20px 28px 28px;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05);padding:22px 24px}
+h2{font-size:19px;color:var(--navy);margin-bottom:4px}
+.hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.hint b{color:var(--pink)}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:700;transition:.15s}
+.btn-grad{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;padding:12px 26px;border-radius:999px}
+.btn-grad:hover{filter:brightness(.93)}
+.btn-navy{background:var(--teal);color:#fff;padding:12px 22px}
+.btn-navy:hover{background:#5C2253}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+
+table{border-collapse:collapse;width:100%}
+th{background:var(--navy);color:#fff;font-size:14px;font-weight:700;padding:11px 8px;border:1px solid #3A466F}
+td{border:1px solid var(--line);padding:9px 10px;font-size:14px;vertical-align:middle;background:#fff}
+td.label{background:#F1EBF8;font-weight:700;color:var(--navy);white-space:nowrap;text-align:center}
+td.sum{color:#4A5568;font-size:13.5px}
+td textarea{width:100%;border:none;padding:4px;min-height:36px;background:transparent;font-family:inherit;font-size:14.5px;line-height:1.5;resize:vertical;outline:none}
+td textarea:focus{background:#FBF7FE}
+td textarea::placeholder{color:#C0BACF}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
+.toast.show{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">13과정</span>
+  <h1>12개 과정 한 줄 회고</h1>
+  <span class="sub">2026 인공지능 활용 선도교사 연수 · 활동1 돌아보기 &nbsp;|&nbsp; <a href="/13/">🧭 성장 로드맵 워크북 →</a></span>
+  <button class="clear" onclick="clearAll()">🗑 내용 지우기</button>
+  <a class="home" href="/">🏠 홈</a>
+</header>
+
+<main>
+  <div class="card" id="sheet">
+    <h2>각 과정에서 '내가 얻은 것'을 한 줄로 적어 봅니다</h2>
+    <p class="hint">12개 과정은 흩어진 연수가 아니라 A~G 역량을 키워 온 하나의 여정입니다. 여기서 모은 <b>강점·아쉬움·변화</b>가 사후 진단 해석과 성장 로드맵의 재료가 됩니다.</p>
+    <table>
+      <tr><th style="width:150px">과정</th><th style="width:33%">핵심 배움 (요약)</th><th>나의 한 줄 회고</th></tr>
+      <tr><td class="label">① 본질 이해</td><td class="sum">AI 시대 교육 방향·역할 매트릭스</td><td><textarea data-k="rv1" placeholder="한 줄로 적어 보세요"></textarea></td></tr>
+      <tr><td class="label">②③ 가치관·윤리</td><td class="sum">가치관 선언문·윤리 체크리스트</td><td><textarea data-k="rv2"></textarea></td></tr>
+      <tr><td class="label">④⑤ 데이터·설계</td><td class="sum">데이터 해석·수업설계 뼈대</td><td><textarea data-k="rv3"></textarea></td></tr>
+      <tr><td class="label">⑥⑦ 도구·평가</td><td class="sum">도구 맥락 활용·과정중심평가 설계</td><td><textarea data-k="rv4"></textarea></td></tr>
+      <tr><td class="label">⑧⑨⑩ 집합 실행</td><td class="sum">팀 설계·마이크로티칭 실행</td><td><textarea data-k="rv5"></textarea></td></tr>
+      <tr><td class="label">⑪⑫ 분석·환류</td><td class="sum">학습데이터 분석·환류 설계</td><td><textarea data-k="rv6"></textarea></td></tr>
+    </table>
+    <div class="tools">
+      <button class="btn-grad" onclick="copyAll()">📋 전체 복사</button>
+      <button class="btn-navy" onclick="saveImage()">🖼 이미지 저장</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<footer>2026년 인공지능 활용 선도교사 연수 · 활동1 1번~12번 연수 돌아보기</footer>
+
+<script>
+const LS_KEY='p13-review';
+const LABELS=['① 본질 이해','②③ 가치관·윤리','④⑤ 데이터·설계','⑥⑦ 도구·평가','⑧⑨⑩ 집합 실행','⑪⑫ 분석·환류'];
+let data={};
+try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); if(s) data=s; }catch(e){}
+
+document.querySelectorAll('[data-k]').forEach(el=>{
+  const k=el.dataset.k;
+  if(data[k]) el.value=data[k];
+  el.addEventListener('input',()=>{ data[k]=el.value; localStorage.setItem(LS_KEY,JSON.stringify(data)); });
+});
+
+function copyAll(){
+  const lines=['[12개 과정 한 줄 회고]'];
+  LABELS.forEach((l,i)=>{ const v=(data['rv'+(i+1)]||'').trim(); if(v) lines.push(`${l}: ${v}`); });
+  if(lines.length===1){ toast('아직 적은 회고가 없어요 ✏️'); return; }
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>toast('복사했어요 📋'));
+}
+function saveImage(){
+  toast('이미지를 만드는 중…');
+  html2canvas(document.getElementById('sheet'),{scale:2,backgroundColor:'#ffffff',
+    onclone:doc=>{ const t=doc.querySelector('.tools'); if(t) t.style.display='none'; }}).then(cv=>{
+    const a=document.createElement('a');
+    a.download='12개과정_한줄회고.png';
+    a.href=cv.toDataURL('image/png'); a.click();
+    toast('이미지로 저장했어요 🖼');
+  });
+}
+function clearAll(){
+  if(!confirm('모든 입력 내용을 지울까요? 되돌릴 수 없습니다.')) return;
+  data={}; localStorage.removeItem(LS_KEY);
+  document.querySelectorAll('[data-k]').forEach(el=>el.value='');
+  toast('내용을 지웠어요');
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600);
+}
+</script>
+</body>
+</html>
