@@ -135,6 +135,8 @@ td textarea:focus{background:#FBF7FE}
 #finalSheet .decl{background:#FDF4FA;border:1.5px solid #E9D9EE;border-radius:10px;padding:14px 18px;font-size:14.5px;line-height:1.9}
 #finalSheet .decl b{color:var(--pink)}
 .final-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.copybtn{float:right;margin:0 0 4px 10px;background:#fff;border:1px solid var(--line);border-radius:6px;font-size:12px;font-weight:500;padding:3px 9px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.copybtn:hover{color:var(--navy);border-color:var(--sky);background:#FEF8FC}
 
 .modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
 .modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
@@ -149,7 +151,7 @@ td textarea:focus{background:#FBF7FE}
 .toast.show{opacity:1;transform:none}
 
 @media print{
-  body::before,header,footer,.tabs,.nav-row,.final-tools{display:none!important}
+  body::before,header,footer,.tabs,.nav-row,.final-tools,.copybtn{display:none!important}
   body{background:#fff}
   main{padding:0;max-width:none}
   .card{border:none;box-shadow:none}
@@ -594,34 +596,54 @@ renderDecl();
 
 // ---------- 6단계: 완성본 ----------
 function v(k){ return data[k] ? esc(data[k]) : '<span style="color:#B9B4C9">—</span>'; }
+let copyTexts={};
+function copyItem(k){
+  const t=(copyTexts[k]||'').trim();
+  if(!t){ toast('복사할 내용이 아직 없어요'); return; }
+  navigator.clipboard.writeText(t).then(()=>toast('복사했어요 📋 포트폴리오 칸에 붙여 넣으세요'));
+}
 function renderFinal(){
   const sw=strengthsWeaknesses();
   const scoreRow=COMP.map((cp,i)=>`${cp.c} ${cp.n} ${data.scores[i]||'-'}`).join(' · ');
+  copyTexts={
+    goal:data.goal||'',
+    diag:scoreRow,
+    strong:sw?sw.strong.map(x=>x.c+' '+x.n).join(', '):'',
+    weak:sw?sw.weak.map(x=>x.c+' '+x.n).join(', '):'',
+    nw:['Need: '+[data.need1,data.need2,data.need3].filter(Boolean).join(' / '),'Want: '+[data.want1,data.want2,data.want3].filter(Boolean).join(' / ')].join('\n'),
+    rShort:data.rShort||'', rMid:data.rMid||'', rLong:data.rLong||'',
+    ob:[data.ob1,data.ob2].filter(Boolean).join('\n'),
+    sol:[data.sol1,data.sol2].filter(Boolean).join('\n'),
+    res:['연수: '+(data.pl1||''),'커뮤니티: '+(data.pl2||''),'AI 도구: '+(data.pl3||'')].join('\n'),
+    decl:(data.dRole||data.dHelp)?`나는 AI·디지털 대전환의 시기, 두려움보다 호기심으로, 고립보다 연대를 선택하겠습니다. 나는 2026년, ${data.dRole||'(  )'} 역량을 집중적으로 키워, 우리 학급·교과 학생들의 ${data.dHelp||'(  )'}을/를 돕는 교사가 되겠습니다. ${data.dDate||''} 교사 ${data.dName||''}`:''
+  };
+  if(!copyTexts.nw.replace(/Need:|Want:|\n/g,'').trim()) copyTexts.nw='';
+  const cb=k=>`<button class="copybtn" onclick="copyItem('${k}')">📋 복사</button>`;
   document.getElementById('finalSheet').innerHTML=`
   <div class="fs-head"><h3>AI·디지털 역량 개발 계획서</h3><span>${data.dName?esc(data.dName)+' · ':''}2026 인공지능 활용 선도교사 연수 13과정</span></div>
   <table>
-    <tr><td class="label">역량 개발 목표</td><td>${v('goal')}</td></tr>
-    <tr><td class="label">자가 진단 결과</td><td>${scoreRow}</td></tr>
-    <tr><td class="label">상위(강점) 역량</td><td>${sw?sw.strong.map(x=>x.c+' '+x.n).join(', ')+' — 동료·학생을 위해 나눌 수 있는 힘':'<span style="color:#B9B4C9">① 자가 진단을 완료하면 채워집니다</span>'}</td></tr>
-    <tr><td class="label">하위(보완) 역량</td><td>${sw?sw.weak.map(x=>x.c+' '+x.n).join(', ')+' — 다음 학기 집중할 성장 지점':'<span style="color:#B9B4C9">① 자가 진단을 완료하면 채워집니다</span>'}</td></tr>
-    <tr><td class="label">학생의 필요 × 나의 흥미</td><td>Need: ${[data.need1,data.need2,data.need3].filter(Boolean).map(esc).join(' / ')||'—'}<br>Want: ${[data.want1,data.want2,data.want3].filter(Boolean).map(esc).join(' / ')||'—'}</td></tr>
+    <tr><td class="label">역량 개발 목표</td><td>${cb('goal')}${v('goal')}</td></tr>
+    <tr><td class="label">자가 진단 결과</td><td>${cb('diag')}${scoreRow}</td></tr>
+    <tr><td class="label">상위(강점) 역량</td><td>${cb('strong')}${sw?sw.strong.map(x=>x.c+' '+x.n).join(', ')+' — 동료·학생을 위해 나눌 수 있는 힘':'<span style="color:#B9B4C9">① 자가 진단을 완료하면 채워집니다</span>'}</td></tr>
+    <tr><td class="label">하위(보완) 역량</td><td>${cb('weak')}${sw?sw.weak.map(x=>x.c+' '+x.n).join(', ')+' — 다음 학기 집중할 성장 지점':'<span style="color:#B9B4C9">① 자가 진단을 완료하면 채워집니다</span>'}</td></tr>
+    <tr><td class="label">학생의 필요 × 나의 흥미</td><td>${cb('nw')}Need: ${[data.need1,data.need2,data.need3].filter(Boolean).map(esc).join(' / ')||'—'}<br>Want: ${[data.want1,data.want2,data.want3].filter(Boolean).map(esc).join(' / ')||'—'}</td></tr>
   </table>
   <table>
     <tr><th style="width:130px">시기</th><th>구체적 실행 계획 (Action Item)</th></tr>
-    <tr><td class="label">단기<small>1학기</small></td><td>${v('rShort')}</td></tr>
-    <tr><td class="label">중기<small>2학기</small></td><td>${v('rMid')}</td></tr>
-    <tr><td class="label">장기<small>1년 후</small></td><td>${v('rLong')}</td></tr>
+    <tr><td class="label">단기<small>1학기</small></td><td>${cb('rShort')}${v('rShort')}</td></tr>
+    <tr><td class="label">중기<small>2학기</small></td><td>${cb('rMid')}${v('rMid')}</td></tr>
+    <tr><td class="label">장기<small>1년 후</small></td><td>${cb('rLong')}${v('rLong')}</td></tr>
   </table>
   <table>
     <tr><th>예상 장애물</th><th>극복 방안</th><th style="width:34%">지원 자원 (플레이리스트)</th></tr>
     <tr>
-      <td>${[data.ob1,data.ob2].filter(Boolean).map(esc).join('<br>')||'—'}</td>
-      <td>${[data.sol1,data.sol2].filter(Boolean).map(esc).join('<br>')||'—'}</td>
-      <td>연수: ${v('pl1')}<br>커뮤니티: ${v('pl2')}<br>AI 도구: ${v('pl3')}</td>
+      <td>${cb('ob')}${[data.ob1,data.ob2].filter(Boolean).map(esc).join('<br>')||'—'}</td>
+      <td>${cb('sol')}${[data.sol1,data.sol2].filter(Boolean).map(esc).join('<br>')||'—'}</td>
+      <td>${cb('res')}연수: ${v('pl1')}<br>커뮤니티: ${v('pl2')}<br>AI 도구: ${v('pl3')}</td>
     </tr>
   </table>
   <div class="decl">
-    나는 AI·디지털 대전환의 시기, 두려움보다 호기심으로, 고립보다 연대를 선택하겠습니다.<br>
+    ${cb('decl')}나는 AI·디지털 대전환의 시기, 두려움보다 호기심으로, 고립보다 연대를 선택하겠습니다.<br>
     나는 2026년, <b>${v('dRole')}</b> 역량을 집중적으로 키워, 우리 학급·교과 학생들의 <b>${v('dHelp')}</b>을/를 돕는 교사가 되겠습니다.
     <div style="text-align:right;font-weight:700;color:#1E2C59;margin-top:6px">${data.dDate?esc(data.dDate):'20 . . .'} &nbsp; 교사 ${v('dName')} ✍</div>
   </div>`;
@@ -652,7 +674,8 @@ function copyFinal(){
 }
 function saveImage(){
   toast('이미지를 만드는 중…');
-  html2canvas(document.getElementById('finalSheet'),{scale:2,backgroundColor:'#ffffff'}).then(cv=>{
+  html2canvas(document.getElementById('finalSheet'),{scale:2,backgroundColor:'#ffffff',
+    onclone:doc=>doc.querySelectorAll('.copybtn').forEach(b=>b.style.display='none')}).then(cv=>{
     const a=document.createElement('a');
     a.download='역량개발계획서_'+(data.dName||'나의성장로드맵')+'.png';
     a.href=cv.toDataURL('image/png'); a.click();
