@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나의 성장 로드맵 워크북 · 13과정</title>
+<meta property="og:title" content="나의 성장 로드맵 워크북">
+<meta property="og:description" content="역량 자가 진단부터 성장 선언문까지, 단계대로 채우면 역량 개발 계획서가 완성됩니다.">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2C59'/%3E%3Cpath d='M32 10 52 25 44 50H20L12 25Z' fill='none' stroke='%23F6C2E4' stroke-width='5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='33' r='6' fill='%23FCE303'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E2C59;--teal:#7A2E6E;--sky:#F6C2E4;--pink:#E85FA5;--bg:#F7F9FF;--line:#DDE1EB;--muted:#5B6B7C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:#1B2A3A;min-height:100vh;display:flex;flex-direction:column}
+header{background:linear-gradient(90deg,#C9C4F2 0%,#F9C8E8 100%);color:var(--navy);padding:14px 28px;display:flex;align-items:center;gap:14px}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(420px 420px at 6% 16%,rgba(178,158,240,.30),transparent 70%),radial-gradient(520px 520px at 2% 78%,rgba(120,205,242,.22),transparent 70%),radial-gradient(400px 400px at 14% 46%,rgba(250,150,205,.22),transparent 70%)}
+header,main,footer{position:relative;z-index:1}
+footer{background:#E7F2FB;color:#6B7A99;font-size:13px;padding:10px 28px}
+header .badge{background:#fff;color:#C2447A;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+header h1{font-size:22px;font-weight:700}
+header .sub{margin-left:auto;font-size:13px;color:#52609B;white-space:nowrap}
+header .home{color:#52609B;text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px}
+header .home:hover{color:var(--navy)}
+
+main{flex:1;max-width:1240px;width:100%;margin:0 auto;padding:18px 28px 26px;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05)}
+.tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{padding:14px 16px;font-size:15px;font-weight:700;color:var(--muted);background:#FAFAFE;border:none;border-bottom:3px solid transparent;white-space:nowrap;cursor:pointer;font-family:inherit}
+.tab.active{color:var(--navy);border-bottom-color:var(--sky);background:#fff}
+.tab .done{color:#2E9E6B}
+.step{display:none;padding:22px 24px}
+.step.active{display:block}
+.step h2{font-size:19px;color:var(--navy);margin-bottom:4px}
+.step .hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.step .hint b{color:var(--pink)}
+
+button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:700;transition:.15s}
+.btn-grad{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;padding:12px 26px;border-radius:999px}
+.btn-grad:hover{filter:brightness(.93)}
+.btn-grad:disabled{background:#CBA9C6;filter:none;cursor:not-allowed}
+.btn-navy{background:var(--teal);color:#fff;padding:12px 22px}
+.btn-navy:hover{background:#5C2253}
+.btn-outline{background:#fff;border:1.5px solid var(--line);color:#1B2A3A;font-weight:500;padding:12px 18px}
+.nav-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:20px;flex-wrap:wrap}
+
+/* 1단계: 자가 프로파일링 */
+.diag-wrap{display:grid;grid-template-columns:1.25fr .9fr;gap:24px;align-items:start}
+@media(max-width:900px){.diag-wrap{grid-template-columns:1fr}}
+.qrow{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed #EAE6F2}
+.qrow .code{flex:0 0 74px;font-weight:900;color:var(--navy);font-size:15px}
+.qrow .code small{display:block;font-weight:700;color:var(--pink);font-size:12px}
+.qrow .q{flex:1;font-size:14px;line-height:1.45}
+.scale{display:flex;gap:5px}
+.scale button{width:34px;height:34px;border-radius:50%;background:#F1EFF8;color:#8A87A8;font-size:14px;font-weight:700}
+.scale button.sel{background:linear-gradient(135deg,#8F86DD,#EC6FB2);color:#fff}
+.radar-box{text-align:center}
+.radar-box svg{max-width:330px;width:100%}
+.sw-tags{display:flex;flex-direction:column;gap:8px;margin-top:8px;text-align:left}
+.sw-tags .tag{border-radius:9px;padding:9px 14px;font-size:14px;font-weight:700}
+.tag.strong{background:#EAF6F0;color:#1E7A4F}
+.tag.weak{background:#FDEEF5;color:#C2447A}
+
+/* 공용 입력 */
+textarea,input[type=text]{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;outline:none;background:#fff;line-height:1.55;resize:vertical}
+textarea:focus,input[type=text]:focus{border-color:var(--sky);background:#FEFBFE}
+label.fl{display:block;font-size:13px;font-weight:700;color:var(--navy);margin:0 0 5px}
+
+/* 2단계: 스윗 스팟 */
+.spot-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.spot-grid{grid-template-columns:1fr}}
+.spot-col{border:1.5px solid var(--line);border-radius:12px;padding:16px}
+.spot-col.need{background:#F4F8FF;border-color:#C6D8F5}
+.spot-col.want{background:#FFF5FA;border-color:#F5C6E0}
+.spot-col h3{font-size:16px;color:var(--navy);margin-bottom:3px}
+.spot-col p{font-size:12.5px;color:var(--muted);margin-bottom:10px}
+.spot-col input{margin-bottom:8px}
+.goal-box{margin-top:18px;background:linear-gradient(90deg,#F3F0FE,#FEF0F8);border:1.5px solid #E3D8F2;border-radius:12px;padding:16px}
+.goal-box .fl{font-size:15px}
+.goal-box .fl b{color:var(--pink)}
+
+/* 3단계: 로드맵 표 */
+table{border-collapse:collapse;width:100%}
+th{background:var(--navy);color:#fff;font-size:14px;font-weight:700;padding:10px 8px;border:1px solid #3A466F}
+td{border:1px solid var(--line);padding:8px 10px;font-size:14px;vertical-align:top;background:#fff}
+td.label{background:#F1EBF8;font-weight:700;color:var(--navy);white-space:nowrap;text-align:center;width:130px}
+td.label small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+td textarea{border:none;padding:4px;min-height:52px;background:transparent}
+td textarea:focus{background:#FBF7FE}
+.roadmap-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.spin{display:none;width:22px;height:22px;border:3px solid #E8E2F2;border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#aiStatus{font-size:14px;color:var(--teal);font-weight:500}
+.example{display:none;background:#F7F5FC;border:1.5px dashed #CDC3E8;border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.7;margin-bottom:14px;color:#4A4468}
+.example.show{display:block}
+.example b{color:var(--navy)}
+
+/* 4단계 */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:820px){.two-col{grid-template-columns:1fr}}
+
+/* 5단계: 선언문 */
+.declare-edit{max-width:640px}
+.declare-edit .row2{display:flex;gap:14px;flex-wrap:wrap}
+.declare-edit .row2>div{flex:1;min-width:200px}
+.declare-card{margin-top:20px;background:linear-gradient(160deg,#FFFDFB,#FDF4FA);border:2px solid #E9D9EE;border-radius:16px;padding:30px 34px;max-width:640px;box-shadow:0 4px 18px rgba(120,46,110,.08)}
+.declare-card h3{text-align:center;color:var(--navy);font-size:18px;letter-spacing:.06em;margin-bottom:16px}
+.declare-card .body{font-size:16px;line-height:2;color:#33304A}
+.declare-card .body b{color:var(--pink);border-bottom:2px solid #F6C2E4;padding:0 3px}
+.declare-card .sign{text-align:right;margin-top:16px;font-size:15px;color:var(--navy);font-weight:700}
+
+/* 6단계: 완성본 */
+#finalSheet{background:#fff;border:1px solid var(--line);border-radius:12px;padding:26px 30px}
+#finalSheet .fs-head{display:flex;align-items:baseline;gap:12px;border-bottom:3px solid var(--navy);padding-bottom:10px;margin-bottom:16px}
+#finalSheet .fs-head h3{font-size:21px;color:var(--navy)}
+#finalSheet .fs-head span{font-size:13px;color:var(--muted)}
+#finalSheet table{margin-bottom:14px}
+#finalSheet td{line-height:1.6}
+#finalSheet .decl{background:#FDF4FA;border:1.5px solid #E9D9EE;border-radius:10px;padding:14px 18px;font-size:14.5px;line-height:1.9}
+#finalSheet .decl b{color:var(--pink)}
+.final-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+
+.modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
+.modal h3{font-size:18px;color:var(--navy);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);margin-bottom:14px}
+.modal input{width:100%;padding:13px;font-size:16px;border:1.5px solid var(--line);border-radius:9px;outline:none;font-family:inherit}
+.modal input:focus{border-color:var(--sky)}
+.modal .err{display:none;color:#C0392B;font-size:13px;margin-top:8px}
+.modal .row{display:flex;gap:10px;margin-top:16px}
+.modal .row button{flex:1;padding:12px}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
+.toast.show{opacity:1;transform:none}
+
+@media print{
+  body::before,header,footer,.tabs,.nav-row,.final-tools{display:none!important}
+  body{background:#fff}
+  main{padding:0;max-width:none}
+  .card{border:none;box-shadow:none}
+  .step{display:none!important;padding:0}
+  #step6{display:block!important}
+  #finalSheet{border:none;padding:0}
+}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">13과정</span>
+  <h1>나의 성장 로드맵 워크북</h1>
+  <span class="sub">2026 인공지능 활용 선도교사 연수 · 성장 로드맵 설계와 실천 다짐</span>
+  <a class="home" href="/">🏠 홈</a>
+</header>
+
+<main>
+  <div class="card" style="flex:1;display:flex;flex-direction:column">
+    <div class="tabs" id="tabs"></div>
+
+    <!-- 1단계: 역량 자가 프로파일링 -->
+    <section class="step" id="step1">
+      <h2>① 역량 자가 프로파일링</h2>
+      <p class="hint">A~F 여섯 역량을 <b>지금의 나</b> 기준으로 1~5점으로 표시하세요. 점수를 매기면 육각형 그래프와 강점·보완 역량이 자동으로 나타납니다. KERIS 진단 플랫폼의 사후 레이더 차트와 겹쳐 비교해 보면 더 좋습니다.</p>
+      <div class="diag-wrap">
+        <div id="qList"></div>
+        <div class="radar-box">
+          <svg id="radar" viewBox="0 0 340 320"></svg>
+          <div class="sw-tags">
+            <div class="tag strong" id="tagStrong">💪 강점 역량 — 점수를 매기면 표시됩니다</div>
+            <div class="tag weak" id="tagWeak">🌱 보완 역량 — 점수를 매기면 표시됩니다</div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-row"><span></span><button class="btn-grad" onclick="go(2)">다음 · 스윗 스팟 →</button></div>
+    </section>
+
+    <!-- 2단계: 성장 스윗 스팟 -->
+    <section class="step" id="step2">
+      <h2>② 성장 스윗 스팟 찾기</h2>
+      <p class="hint"><b>학생의 필요(Need)</b>와 <b>나의 흥미(Want)</b>를 각각 적고, 두 가지가 만나는 지점에서 최우선 성장 목표를 한 문장으로 만드세요. 예) “생성형 AI를 활용해(Want) 느린 학습자 맞춤 문제(Need) 만들기”</p>
+      <div class="spot-grid">
+        <div class="spot-col need">
+          <h3>[A] 학생의 필요 (Need)</h3>
+          <p>예) 기초학력, 참여 저조, 표현력 부족 같은 우리 반·교과의 현장 과제</p>
+          <input type="text" data-k="need1" placeholder="1.">
+          <input type="text" data-k="need2" placeholder="2.">
+          <input type="text" data-k="need3" placeholder="3.">
+        </div>
+        <div class="spot-col want">
+          <h3>[B] 나의 흥미 (Want)</h3>
+          <p>예) 생성형 AI, 데이터 분석, 게임 기반 학습처럼 내가 배우고 싶은 것</p>
+          <input type="text" data-k="want1" placeholder="1.">
+          <input type="text" data-k="want2" placeholder="2.">
+          <input type="text" data-k="want3" placeholder="3.">
+        </div>
+      </div>
+      <div class="goal-box">
+        <label class="fl">★ 최우선 성장 목표 (A×B 연결) — <b>포트폴리오 '역량 개발 목표' 칸에 들어갑니다</b></label>
+        <input type="text" data-k="goal" placeholder="예) 생성형 AI를 활용해 느린 학습자 맞춤 문제를 만드는 교사 되기 (C·F 역량 보완)">
+      </div>
+      <div class="nav-row"><button class="btn-outline" onclick="go(1)">← 이전</button><button class="btn-grad" onclick="go(3)">다음 · 성장 로드맵 →</button></div>
+    </section>
+
+    <!-- 3단계: 연간 성장 로드맵 -->
+    <section class="step" id="step3">
+      <h2>③ 나의 연간 성장 로드맵</h2>
+      <p class="hint">6개월 실행 계획을 중심으로, 시기별 <b>구체적 실행 계획(Action Item)</b>을 적으세요. 막히면 예시를 보거나 AI에게 초안을 요청한 뒤 내 상황에 맞게 고치면 됩니다.</p>
+      <div class="roadmap-tools">
+        <button class="btn-outline" id="exBtn" onclick="toggleExample()">📖 작성 예시 보기</button>
+        <button class="btn-grad" id="aiBtn">🤖 AI 초안 제안</button>
+        <div class="spin" id="aiSpin"></div>
+        <span id="aiStatus"></span>
+      </div>
+      <div class="example" id="example">
+        <b>성장 목표</b> — 학습 데이터를 읽고 맞춤 피드백을 주는 교사 되기 (C·F 역량 보완)<br>
+        <b>단기(1학기)</b> — 데이터 기반 수업 원격연수 수강 / AI 도구 분석 기능 익히기<br>
+        <b>중기(2학기)</b> — 한 단원에서 데이터 기반 피드백 적용 / 학생 반응을 e-포트폴리오에 기록<br>
+        <b>장기(1년 후)</b> — 성장 메이트와 결과 공유 / 다음 학기 확장 계획 수립·수업 사례 나눔
+      </div>
+      <table>
+        <tr><th style="width:130px">시기</th><th>구체적 실행 계획 (Action Item)</th></tr>
+        <tr><td class="label">단기<small>1학기 · 기초 다지기</small></td><td><textarea data-k="rShort" placeholder="예) 관련 원격연수 1개 이수, 동료 수업 참관"></textarea></td></tr>
+        <tr><td class="label">중기<small>2학기 · 현장 적용</small></td><td><textarea data-k="rMid" placeholder="예) 배운 도구로 수업 1개 재구성, 학생 반응 데이터 모으기"></textarea></td></tr>
+        <tr><td class="label">장기<small>1년 후 · 확산/심화</small></td><td><textarea data-k="rLong" placeholder="예) 수업 사례 나눔, 나만의 노하우 자료집 만들기"></textarea></td></tr>
+      </table>
+      <p class="hint" style="margin-top:10px">📋 포트폴리오 계획서의 단기(연수 중) · 중기(6개월 이내) · 장기(1년 이상) 칸과 같은 구조입니다.</p>
+      <div class="nav-row"><button class="btn-outline" onclick="go(2)">← 이전</button><button class="btn-grad" onclick="go(4)">다음 · 걸림돌과 자원 →</button></div>
+    </section>
+
+    <!-- 4단계: 걸림돌 + 플레이리스트 -->
+    <section class="step" id="step4">
+      <h2>④ 성장 걸림돌 제거 &amp; 학습 플레이리스트</h2>
+      <p class="hint">장애물을 <b>미리</b> 적어 두면 닥쳤을 때 포기하지 않습니다. 나의 성장을 도울 자원도 구체적인 이름으로 목록화하세요.</p>
+      <div class="two-col">
+        <div>
+          <table>
+            <tr><th>예상 장애물</th><th>나의 극복 방안</th></tr>
+            <tr><td><textarea data-k="ob1" placeholder="예) 학기 초 업무 폭탄"></textarea></td><td><textarea data-k="sol1" placeholder="예) 하루 10분만 투자, 작게 시작하기"></textarea></td></tr>
+            <tr><td><textarea data-k="ob2" placeholder="예) 기기·시간 부족, 동료 무관심"></textarea></td><td><textarea data-k="sol2" placeholder="예) 동료와 주 1회 티타임"></textarea></td></tr>
+          </table>
+        </div>
+        <div>
+          <table>
+            <tr><th style="width:130px">구분</th><th>학습 자원 (구체적인 이름)</th></tr>
+            <tr><td class="label">연수 플랫폼</td><td><textarea data-k="pl1" style="min-height:38px" placeholder="예) 지식샘터, 중앙교육연수원"></textarea></td></tr>
+            <tr><td class="label">커뮤니티·채널</td><td><textarea data-k="pl2" style="min-height:38px" placeholder="예) 교과 연구회, 온라인 교사 커뮤니티, 교사 유튜버"></textarea></td></tr>
+            <tr><td class="label">AI 파트너 도구</td><td><textarea data-k="pl3" style="min-height:38px" placeholder="예) 수업 설계를 도와줄 생성형 AI, 콘텐츠 제작 도구"></textarea></td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="nav-row"><button class="btn-outline" onclick="go(3)">← 이전</button><button class="btn-grad" onclick="go(5)">다음 · 성장 선언문 →</button></div>
+    </section>
+
+    <!-- 5단계: 성장 선언문 -->
+    <section class="step" id="step5">
+      <h2>⑤ 교사 전문성 성장 선언</h2>
+      <p class="hint">빈칸을 채우면 아래에 나의 선언문 카드가 완성됩니다. 1년 뒤의 나에게 남기는 오늘의 약속입니다.</p>
+      <div class="declare-edit">
+        <div class="row2">
+          <div><label class="fl">집중적으로 키울 역량</label><input type="text" data-k="dRole" placeholder="예) C 분석 · F 평가"></div>
+          <div><label class="fl">도울 학생의 모습</label><input type="text" data-k="dHelp" placeholder="예) 자기 속도로 배우는 힘"></div>
+        </div>
+        <div class="row2" style="margin-top:10px">
+          <div><label class="fl">이름</label><input type="text" data-k="dName" placeholder="예) 김선생"></div>
+          <div><label class="fl">날짜</label><input type="text" data-k="dDate" placeholder="예) 2026. 7. 19."></div>
+        </div>
+      </div>
+      <div class="declare-card" id="declCard">
+        <h3>[ 교사 전문성 성장 선언문 ]</h3>
+        <div class="body">
+          나는 AI·디지털 대전환의 시기,<br>
+          두려움보다 호기심으로, 고립보다 연대를 선택하겠습니다.<br><br>
+          나는 2026년, <b id="pvRole">(&nbsp;&nbsp;&nbsp;&nbsp;)</b> 역량을 집중적으로 키워,<br>
+          우리 학급·교과 학생들의 <b id="pvHelp">(&nbsp;&nbsp;&nbsp;&nbsp;)</b>을/를 돕는 교사가 되겠습니다.
+        </div>
+        <div class="sign"><span id="pvDate">20&nbsp;&nbsp;.&nbsp;&nbsp;.&nbsp;&nbsp;.</span> &nbsp; 교사 <span id="pvName">(&nbsp;&nbsp;&nbsp;&nbsp;)</span> ✍</div>
+      </div>
+      <div class="nav-row"><button class="btn-outline" onclick="go(4)">← 이전</button><button class="btn-grad" onclick="go(6)">완성본 보기 →</button></div>
+    </section>
+
+    <!-- 6단계: 완성본 -->
+    <section class="step" id="step6">
+      <h2>⑥ 역량 개발 계획서 완성본</h2>
+      <p class="hint">앞 단계에서 적은 내용이 포트폴리오 <b>'AI·디지털 역량 개발 계획서'</b> 형식으로 모였습니다. 복사해서 포트폴리오에 붙여 넣거나, 인쇄·이미지로 저장하세요. 고칠 내용은 해당 단계 탭으로 돌아가면 됩니다.</p>
+      <div class="final-tools">
+        <button class="btn-grad" onclick="copyFinal()">📋 전체 복사 (포트폴리오 붙여넣기용)</button>
+        <button class="btn-navy" onclick="window.print()">🖨 인쇄</button>
+        <button class="btn-navy" onclick="saveImage()">🖼 이미지 저장</button>
+        <button class="btn-outline" onclick="clearAll()">내용 지우기</button>
+      </div>
+      <div id="finalSheet"></div>
+      <div class="nav-row"><button class="btn-outline" onclick="go(5)">← 이전</button><span></span></div>
+    </section>
+  </div>
+</main>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>🔒 AI 초안 활성화</h3>
+    <p>강사가 안내한 비밀번호를 입력하세요.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호">
+    <div class="err" id="pwErr">비밀번호가 일치하지 않습니다.</div>
+    <div class="row">
+      <button class="btn-outline" id="pwCancel">취소</button>
+      <button class="btn-navy" id="pwOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>2026년 인공지능 활용 선도교사 연수 · 활동3 맞춤형 전문성 개발 경로 설계</footer>
+
+<script>
+const LS_KEY='p13-workbook';
+const COMP=[
+ {c:'A',n:'이해',q:"AI·디지털 교육이 '왜' 필요한지 내 언어로 설명할 수 있는가?"},
+ {c:'B',n:'윤리',q:'저작권·AI 윤리·데이터 안전 원칙을 수업에 적용하는가?'},
+ {c:'C',n:'분석',q:'LMS·AI 도구 데이터로 학생의 학습 상태를 진단할 수 있는가?'},
+ {c:'D',n:'설계',q:'학생 맞춤형 경로·참여형 수업을 디지털로 설계할 수 있는가?'},
+ {c:'E',n:'실행',q:'수업 중 기기 문제·학생 상호작용을 유연하게 조율하는가?'},
+ {c:'F',n:'평가',q:'과정중심평가에 AI 도구로 즉각 피드백을 주는가?'}
+];
+const STEPS=['① 자가 진단','② 스윗 스팟','③ 성장 로드맵','④ 걸림돌·자원','⑤ 성장 선언','⑥ 완성본'];
+let data={scores:[0,0,0,0,0,0]};
+try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); if(s&&Array.isArray(s.scores)) data=s; }catch(e){}
+
+// ---------- 탭 ----------
+const tabsEl=document.getElementById('tabs');
+STEPS.forEach((t,i)=>{
+  const b=document.createElement('button');
+  b.className='tab'; b.dataset.i=i+1; b.textContent=t;
+  b.onclick=()=>go(i+1);
+  tabsEl.appendChild(b);
+});
+function go(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',+t.dataset.i===n));
+  if(n===6) renderFinal();
+  window.scrollTo({top:0});
+}
+
+// ---------- 저장 ----------
+function save(){ localStorage.setItem(LS_KEY,JSON.stringify(data)); }
+document.querySelectorAll('[data-k]').forEach(el=>{
+  const k=el.dataset.k;
+  if(data[k]) el.value=data[k];
+  el.addEventListener('input',()=>{ data[k]=el.value; save(); if(k.startsWith('d')) renderDecl(); });
+});
+
+// ---------- 1단계: 문항 + 레이더 ----------
+const qList=document.getElementById('qList');
+COMP.forEach((cp,i)=>{
+  const row=document.createElement('div'); row.className='qrow';
+  row.innerHTML=`<span class="code">${cp.c}<small>${cp.n}</small></span><span class="q">${cp.q}</span>`;
+  const sc=document.createElement('div'); sc.className='scale';
+  for(let v=1;v<=5;v++){
+    const b=document.createElement('button'); b.textContent=v;
+    b.onclick=()=>{ data.scores[i]=v; save(); renderScale(); renderRadar(); };
+    sc.appendChild(b);
+  }
+  row.appendChild(sc); qList.appendChild(row);
+});
+function renderScale(){
+  document.querySelectorAll('.qrow').forEach((row,i)=>{
+    row.querySelectorAll('.scale button').forEach((b,j)=>b.classList.toggle('sel',data.scores[i]===j+1));
+  });
+}
+function strengthsWeaknesses(){
+  const rated=COMP.map((cp,i)=>({...cp,v:data.scores[i]})).filter(x=>x.v>0);
+  if(rated.length<COMP.length) return null;
+  const sorted=[...rated].sort((a,b)=>b.v-a.v);
+  return {strong:sorted.slice(0,2),weak:sorted.slice(-2).reverse()};
+}
+function renderRadar(){
+  const svg=document.getElementById('radar');
+  const cx=170,cy=160,R=110,N=6;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/N;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];};
+  let s='';
+  for(let lv=1;lv<=5;lv++){
+    const pts=Array.from({length:N},(_,i)=>pt(i,R*lv/5).join(',')).join(' ');
+    s+=`<polygon points="${pts}" fill="none" stroke="${lv===5?'#C9C2DF':'#E8E4F2'}" stroke-width="1"/>`;
+  }
+  for(let i=0;i<N;i++){
+    const [x,y]=pt(i,R);
+    s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#E8E4F2"/>`;
+    const [lx,ly]=pt(i,R+26);
+    s+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="700" fill="#1E2C59">${COMP[i].c} ${COMP[i].n}</text>`;
+  }
+  if(data.scores.some(v=>v>0)){
+    const pts=data.scores.map((v,i)=>pt(i,R*Math.max(v,0.3)/5).join(',')).join(' ');
+    s+=`<polygon points="${pts}" fill="rgba(236,111,178,.28)" stroke="#E85FA5" stroke-width="2.5" stroke-linejoin="round"/>`;
+    data.scores.forEach((v,i)=>{ if(v>0){const [x,y]=pt(i,R*v/5); s+=`<circle cx="${x}" cy="${y}" r="4.5" fill="#8F86DD"/>`;} });
+  }
+  svg.innerHTML=s;
+  const sw=strengthsWeaknesses();
+  document.getElementById('tagStrong').textContent= sw ? `💪 강점 역량 — ${sw.strong.map(x=>`${x.c} ${x.n}(${x.v}점)`).join(', ')} → 동료를 도울 무기`:'💪 강점 역량 — 여섯 문항을 모두 표시하면 나타납니다';
+  document.getElementById('tagWeak').textContent= sw ? `🌱 보완 역량 — ${sw.weak.map(x=>`${x.c} ${x.n}(${x.v}점)`).join(', ')} → 성장의 기회`:'🌱 보완 역량 — 여섯 문항을 모두 표시하면 나타납니다';
+}
+renderScale(); renderRadar();
+
+// ---------- 3단계: 예시 + AI ----------
+function toggleExample(){ document.getElementById('example').classList.toggle('show'); }
+let unlocked=false, enteredPw='';
+const modalBg=document.getElementById('modalBg'), pwInput=document.getElementById('pwInput');
+document.getElementById('aiBtn').onclick=()=>{ if(unlocked) runAI(); else {modalBg.style.display='flex'; pwInput.value=''; document.getElementById('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50);} };
+document.getElementById('pwCancel').onclick=()=>modalBg.style.display='none';
+function tryPw(){
+  enteredPw=pwInput.value.trim();
+  if(!enteredPw){ document.getElementById('pwErr').style.display='block'; return; }
+  unlocked=true; modalBg.style.display='none'; runAI();
+}
+document.getElementById('pwOk').onclick=tryPw;
+pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
+
+async function runAI(){
+  const btn=document.getElementById('aiBtn'), spin=document.getElementById('aiSpin'), st=document.getElementById('aiStatus');
+  const sw=strengthsWeaknesses();
+  btn.disabled=true; spin.style.display='block'; st.textContent='AI가 로드맵 초안을 쓰는 중…';
+  try{
+    const res=await fetch('/api/roadmap',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        pw:enteredPw,
+        scores:COMP.map((cp,i)=>`${cp.c} ${cp.n}: ${data.scores[i]||'-'}점`).join(', '),
+        strong:sw?sw.strong.map(x=>x.c+' '+x.n).join(', '):'',
+        weak:sw?sw.weak.map(x=>x.c+' '+x.n).join(', '):'',
+        need:[data.need1,data.need2,data.need3].filter(Boolean).join(' / '),
+        want:[data.want1,data.want2,data.want3].filter(Boolean).join(' / '),
+        goal:data.goal||''
+      })});
+    const j=await res.json();
+    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    const fill=(k,v)=>{ if(!v) return; data[k]=v; const el=document.querySelector(`[data-k=${k}]`); if(el) el.value=v; };
+    fill('rShort',j.short); fill('rMid',j.mid); fill('rLong',j.long);
+    fill('ob1',j.ob1); fill('sol1',j.sol1); fill('ob2',j.ob2); fill('sol2',j.sol2);
+    if(!data.goal && j.goal) fill('goal',j.goal);
+    save(); st.textContent='';
+    toast('초안을 채웠어요. 내 상황에 맞게 자유롭게 고치세요 ✏️');
+  }catch(e){ st.textContent='⚠ '+e.message; }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+
+// ---------- 5단계: 선언문 미리보기 ----------
+function renderDecl(){
+  const blank='(&nbsp;&nbsp;&nbsp;&nbsp;)';
+  document.getElementById('pvRole').innerHTML=data.dRole?esc(data.dRole):blank;
+  document.getElementById('pvHelp').innerHTML=data.dHelp?esc(data.dHelp):blank;
+  document.getElementById('pvName').innerHTML=data.dName?esc(data.dName):blank;
+  document.getElementById('pvDate').innerHTML=data.dDate?esc(data.dDate):'20&nbsp;&nbsp;.&nbsp;&nbsp;.&nbsp;&nbsp;.';
+}
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+renderDecl();
+
+// ---------- 6단계: 완성본 ----------
+function v(k){ return data[k] ? esc(data[k]) : '<span style="color:#B9B4C9">—</span>'; }
+function renderFinal(){
+  const sw=strengthsWeaknesses();
+  const scoreRow=COMP.map((cp,i)=>`${cp.c} ${cp.n} ${data.scores[i]||'-'}`).join(' · ');
+  document.getElementById('finalSheet').innerHTML=`
+  <div class="fs-head"><h3>AI·디지털 역량 개발 계획서</h3><span>${data.dName?esc(data.dName)+' · ':''}2026 인공지능 활용 선도교사 연수 13과정</span></div>
+  <table>
+    <tr><td class="label">역량 개발 목표</td><td>${v('goal')}</td></tr>
+    <tr><td class="label">자가 진단 결과</td><td>${scoreRow}</td></tr>
+    <tr><td class="label">상위(강점) 역량</td><td>${sw?sw.strong.map(x=>x.c+' '+x.n).join(', ')+' — 동료·학생을 위해 나눌 수 있는 힘':'<span style="color:#B9B4C9">① 자가 진단을 완료하면 채워집니다</span>'}</td></tr>
+    <tr><td class="label">하위(보완) 역량</td><td>${sw?sw.weak.map(x=>x.c+' '+x.n).join(', ')+' — 다음 학기 집중할 성장 지점':'<span style="color:#B9B4C9">① 자가 진단을 완료하면 채워집니다</span>'}</td></tr>
+    <tr><td class="label">학생의 필요 × 나의 흥미</td><td>Need: ${[data.need1,data.need2,data.need3].filter(Boolean).map(esc).join(' / ')||'—'}<br>Want: ${[data.want1,data.want2,data.want3].filter(Boolean).map(esc).join(' / ')||'—'}</td></tr>
+  </table>
+  <table>
+    <tr><th style="width:130px">시기</th><th>구체적 실행 계획 (Action Item)</th></tr>
+    <tr><td class="label">단기<small>1학기</small></td><td>${v('rShort')}</td></tr>
+    <tr><td class="label">중기<small>2학기</small></td><td>${v('rMid')}</td></tr>
+    <tr><td class="label">장기<small>1년 후</small></td><td>${v('rLong')}</td></tr>
+  </table>
+  <table>
+    <tr><th>예상 장애물</th><th>극복 방안</th><th style="width:34%">지원 자원 (플레이리스트)</th></tr>
+    <tr>
+      <td>${[data.ob1,data.ob2].filter(Boolean).map(esc).join('<br>')||'—'}</td>
+      <td>${[data.sol1,data.sol2].filter(Boolean).map(esc).join('<br>')||'—'}</td>
+      <td>연수: ${v('pl1')}<br>커뮤니티: ${v('pl2')}<br>AI 도구: ${v('pl3')}</td>
+    </tr>
+  </table>
+  <div class="decl">
+    나는 AI·디지털 대전환의 시기, 두려움보다 호기심으로, 고립보다 연대를 선택하겠습니다.<br>
+    나는 2026년, <b>${v('dRole')}</b> 역량을 집중적으로 키워, 우리 학급·교과 학생들의 <b>${v('dHelp')}</b>을/를 돕는 교사가 되겠습니다.
+    <div style="text-align:right;font-weight:700;color:#1E2C59;margin-top:6px">${data.dDate?esc(data.dDate):'20 . . .'} &nbsp; 교사 ${v('dName')} ✍</div>
+  </div>`;
+}
+
+function copyFinal(){
+  const sw=strengthsWeaknesses();
+  const lines=[
+   '[AI·디지털 역량 개발 계획서]',
+   '역량 개발 목표: '+(data.goal||''),
+   '자가 진단: '+COMP.map((cp,i)=>`${cp.c}${cp.n} ${data.scores[i]||'-'}`).join(', '),
+   '상위(강점) 역량: '+(sw?sw.strong.map(x=>x.c+' '+x.n).join(', '):''),
+   '하위(보완) 역량: '+(sw?sw.weak.map(x=>x.c+' '+x.n).join(', '):''),
+   '학생의 필요(Need): '+[data.need1,data.need2,data.need3].filter(Boolean).join(' / '),
+   '나의 흥미(Want): '+[data.want1,data.want2,data.want3].filter(Boolean).join(' / '),
+   '',
+   '단기(1학기): '+(data.rShort||''),
+   '중기(2학기): '+(data.rMid||''),
+   '장기(1년 후): '+(data.rLong||''),
+   '',
+   '예상 장애물: '+[data.ob1,data.ob2].filter(Boolean).join(' / '),
+   '극복 방안: '+[data.sol1,data.sol2].filter(Boolean).join(' / '),
+   '지원 자원: 연수 '+(data.pl1||'')+' | 커뮤니티 '+(data.pl2||'')+' | AI 도구 '+(data.pl3||''),
+   '',
+   '[성장 선언문] 나는 2026년, '+(data.dRole||'( )')+' 역량을 집중적으로 키워, 우리 학급·교과 학생들의 '+(data.dHelp||'( )')+'을/를 돕는 교사가 되겠습니다. '+(data.dDate||'')+' 교사 '+(data.dName||'')
+  ];
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>toast('복사했어요. 포트폴리오에 붙여 넣으세요 📋'));
+}
+function saveImage(){
+  toast('이미지를 만드는 중…');
+  html2canvas(document.getElementById('finalSheet'),{scale:2,backgroundColor:'#ffffff'}).then(cv=>{
+    const a=document.createElement('a');
+    a.download='역량개발계획서_'+(data.dName||'나의성장로드맵')+'.png';
+    a.href=cv.toDataURL('image/png'); a.click();
+    toast('이미지로 저장했어요 🖼');
+  });
+}
+function clearAll(){
+  if(!confirm('모든 입력 내용을 지울까요? 되돌릴 수 없습니다.')) return;
+  data={scores:[0,0,0,0,0,0]}; save();
+  document.querySelectorAll('[data-k]').forEach(el=>el.value='');
+  renderScale(); renderRadar(); renderDecl(); renderFinal();
+  toast('내용을 지웠어요');
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600);
+}
+go(1);
+</script>
+</body>
+</html>
