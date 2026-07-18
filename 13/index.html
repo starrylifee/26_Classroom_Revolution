@@ -555,6 +555,21 @@ const HELP_SUGGEST={
 };
 const HELP_COMMON=['배움을 즐기는 마음','포기하지 않고 도전하는 태도','자신의 성장을 스스로 느끼는 경험','친구와 함께 성장하는 배움','자신감 있게 표현하는 힘','미래를 준비하는 든든한 실력'];
 const COMMON_PREFIX='(공통) ';
+// 선언문에는 역량 코드 대신 풀어쓴 문구로 넣는다 ("~하는 역량을 집중적으로 키워")
+const ROLE_PHRASE={
+ A:'AI·디지털 교육의 방향을 이해하고 내 언어로 설명하는',
+ B:'저작권·AI 윤리·데이터 안전을 수업에 적용하는',
+ C:'LMS·AI 도구로 학생의 학습을 분석하고 진단하는',
+ D:'학생 맞춤형 경로와 참여형 수업을 디지털로 설계하는',
+ E:'수업 속 기기 문제와 상호작용을 유연하게 조율하는',
+ F:'AI 도구로 과정중심평가와 즉각 피드백을 실천하는'
+};
+function rolePhrase(){
+  const r=(data.dRole||'').trim();
+  if(!r) return '';
+  const p=ROLE_PHRASE[r.charAt(0)];
+  return p ? `${p}(${r})` : r;
+}
 const roleSel=document.getElementById('roleSel'), helpSel=document.getElementById('helpSel'), helpCustom=document.getElementById('helpCustom');
 roleSel.innerHTML='<option value="">역량 선택</option>'+COMP.map(cp=>`<option value="${cp.c} ${cp.n}">${cp.c} ${cp.n} — ${cp.q}</option>`).join('');
 function fillHelpOptions(){
@@ -589,7 +604,7 @@ fillHelpOptions();
 // ---------- 5단계: 선언문 미리보기 ----------
 function renderDecl(){
   const blank='(&nbsp;&nbsp;&nbsp;&nbsp;)';
-  document.getElementById('pvRole').innerHTML=data.dRole?esc(data.dRole):blank;
+  document.getElementById('pvRole').innerHTML=data.dRole?esc(rolePhrase()):blank;
   document.getElementById('pvHelp').innerHTML=data.dHelp?esc(data.dHelp):blank;
   document.getElementById('pvName').innerHTML=data.dName?esc(data.dName):blank;
   document.getElementById('pvDate').innerHTML=data.dDate?esc(data.dDate):'20&nbsp;&nbsp;.&nbsp;&nbsp;.&nbsp;&nbsp;.';
@@ -618,7 +633,7 @@ function renderFinal(){
     ob:[data.ob1,data.ob2].filter(Boolean).join('\n'),
     sol:[data.sol1,data.sol2].filter(Boolean).join('\n'),
     res:['연수: '+(data.pl1||''),'커뮤니티: '+(data.pl2||''),'AI 도구: '+(data.pl3||'')].join('\n'),
-    decl:(data.dRole||data.dHelp)?`나는 AI·디지털 대전환의 시기, 두려움보다 호기심으로, 고립보다 연대를 선택하겠습니다. 나는 2026년, ${data.dRole||'(  )'} 역량을 집중적으로 키워, 우리 학급·교과 학생들의 ${data.dHelp||'(  )'}을/를 돕는 교사가 되겠습니다. ${data.dDate||''} 교사 ${data.dName||''}`:''
+    decl:(data.dRole||data.dHelp)?`나는 AI·디지털 대전환의 시기, 두려움보다 호기심으로, 고립보다 연대를 선택하겠습니다. 나는 2026년, ${rolePhrase()||'(  )'} 역량을 집중적으로 키워, 우리 학급·교과 학생들의 ${data.dHelp||'(  )'}을/를 돕는 교사가 되겠습니다. ${data.dDate||''} 교사 ${data.dName||''}`:''
   };
   if(!copyTexts.nw.replace(/Need:|Want:|\n/g,'').trim()) copyTexts.nw='';
   const cb=k=>`<button class="copybtn" onclick="copyItem('${k}')">📋 복사</button>`;
@@ -647,7 +662,7 @@ function renderFinal(){
   </table>
   <div class="decl">
     ${cb('decl')}나는 AI·디지털 대전환의 시기, 두려움보다 호기심으로, 고립보다 연대를 선택하겠습니다.<br>
-    나는 2026년, <b>${v('dRole')}</b> 역량을 집중적으로 키워, 우리 학급·교과 학생들의 <b>${v('dHelp')}</b>을/를 돕는 교사가 되겠습니다.
+    나는 2026년, <b>${data.dRole?esc(rolePhrase()):'<span style="color:#B9B4C9">—</span>'}</b> 역량을 집중적으로 키워, 우리 학급·교과 학생들의 <b>${v('dHelp')}</b>을/를 돕는 교사가 되겠습니다.
     <div style="text-align:right;font-weight:700;color:#1E2C59;margin-top:6px">${data.dDate?esc(data.dDate):'20 . . .'} &nbsp; 교사 ${v('dName')} ✍</div>
   </div>`;
 }
