@@ -118,7 +118,8 @@ td textarea:focus{background:#FBF7FE}
 /* 5단계: 선언문 */
 .declare-edit{max-width:640px}
 .declare-edit .row2{display:flex;gap:14px;flex-wrap:wrap}
-.declare-edit .row2>div{flex:1;min-width:200px}
+.declare-edit .row2>div{flex:1;min-width:200px;display:flex;flex-direction:column}
+.declare-edit .row2>div .fl{flex:1;display:flex;align-items:end}
 .declare-card{margin-top:20px;background:linear-gradient(160deg,#FFFDFB,#FDF4FA);border:2px solid #E9D9EE;border-radius:16px;padding:30px 34px;max-width:640px;box-shadow:0 4px 18px rgba(120,46,110,.08)}
 .declare-card h3{text-align:center;color:var(--navy);font-size:18px;letter-spacing:.06em;margin-bottom:16px}
 .declare-card .body{font-size:16px;line-height:2;color:#33304A}
@@ -287,7 +288,7 @@ td textarea:focus{background:#FBF7FE}
       <div class="declare-edit">
         <div class="row2">
           <div><label class="fl">집중적으로 키울 역량 (1개 선택)</label><select id="roleSel"></select></div>
-          <div><label class="fl">도울 학생의 모습 (역량을 고르면 어울리는 모습이 나옵니다)</label>
+          <div><label class="fl">도울 학생의 모습</label>
             <select id="helpSel"></select>
             <input type="text" id="helpCustom" placeholder="직접 입력 — 예) 자기 속도로 배우는 힘" style="display:none;margin-top:8px">
           </div>
