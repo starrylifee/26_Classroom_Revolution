@@ -91,6 +91,11 @@ label.fl{display:block;font-size:13px;font-weight:700;color:var(--navy);margin:0
 .cand input{flex:1;font-size:14px;padding:8px 11px}
 .cand .use{background:var(--teal);color:#fff;padding:9px 16px;font-size:13.5px;white-space:nowrap}
 .cand .use:hover{background:#5C2253}
+.cand .cand-text{flex:1;font-size:13.5px;line-height:1.5;background:#FBFAFE;border:1px solid #EAE5F3;border-radius:8px;padding:7px 10px}
+.cand .del{background:#fff;border:1px solid var(--line);color:#C0392B;padding:8px 13px;font-size:13px;font-weight:500;white-space:nowrap}
+.cand .del:hover{background:#FDEDEB}
+.sol-tools{display:flex;gap:8px;align-items:center;margin-top:8px}
+.sol-tools .solAiBtn{padding:8px 16px;font-size:13.5px}
 
 /* 3단계: 로드맵 표 */
 table{border-collapse:collapse;width:100%}
@@ -264,9 +269,24 @@ td textarea:focus{background:#FBF7FE}
         <div>
           <table>
             <tr><th>예상 장애물</th><th>나의 극복 방안</th></tr>
-            <tr><td><textarea data-k="ob1" placeholder="예) 학기 초 업무 폭탄"></textarea></td><td><textarea data-k="sol1" placeholder="예) 하루 10분만 투자, 작게 시작하기"></textarea></td></tr>
-            <tr><td><textarea data-k="ob2" placeholder="예) 기기·시간 부족, 동료 무관심"></textarea></td><td><textarea data-k="sol2" placeholder="예) 동료와 주 1회 티타임"></textarea></td></tr>
+            <tr>
+              <td><textarea data-k="ob1" placeholder="예) 학기 초 업무 폭탄"></textarea></td>
+              <td>
+                <textarea data-k="sol1" placeholder="예) 하루 10분만 투자, 작게 시작하기"></textarea>
+                <div class="sol-tools"><button class="btn-grad solAiBtn" data-i="1">🤖 극복 방안 제안</button><div class="spin" id="solSpin1"></div></div>
+                <div id="solCands1"></div>
+              </td>
+            </tr>
+            <tr>
+              <td><textarea data-k="ob2" placeholder="예) 기기·시간 부족, 동료 무관심"></textarea></td>
+              <td>
+                <textarea data-k="sol2" placeholder="예) 동료와 주 1회 티타임"></textarea>
+                <div class="sol-tools"><button class="btn-grad solAiBtn" data-i="2">🤖 극복 방안 제안</button><div class="spin" id="solSpin2"></div></div>
+                <div id="solCands2"></div>
+              </td>
+            </tr>
           </table>
+          <p class="goal-hint">장애물을 적고 버튼을 누르면 AI가 극복 방안 5개를 제안합니다. <b>승인</b>하면 칸에 들어가 고쳐 쓸 수 있고, 필요 없으면 <b>삭제</b>하세요.</p>
         </div>
         <div>
           <table>
@@ -440,7 +460,11 @@ function hasNeedWant(){
 }
 function askAI(kind){
   pendingAI=kind;
-  if(unlocked){ kind==='goal'?runGoalAI():runAI(); }
+  if(unlocked){
+    if(kind==='goal') runGoalAI();
+    else if(kind==='sol1'||kind==='sol2') runSolAI(+kind.slice(3));
+    else runAI();
+  }
   else {modalBg.style.display='flex'; pwInput.value=''; document.getElementById('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50);}
 }
 document.getElementById('aiBtn').onclick=()=>{
@@ -457,12 +481,21 @@ document.getElementById('goalAiBtn').onclick=()=>{
   }
   askAI('goal');
 };
+document.querySelectorAll('.solAiBtn').forEach(b=>{
+  b.onclick=()=>{
+    const i=+b.dataset.i;
+    if(!(data['ob'+i]||'').trim()){ toast('왼쪽에 예상 장애물을 먼저 적어 주세요 ✏️'); return; }
+    askAI('sol'+i);
+  };
+});
 document.getElementById('pwCancel').onclick=()=>modalBg.style.display='none';
 function tryPw(){
   enteredPw=pwInput.value.trim();
   if(!enteredPw){ document.getElementById('pwErr').style.display='block'; return; }
   unlocked=true; modalBg.style.display='none';
-  pendingAI==='goal'?runGoalAI():runAI();
+  if(pendingAI==='goal') runGoalAI();
+  else if(pendingAI==='sol1'||pendingAI==='sol2') runSolAI(+pendingAI.slice(3));
+  else runAI();
 }
 document.getElementById('pwOk').onclick=tryPw;
 pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
@@ -540,6 +573,51 @@ async function runAI(){
   }catch(e){ st.textContent='⚠ '+e.message; }
   finally{ btn.disabled=false; spin.style.display='none'; }
 }
+
+// ---------- 4단계: AI 극복 방안 제안 ----------
+async function runSolAI(i){
+  const ob=(data['ob'+i]||'').trim();
+  if(!ob){ toast('왼쪽에 예상 장애물을 먼저 적어 주세요 ✏️'); return; }
+  const btn=document.querySelector(`.solAiBtn[data-i="${i}"]`), spin=document.getElementById('solSpin'+i);
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const sw=strengthsWeaknesses();
+    const res=await fetch('/api/roadmap',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        pw:enteredPw, mode:'solutions',
+        obstacle:ob,
+        goal:data.goal||'',
+        weak:sw?sw.weak.map(x=>x.c+' '+x.n).join(', '):''
+      })});
+    const j=await res.json();
+    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    const sols=(Array.isArray(j.solutions)?j.solutions:[]).map(s=>String(s).trim()).filter(Boolean);
+    if(!sols.length) throw new Error('AI가 방안을 만들지 못했어요. 다시 시도해 주세요.');
+    data.solCands=data.solCands||{}; data.solCands[i]=sols; save(); renderSolCands(i);
+    toast(`극복 방안 ${sols.length}개를 제안했어요. 승인하면 칸에 들어갑니다 ✅`);
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+function renderSolCands(i){
+  const box=document.getElementById('solCands'+i); if(!box) return;
+  box.innerHTML='';
+  (((data.solCands||{})[i])||[]).forEach((t,idx)=>{
+    const row=document.createElement('div'); row.className='cand';
+    const txt=document.createElement('span'); txt.className='cand-text'; txt.textContent=t;
+    const ok=document.createElement('button'); ok.className='use'; ok.textContent='승인';
+    ok.onclick=()=>{
+      const k='sol'+i;
+      data[k]=(data[k]&&data[k].trim())?data[k].trim()+'\n'+t:t;
+      const el=document.querySelector(`[data-k=${k}]`); if(el) el.value=data[k];
+      data.solCands[i].splice(idx,1); save(); renderSolCands(i);
+      toast('극복 방안 칸에 넣었어요. 자유롭게 고치세요 ✏️');
+    };
+    const del=document.createElement('button'); del.className='del'; del.textContent='삭제';
+    del.onclick=()=>{ data.solCands[i].splice(idx,1); save(); renderSolCands(i); };
+    row.append(txt,ok,del); box.appendChild(row);
+  });
+}
+renderSolCands(1); renderSolCands(2);
 
 // ---------- 5단계: 역량·학생 모습 선택 ----------
 // 역량 고유 문구(핵심 동작이 드러나게)는 위에, 공통 문구는 "(공통)" 라벨을 붙여 아래에 정렬.
@@ -704,7 +782,7 @@ function clearAll(){
   data={scores:[0,0,0,0,0,0]}; save();
   document.querySelectorAll('[data-k]').forEach(el=>el.value='');
   roleSel.value=''; helpCustom.value=''; fillHelpOptions();
-  renderScale(); renderRadar(); renderDecl(); renderFinal(); renderCands();
+  renderScale(); renderRadar(); renderDecl(); renderFinal(); renderCands(); renderSolCands(1); renderSolCands(2);
   toast('내용을 지웠어요');
 }
 function toast(msg){

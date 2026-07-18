@@ -10,6 +10,51 @@ module.exports = async function handler(req, res) {
     // 화면 잠금과 별개로 서버에서도 비밀번호를 검사해 무단 API 호출을 막는다
     if (pw !== 'tlsekq') { res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' }); return; }
 
+    // mode 'solutions': 예상 장애물 1개에 대한 극복 방안 5개 제안
+    if (mode === 'solutions') {
+      const obstacle = String(req.body.obstacle ?? '').trim().slice(0, 300);
+      if (!obstacle) { res.status(400).json({ error: '예상 장애물을 입력하세요.' }); return; }
+
+      const sPrompt = `당신은 교사의 AI·디지털 역량 개발을 돕는 연수 컨설턴트입니다.
+
+한 교사가 성장 계획을 실천하는 데 이런 장애물을 예상하고 있습니다.
+- 예상 장애물: ${obstacle}
+- 교사의 성장 목표: ${String(goal || '').slice(0, 300) || '미입력'}
+- 보완이 필요한 역량: ${String(weak || '').slice(0, 100) || '미입력'}
+
+이 장애물을 극복할 현실적인 방안 5개를 제안하세요. 원칙:
+- 한국 초·중등 학교 현장에서 바로 실천 가능한 작은 행동으로. 각 방안 40자 이내.
+- 5개는 서로 다른 접근일 것 (예: 시간 확보 / 동료 협력 / 작게 시작 / 도구 활용 / 계획 조정).
+- "하루 10분만 투자", "동료와 주 1회 티타임"처럼 구체적으로. 뻔한 정신론 금지.
+
+{"solutions":["방안1","방안2","방안3","방안4","방안5"]} JSON으로만 출력하세요. 다른 텍스트 금지.`;
+      const sRes = await fetch('https://api.upstage.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'solar-pro2',
+          messages: [{ role: 'user', content: sPrompt }],
+          temperature: 0.6,
+          max_tokens: 800,
+        }),
+      });
+      if (!sRes.ok) {
+        const t = await sRes.text();
+        res.status(502).json({ error: `AI 방안 생성 실패 (${sRes.status})`, detail: t.slice(0, 300) });
+        return;
+      }
+      const sChat = await sRes.json();
+      const sRaw = (sChat.choices && sChat.choices[0] && sChat.choices[0].message.content) || '';
+      const ss = sRaw.indexOf('{');
+      const se = sRaw.lastIndexOf('}');
+      if (ss === -1 || se === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');
+      const sDraft = JSON.parse(sRaw.slice(ss, se + 1));
+      const solutions = (Array.isArray(sDraft.solutions) ? sDraft.solutions : [])
+        .map((s) => String(s ?? '').trim().slice(0, 120)).filter(Boolean).slice(0, 5);
+      res.status(200).json({ solutions });
+      return;
+    }
+
     // mode 'goal': Need×Want 모든 조합(최대 3×3=9)에 대해 성장 목표 문장을 하나씩 생성
     if (mode === 'goal') {
       const clean = (arr) => (Array.isArray(arr) ? arr : [])
