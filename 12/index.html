@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>피드백 리허설 도우미 · 12과정</title>
+<meta property="og:title" content="피드백 리허설 도우미">
+<meta property="og:description" content="존 해티 3단계로 우리 반 학생 피드백을 리허설하고, 환류 전략 템플릿과 동료 코칭 기록지까지.">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2C59'/%3E%3Cpath d='M32 10 52 25 44 50H20L12 25Z' fill='none' stroke='%23F6C2E4' stroke-width='5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='33' r='6' fill='%23FCE303'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E2C59;--teal:#7A2E6E;--sky:#F6C2E4;--pink:#E85FA5;--bg:#F7F9FF;--line:#DDE1EB;--muted:#5B6B7C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:#1B2A3A;min-height:100vh;display:flex;flex-direction:column}
+header{background:linear-gradient(90deg,#C9C4F2 0%,#F9C8E8 100%);color:var(--navy);padding:14px 28px;display:flex;align-items:center;gap:14px}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(420px 420px at 6% 16%,rgba(178,158,240,.30),transparent 70%),radial-gradient(520px 520px at 2% 78%,rgba(120,205,242,.22),transparent 70%),radial-gradient(400px 400px at 14% 46%,rgba(250,150,205,.22),transparent 70%)}
+header,main,footer{position:relative;z-index:1}
+footer{background:#E7F2FB;color:#6B7A99;font-size:13px;padding:10px 28px}
+header .badge{background:#fff;color:#C2447A;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+header h1{font-size:22px;font-weight:700}
+header .sub{margin-left:auto;font-size:13px;color:#52609B;white-space:nowrap}
+header .clear{color:#C0392B;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit}
+header .clear:hover{background:#FDEDEB}
+header .home{color:#52609B;text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px}
+header .home:hover{color:var(--navy)}
+
+main{flex:1;max-width:1140px;width:100%;margin:0 auto;padding:18px 28px 26px;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05)}
+.tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{padding:14px 16px;font-size:15px;font-weight:700;color:var(--muted);background:#FAFAFE;border:none;border-bottom:3px solid transparent;white-space:nowrap;cursor:pointer;font-family:inherit}
+.tab.active{color:var(--navy);border-bottom-color:var(--sky);background:#fff}
+.step{display:none;padding:22px 24px}
+.step.active{display:block}
+.step h2{font-size:19px;color:var(--navy);margin-bottom:4px}
+.step .hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.step .hint b{color:var(--pink)}
+
+button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:700;transition:.15s}
+.btn-grad{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;padding:12px 26px;border-radius:999px}
+.btn-grad:hover{filter:brightness(.93)}
+.btn-grad:disabled{background:#CBA9C6;filter:none;cursor:not-allowed}
+.btn-navy{background:var(--teal);color:#fff;padding:12px 22px}
+.btn-navy:hover{background:#5C2253}
+.btn-navy:disabled{background:#B99DB4;cursor:not-allowed}
+.btn-outline{background:#fff;border:1.5px solid var(--line);color:#1B2A3A;font-weight:500;padding:12px 18px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.spin{display:none;width:22px;height:22px;border:3px solid #E8E2F2;border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+input[type=text]{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;outline:none;background:#fff}
+input[type=text]:focus{border-color:var(--sky);background:#FEFBFE}
+textarea{width:100%;font-family:inherit;font-size:14.5px;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;outline:none;background:#fff;line-height:1.6;resize:vertical}
+textarea:focus{border-color:var(--sky);background:#FEFBFE}
+label.fl{display:block;font-size:13.5px;font-weight:700;color:var(--navy);margin:0 0 5px}
+
+/* 피드백 4단계 */
+.fb-step{border-radius:12px;padding:14px 16px;margin-bottom:12px;border:1.5px solid}
+.fb-step h3{font-size:15px;margin-bottom:2px}
+.fb-step p{font-size:12.5px;color:var(--muted);margin-bottom:9px}
+.fb-step textarea{min-height:58px}
+.fb-s0{background:#FFF9EC;border-color:#E8D5A0}.fb-s0 h3{color:#9C7A1E}
+.fb-s1{background:#F4F8FF;border-color:#C6D8F5}.fb-s1 h3{color:#2E5AA8}
+.fb-s2{background:#FDF1F6;border-color:#F2C4DA}.fb-s2 h3{color:#C2447A}
+.fb-s3{background:#F0F9F4;border-color:#BFE3CE}.fb-s3 h3{color:#1E7A4F}
+.ai-result{display:none;margin-top:16px;border-top:2px dashed var(--line);padding-top:16px}
+.lst{border-radius:12px;padding:13px 16px;font-size:13.5px;line-height:1.8;border:1.5px solid;margin-bottom:12px}
+.lst h4{font-size:14px;margin-bottom:6px}
+.lst.chk{background:#F4F8FF;border-color:#C6D8F5}.lst.chk h4{color:#2E5AA8}
+.lst.rev{background:#FDF4FA;border-color:#E9D9EE}.lst.rev h4{color:var(--teal)}
+.lst.cau{background:#FDF1F1;border-color:#EFC1C1}.lst.cau h4{color:#B23B3B}
+.pre{white-space:pre-wrap}
+
+/* 템플릿·코칭 표 */
+table{border-collapse:collapse;width:100%}
+th{background:var(--navy);color:#fff;font-size:14px;font-weight:700;padding:11px 8px;border:1px solid #3A466F}
+td{border:1px solid var(--line);padding:9px 10px;font-size:14px;vertical-align:top;background:#fff}
+td.label{background:#F1EBF8;font-weight:700;color:var(--navy);white-space:nowrap;text-align:center;width:150px}
+td.label small{display:block;font-weight:500;color:var(--muted);font-size:12px;white-space:normal}
+td textarea{border:none;padding:4px;min-height:64px;background:transparent}
+td textarea:focus{background:#FBF7FE}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
+.toast.show{opacity:1;transform:none}
+.modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
+.modal h3{font-size:18px;color:var(--navy);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);margin-bottom:14px}
+.modal input{width:100%;padding:13px;font-size:16px;border:1.5px solid var(--line);border-radius:9px;outline:none;font-family:inherit}
+.modal input:focus{border-color:var(--sky)}
+.modal .err{display:none;color:#C0392B;font-size:13px;margin-top:8px}
+.modal .row{display:flex;gap:10px;margin-top:16px}
+.modal .row button{flex:1;padding:12px}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">12과정</span>
+  <h1>피드백 리허설 도우미</h1>
+  <span class="sub">2026 인공지능 활용 선도교사 연수 · 평가 결과 기반 환류 설계</span>
+  <button class="clear" onclick="clearAll()">🗑 내용 지우기</button>
+  <a class="home" href="/">🏠 홈</a>
+</header>
+
+<main>
+  <div class="card" style="flex:1;display:flex;flex-direction:column">
+    <div class="tabs" id="tabs"></div>
+
+    <!-- ① 피드백 리허설 -->
+    <section class="step" id="step1">
+      <h2>① 피드백 리허설 — 존 해티 3단계</h2>
+      <p class="hint">우리 반에서 지금 피드백이 필요한 학생을 떠올리고, <b>라포 → Feed-Up → Feed-Back → Feed-Forward</b> 순서로 실제 말하듯 적어 보세요. AI가 좋은 피드백 원칙(라포·객관적 진단·우선순위 하나·작게 쪼개기)으로 점검해 줍니다.</p>
+      <div id="fbSheet">
+      <div style="margin-bottom:14px"><label class="fl">이 학생은 어떤 학생인가요? (특성·행동·데이터에서 본 것)</label><textarea data-k="student" style="min-height:54px" placeholder="예) 지각이 잦고 과제 시작을 망설이는 학생. 이번 조사 과제에서 완벽한 자료를 찾으려다 답변을 쓰지 못함."></textarea></div>
+      <div class="fb-step fb-s0"><h3>라포 · 긍정적 시작</h3><p>무조건적 칭찬 말고, 실제로 해낸 작은 성과를 구체적으로 인정</p><textarea data-k="rapport" placeholder="예) 조사하는 모습을 보니 사이트랑 정보를 잘 찾았더라. 시작을 아주 잘 끊었어."></textarea></div>
+      <div class="fb-step fb-s1"><h3>Feed-Up · 목표 상기</h3><p>원래 도달했어야 할 명확한 기준을 학생 스스로 떠올리게</p><textarea data-k="feedup" placeholder="예) 이번 과제의 목표가 '자료 3개 찾아서 요약'이었지?"></textarea></div>
+      <div class="fb-step fb-s2"><h3>Feed-Back · 현재 상태 진단</h3><p>추궁 대신 객관적인 원인 짚기 ("왜 안 했니?" 금지)</p><textarea data-k="feedback" placeholder="예) 완벽한 자료를 찾으려고 망설이다 내용을 다 채우지 못한 것 같아 아쉬웠어."></textarea></div>
+      <div class="fb-step fb-s3"><h3>Feed-Forward · 다음 단계 제시</h3><p>난이도를 낮춘 작고 구체적인 다음 미션으로</p><textarea data-k="feedforward" placeholder="예) 오늘은 딱 한 가지 자료만 찾아 두 줄로 요약해 보자. 내일 제일 먼저 선생님한테 보여주는 미션!"></textarea></div>
+      <div class="ai-result" id="coachBox">
+        <div class="lst chk"><h4>✅ 원칙별 점검</h4><div class="pre" id="aiChecks"></div></div>
+        <div class="lst rev"><h4>🎙 다듬은 피드백 스크립트</h4><div class="pre" id="aiRevised"></div></div>
+        <div class="lst cau"><h4>⚠ 이 학생에게 조심할 점</h4><div class="pre" id="aiCaution"></div></div>
+      </div>
+      </div>
+      <div class="tools">
+        <button class="btn-grad" id="coachBtn">🤖 피드백 점검 받기</button>
+        <div class="spin" id="coachSpin"></div>
+        <button class="btn-navy" onclick="savePng('fbSheet','피드백_리허설')">🖼 PNG 저장</button>
+        <button class="btn-outline" onclick="copyFb()">📋 복사</button>
+      </div>
+    </section>
+
+    <!-- ② 환류 전략 템플릿 -->
+    <section class="step" id="step2">
+      <h2>② 환류 전략 템플릿</h2>
+      <p class="hint">데이터에서 발견한 것을 메모하면, ①의 리허설 내용과 함께 AI가 템플릿 초안을 채워 줍니다. 고쳐 쓴 뒤 복사해 제출 양식에 붙여 넣으세요.</p>
+      <div style="margin-bottom:14px"><label class="fl">데이터에서 발견한 것 (분석 보고서·대시보드에서 본 내용 메모)</label><textarea data-k="findings" style="min-height:54px" placeholder="예) 도형 영역 양극화 — 30~40점대 하위권 다수. 3회차에 학습시간 급감한 학생 2명. 오답유형은 문제 해석 오류가 최다."></textarea></div>
+      <div id="tplSheet">
+      <table>
+        <tr><th style="width:150px">항목</th><th>내용</th></tr>
+        <tr><td class="label">데이터 해석<small>학생들의 학습 상태</small></td><td><textarea data-k="tInterpret"></textarea></td></tr>
+        <tr><td class="label">피드백 계획<small>개별 + 학급</small></td><td><textarea data-k="tPlan"></textarea></td></tr>
+        <tr><td class="label">수업 수정 전략<small>다음 차시·단원</small></td><td><textarea data-k="tRevise"></textarea></td></tr>
+        <tr><td class="label">교육적 성찰</td><td><textarea data-k="tReflect"></textarea></td></tr>
+      </table>
+      </div>
+      <div class="tools">
+        <button class="btn-grad" id="tplBtn">🤖 템플릿 초안 받기</button>
+        <div class="spin" id="tplSpin"></div>
+        <button class="btn-navy" onclick="savePng('tplSheet','환류_전략_템플릿')">🖼 PNG 저장</button>
+        <button class="btn-outline" onclick="copyTpl()">📋 복사</button>
+      </div>
+    </section>
+
+    <!-- ③ 동료 코칭 기록지 -->
+    <section class="step" id="step3">
+      <h2>③ 동료 코칭 기록지</h2>
+      <p class="hint">우수 설계안 발표를 들으며 작성합니다. 잘잘못 판단이 아니라 <b>'학생 성장 지원' 관점</b>에서 강점과 보완을 남기고, 내 수업에 가져갈 것까지 적어 보세요. 완성하면 복사해 발표자에게 전해 주세요.</p>
+      <div id="coachSheet">
+      <div class="obs-names" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+        <div style="flex:1;min-width:200px"><label class="fl">설계안 작성자</label><input type="text" data-k="cTarget" placeholder="예) 김선생"></div>
+        <div style="flex:1;min-width:200px"><label class="fl">코칭한 사람</label><input type="text" data-k="cMe" placeholder="예) 박선생"></div>
+      </div>
+      <table>
+        <tr><th style="width:150px">항목</th><th>내용</th></tr>
+        <tr><td class="label">강점<small>학생 성장에 효과적이었던 지점 + 근거</small></td><td><textarea data-k="cGood" placeholder="예) 진단 결과로 모둠을 재구성한 점 — 느린 학습자가 소외되지 않는 구조였음"></textarea></td></tr>
+        <tr><td class="label">보완 제안<small>대안과 함께</small></td><td><textarea data-k="cFix" placeholder="예) 정리 단계 평가가 결과 확인에 그침 — 자기평가 문항 1개를 넣으면 과정중심평가가 완성될 듯"></textarea></td></tr>
+        <tr><td class="label">가져갈 것<small>내 수업에 적용할 아이디어</small></td><td><textarea data-k="cTake" placeholder="예) 오답 유형별로 힌트 카드를 미리 만들어 두는 방식"></textarea></td></tr>
+      </table>
+      </div>
+      <div class="tools">
+        <button class="btn-grad" onclick="copyCoach()">📋 결과 복사 (발표자에게 보내기)</button>
+        <button class="btn-navy" onclick="savePng('coachSheet','동료코칭_기록지')">🖼 PNG 저장</button>
+        <button class="btn-outline" onclick="newCoach()">✏️ 다음 발표 기록</button>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>🔒 AI 기능 활성화</h3>
+    <p>강사가 안내한 비밀번호를 입력하세요.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호">
+    <div class="err" id="pwErr">비밀번호가 일치하지 않습니다.</div>
+    <div class="row">
+      <button class="btn-outline" id="pwCancel">취소</button>
+      <button class="btn-navy" id="pwOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>2026년 인공지능 활용 선도교사 연수 · 12과정 수업 실행 결과를 성장으로 잇다</footer>
+
+<script>
+const LS_KEY='p12-feedback';
+const STEPS=['① 피드백 리허설','② 환류 전략 템플릿','③ 동료 코칭 기록지'];
+let data={};
+try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); if(s) data=s; }catch(e){}
+function save(){ localStorage.setItem(LS_KEY,JSON.stringify(data)); }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+const tabsEl=document.getElementById('tabs');
+STEPS.forEach((t,i)=>{
+  const b=document.createElement('button');
+  b.className='tab'; b.dataset.i=i+1; b.textContent=t;
+  b.onclick=()=>go(i+1);
+  tabsEl.appendChild(b);
+});
+function go(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',+t.dataset.i===n));
+  window.scrollTo({top:0});
+}
+
+document.querySelectorAll('[data-k]').forEach(el=>{
+  const k=el.dataset.k;
+  if(data[k]) el.value=data[k];
+  el.addEventListener('input',()=>{ data[k]=el.value; save(); });
+});
+
+// ---------- 비밀번호 ----------
+let unlocked=false, enteredPw='', pendingAI='coach';
+const modalBg=document.getElementById('modalBg'), pwInput=document.getElementById('pwInput');
+function askAI(kind){
+  pendingAI=kind;
+  if(unlocked){ kind==='coach'?runCoach():runTpl(); }
+  else {modalBg.style.display='flex'; pwInput.value=''; document.getElementById('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50);}
+}
+document.getElementById('pwCancel').onclick=()=>modalBg.style.display='none';
+function tryPw(){
+  enteredPw=pwInput.value.trim();
+  if(!enteredPw){ document.getElementById('pwErr').style.display='block'; return; }
+  unlocked=true; modalBg.style.display='none';
+  pendingAI==='coach'?runCoach():runTpl();
+}
+document.getElementById('pwOk').onclick=tryPw;
+pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
+
+// ---------- ① 코칭 ----------
+document.getElementById('coachBtn').onclick=()=>{
+  if(!(data.student||'').trim()){ toast('학생 소개를 먼저 적어 주세요 ✏️'); return; }
+  if(!['rapport','feedup','feedback','feedforward'].some(k=>(data[k]||'').trim())){ toast('피드백을 한 칸이라도 먼저 적어 주세요 ✏️'); return; }
+  askAI('coach');
+};
+async function runCoach(){
+  const btn=document.getElementById('coachBtn'), spin=document.getElementById('coachSpin');
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const res=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw, mode:'coach', student:data.student||'', rapport:data.rapport||'', feedup:data.feedup||'', feedback:data.feedback||'', feedforward:data.feedforward||''})});
+    const j=await res.json();
+    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    data.aiChecks=j.checks; data.aiRevised=j.revised; data.aiCaution=j.caution; save();
+    renderCoach();
+    toast('점검 결과가 도착했어요. 내 말투로 다듬어 연습해 보세요 🎙');
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+function renderCoach(){
+  const box=document.getElementById('coachBox');
+  if(!data.aiChecks && !data.aiRevised){ box.style.display='none'; return; }
+  box.style.display='block';
+  document.getElementById('aiChecks').textContent=data.aiChecks||'—';
+  document.getElementById('aiRevised').textContent=data.aiRevised||'—';
+  document.getElementById('aiCaution').textContent=data.aiCaution||'—';
+}
+renderCoach();
+function copyFb(){
+  if(!['rapport','feedup','feedback','feedforward'].some(k=>(data[k]||'').trim())){ toast('아직 적은 피드백이 없어요 ✏️'); return; }
+  const t=`[피드백 리허설]\n학생: ${data.student||''}\n라포: ${data.rapport||''}\nFeed-Up: ${data.feedup||''}\nFeed-Back: ${data.feedback||''}\nFeed-Forward: ${data.feedforward||''}`+(data.aiRevised?`\n\n[다듬은 스크립트]\n${data.aiRevised}`:'');
+  navigator.clipboard.writeText(t).then(()=>toast('복사했어요 📋'));
+}
+
+// ---------- ② 템플릿 ----------
+document.getElementById('tplBtn').onclick=()=>{
+  if(!(data.findings||'').trim() && !(data.student||'').trim()){ toast('데이터에서 발견한 것을 먼저 메모해 주세요 ✏️'); return; }
+  askAI('tpl');
+};
+async function runTpl(){
+  const btn=document.getElementById('tplBtn'), spin=document.getElementById('tplSpin');
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const fbPlan=['라포: '+(data.rapport||''),'Feed-Up: '+(data.feedup||''),'Feed-Back: '+(data.feedback||''),'Feed-Forward: '+(data.feedforward||'')].join('\n');
+    const res=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw, mode:'template', findings:data.findings||'', student:data.student||'', fbPlan})});
+    const j=await res.json();
+    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    const fill=(k,v)=>{ if(!v) return; data[k]=v; const el=document.querySelector(`[data-k=${k}]`); if(el) el.value=v; };
+    fill('tInterpret',j.interpret); fill('tPlan',j.plan); fill('tRevise',j.revise); fill('tReflect',j.reflect); save();
+    toast('템플릿 초안을 채웠어요. 내 학급에 맞게 고치세요 ✏️');
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+function copyTpl(){
+  if(!['tInterpret','tPlan','tRevise','tReflect'].some(k=>(data[k]||'').trim())){ toast('아직 적은 내용이 없어요 ✏️'); return; }
+  const t=`[환류 전략 템플릿]\n데이터 해석: ${data.tInterpret||''}\n피드백 계획: ${data.tPlan||''}\n수업 수정 전략: ${data.tRevise||''}\n교육적 성찰: ${data.tReflect||''}`;
+  navigator.clipboard.writeText(t).then(()=>toast('복사했어요 📋 제출 양식에 붙여 넣으세요'));
+}
+
+// ---------- ③ 코칭 기록지 ----------
+function copyCoach(){
+  if(!['cGood','cFix','cTake'].some(k=>(data[k]||'').trim())){ toast('아직 적은 내용이 없어요 ✏️'); return; }
+  const t=`[동료 코칭 기록지] 설계안: ${data.cTarget||'-'} / 코칭: ${data.cMe||'-'}\n강점: ${data.cGood||''}\n보완 제안: ${data.cFix||''}\n내 수업에 가져갈 것: ${data.cTake||''}`;
+  navigator.clipboard.writeText(t).then(()=>toast('복사했어요 📋 발표자에게 보내 주세요'));
+}
+function newCoach(){
+  if(!confirm('기록을 지우고 다음 발표 기록을 시작할까요? (코칭한 사람 이름은 유지)')) return;
+  ['cTarget','cGood','cFix','cTake'].forEach(k=>{ data[k]=''; const el=document.querySelector(`[data-k=${k}]`); if(el) el.value=''; });
+  save(); toast('새 기록을 시작합니다 ✏️');
+}
+
+// ---------- 공용 ----------
+function savePng(id,name){
+  toast('이미지를 만드는 중…');
+  const el=document.getElementById(id);
+  html2canvas(el,{scale:2,backgroundColor:'#ffffff',
+    onclone:doc=>{
+      doc.querySelectorAll('.tools').forEach(t=>t.style.display='none');
+      doc.querySelectorAll('textarea').forEach(t=>{
+        const src=t.dataset.k?document.querySelector(`textarea[data-k="${t.dataset.k}"]`):null;
+        const cs=getComputedStyle(src||t);
+        const d=doc.createElement('div');
+        d.textContent=(src?src.value:t.value);
+        d.style.whiteSpace='pre-wrap'; d.style.wordBreak='break-word'; d.style.width='100%';
+        d.style.minHeight=(src?src.clientHeight:40)+'px';
+        d.style.fontFamily=cs.fontFamily; d.style.fontSize=cs.fontSize; d.style.lineHeight=cs.lineHeight;
+        d.style.padding=cs.padding; d.style.border=cs.border; d.style.borderRadius=cs.borderRadius;
+        d.style.background='#fff'; d.style.color='#1B2A3A';
+        t.replaceWith(d);
+      });
+    }}).then(cv=>{
+    const a=document.createElement('a');
+    a.download=name+'.png';
+    a.href=cv.toDataURL('image/png'); a.click();
+    toast('이미지로 저장했어요 🖼');
+  }).catch(()=>toast('⚠ 이미지 저장에 실패했어요'));
+}
+function clearAll(){
+  if(!confirm('모든 입력 내용을 지울까요? 되돌릴 수 없습니다.')) return;
+  data={}; localStorage.removeItem(LS_KEY);
+  document.querySelectorAll('input[data-k],textarea[data-k]').forEach(el=>el.value='');
+  renderCoach();
+  toast('내용을 지웠어요');
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600);
+}
+go(1);
+</script>
+</body>
+</html>
