@@ -343,7 +343,24 @@ function savePng(id,name){
   toast('이미지를 만드는 중…');
   const el=document.getElementById(id);
   el.classList.add('capture');
-  html2canvas(el,{scale:2,backgroundColor:'#ffffff'}).then(cv=>{
+  html2canvas(el,{scale:2,backgroundColor:'#ffffff',
+    // html2canvas는 textarea의 여러 줄을 못 그리므로, 캡처본에서는 같은 모양의 div로 바꿔 그린다
+    onclone:doc=>{
+      doc.getElementById(id).querySelectorAll('textarea').forEach(t=>{
+        const src=t.dataset.k?document.querySelector(`textarea[data-k="${t.dataset.k}"]`):null;
+        const cs=getComputedStyle(src||t);
+        const d=doc.createElement('div');
+        d.textContent=(src?src.value:t.value);
+        d.style.whiteSpace='pre-wrap';
+        d.style.wordBreak='break-word';
+        d.style.width='100%';
+        d.style.minHeight=(src?src.clientHeight:40)+'px';
+        d.style.fontFamily=cs.fontFamily; d.style.fontSize=cs.fontSize; d.style.lineHeight=cs.lineHeight;
+        d.style.padding=cs.padding; d.style.border=cs.border; d.style.borderRadius=cs.borderRadius;
+        d.style.background='#fff'; d.style.color='#1B2A3A';
+        t.replaceWith(d);
+      });
+    }}).then(cv=>{
     el.classList.remove('capture');
     const a=document.createElement('a');
     a.download=name+(data.cmName?'_'+data.cmName:'')+'.png';
