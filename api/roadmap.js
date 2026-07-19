@@ -32,7 +32,7 @@ ${reviews}
         method: 'POST',
         headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'solar-pro2',
+          model: 'solar-pro3',
           messages: [{ role: 'user', content: kPrompt }],
           temperature: 0.4,
           max_tokens: 800,
@@ -82,7 +82,7 @@ ${kpt || '없음'}
         method: 'POST',
         headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'solar-pro2',
+          model: 'solar-pro3',
           messages: [{ role: 'user', content: bPrompt }],
           temperature: 0.4,
           max_tokens: 600,
@@ -128,7 +128,7 @@ ${kpt || '없음'}
         method: 'POST',
         headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'solar-pro2',
+          model: 'solar-pro3',
           messages: [{ role: 'user', content: sPrompt }],
           temperature: 0.6,
           max_tokens: 800,
@@ -181,7 +181,7 @@ ${pairs.join('\n')}
         method: 'POST',
         headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'solar-pro2',
+          model: 'solar-pro3',
           messages: [{ role: 'user', content: gPrompt }],
           temperature: 0.5,
           max_tokens: 2000,
@@ -228,7 +228,7 @@ ${pairs.join('\n')}
       method: 'POST',
       headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'solar-pro2',
+        model: 'solar-pro3',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.4,
         max_tokens: 1500,

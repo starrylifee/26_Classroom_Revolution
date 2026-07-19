@@ -93,7 +93,7 @@ ${markdown.slice(0, 18000)}
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'solar-pro2',
+        model: 'solar-pro3',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
         max_tokens: 1500,

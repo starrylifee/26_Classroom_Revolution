@@ -15,7 +15,7 @@ module.exports = async function handler(req, res) {
         method: 'POST',
         headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'solar-pro2',
+          model: 'solar-pro3',
           messages: [{ role: 'user', content: prompt }],
           temperature: temp,
           max_tokens: maxTokens,

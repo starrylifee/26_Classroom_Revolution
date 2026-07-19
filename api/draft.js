@@ -67,7 +67,7 @@ JSON 외 다른 텍스트는 출력하지 마세요.`;
       method: 'POST',
       headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'solar-pro2',
+        model: 'solar-pro3',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
         max_tokens: 5000,

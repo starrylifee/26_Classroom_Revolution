@@ -15,7 +15,7 @@ module.exports = async function handler(req, res) {
         method: 'POST',
         headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'solar-pro2',
+          model: 'solar-pro3',
           messages: [{ role: 'user', content: prompt }],
           temperature: temp ?? 0.8,
           max_tokens: maxTokens,
@@ -124,7 +124,7 @@ module.exports = async function handler(req, res) {
       if (!scenario || !question) { res.status(400).json({ error: '단계 정보가 없습니다.' }); return; }
       if (!answer) { res.status(400).json({ error: '답을 먼저 적어 주세요.' }); return; }
 
-      const prompt = `당신은 초등 교사 연수에서 학급 대시보드 판독을 지도하는 다정한 수석교사입니다. 소크라테스식으로 짧게 대화합니다.
+      const prompt = `당신은 초등 교사 연수에서 학급 대시보드 판독을 지도하는 수석교사이자 엄격한 채점자입니다. 다정하게 말하되 판정은 냉정하게 합니다.
 
 <학급 대시보드 데이터 (함정 해설 포함, 학습자에게는 안 보임)>
 ${scenario}
@@ -135,14 +135,21 @@ ${scenario}
 학습자의 답: ${answer}
 
 ${reveal
-  ? '학습자가 두 번 막혔습니다. 이번에는 verdict를 "pass"로 하고, 정답을 근거와 함께 명확히 설명한 뒤 괜찮다고 격려해 주세요.'
-  : `판정 규칙:
-- 학습자의 답이 이 단계의 핵심을 짚었으면 verdict "pass" — 칭찬하고 정답 요지를 한 문장으로 보강.
-- 핵심을 놓쳤거나 함정에 빠졌으면 verdict "retry" — 정답을 직접 말하지 말고, 어디를 다시 보라는 힌트를 1~2문장으로. (예: "관찰 메모 1번을 다시 읽어 보세요", "상자의 길이를 비교해 보세요")`}
+  ? '학습자가 두 번 막혔습니다. 이번에는 verdict를 "pass"로 하고, 정답을 근거와 함께 명확히 설명한 뒤 괜찮다고 격려해 주세요. learner_claim에는 학습자의 답 요약을 적으세요.'
+  : `판정 절차 — 반드시 이 순서로:
+1. 먼저 learner_claim에 학습자의 답이 주장하는 결론을 한 문장으로 요약한다. (답이 무의미하거나 결론이 없으면 "결론 없음")
+2. learner_claim을 채점 기준과 비교해 verdict를 정한다.
+
+판정 규칙 (엄격하게 적용):
+- 학습자의 결론이 채점 기준과 반대 방향이면 무조건 "retry". (예: 기준은 "개입 불필요"인데 개입하자고 답함, 기준은 "결손 아님"인데 결손이라고 답함)
+- 근거 없이 이름·번호·단어만 던진 답은 "retry". 근거(그래프 모양, 관찰 메모, 수치)를 스스로 말해야 "pass".
+- 결론과 근거가 모두 채점 기준의 핵심을 짚었을 때만 "pass" — 칭찬하고 정답 요지를 한 문장으로 보강.
+- "retry"일 때는 정답을 직접 말하지 말고, 어디를 다시 보라는 힌트만 1~2문장. (예: "관찰 메모 1번을 다시 읽어 보세요", "상자의 길이를 비교해 보세요")
+- 애매하면 "retry". "맞습니다" 같은 긍정 표현은 pass일 때만 사용.`}
 - reply는 3문장 이내, 존댓말. 훈계하지 말 것.
 
-{"verdict":"pass 또는 retry","reply":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
-      const d = await ask(prompt, 400, 0.4);
+{"learner_claim":"...","verdict":"pass 또는 retry","reply":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
+      const d = await ask(prompt, 500, 0.1);
       const verdict = d.verdict === 'pass' ? 'pass' : 'retry';
       res.status(200).json({ verdict: reveal ? 'pass' : verdict, reply: String(d.reply ?? '').slice(0, 500) });
       return;
