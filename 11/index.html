@@ -256,8 +256,8 @@ body.chatfloat main{padding-right:466px}
 
 <div class="modal-bg" id="modalBg">
   <div class="modal">
-    <h3>🔒 AI 기능 활성화</h3>
-    <p>강사가 안내한 비밀번호를 입력하세요.</p>
+    <h3 id="pwTitle">🔒 AI 기능 활성화</h3>
+    <p id="pwDesc">강사가 안내한 비밀번호를 입력하세요.</p>
     <input type="password" id="pwInput" placeholder="비밀번호">
     <div class="err" id="pwErr">비밀번호가 일치하지 않습니다.</div>
     <div class="row">
@@ -443,19 +443,31 @@ function renderMemo(sc){
 }
 
 // ---------- 비밀번호 ----------
-let unlocked=false, enteredPw='', pendingAI='new';
+let unlocked=false, enteredPw='', sheetPw='', pendingAI='new';
 const modalBg=document.getElementById('modalBg'), pwInput=document.getElementById('pwInput');
 function runByKind(kind){ if(kind==='new') runNew(); else if(kind==='step') runStep(); else if(kind==='sheet') runSheet(); else runCompare(); }
+function openPwModal(title,desc){
+  document.getElementById('pwTitle').textContent=title;
+  document.getElementById('pwDesc').textContent=desc;
+  modalBg.style.display='flex'; pwInput.value=''; document.getElementById('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50);
+}
 function askAI(kind){
   pendingAI=kind;
+  if(kind==='sheet'){
+    if(sheetPw){ runSheet(); return; }
+    openPwModal('🔒 강사용 답안지','강사용 비밀번호를 입력하세요. (연수생용과 다릅니다)');
+    return;
+  }
   if(unlocked){ runByKind(kind); }
-  else {modalBg.style.display='flex'; pwInput.value=''; document.getElementById('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50);}
+  else openPwModal('🔒 AI 기능 활성화','강사가 안내한 비밀번호를 입력하세요.');
 }
 document.getElementById('pwCancel').onclick=()=>modalBg.style.display='none';
 function tryPw(){
-  enteredPw=pwInput.value.trim();
-  if(!enteredPw){ document.getElementById('pwErr').style.display='block'; return; }
-  unlocked=true; modalBg.style.display='none';
+  const v=pwInput.value.trim();
+  if(!v){ document.getElementById('pwErr').style.display='block'; return; }
+  modalBg.style.display='none';
+  if(pendingAI==='sheet'){ sheetPw=v; runSheet(); return; }
+  enteredPw=v; unlocked=true;
   runByKind(pendingAI);
 }
 document.getElementById('pwOk').onclick=tryPw;
@@ -959,8 +971,8 @@ async function runStep(){
 async function runSheet(){
   try{
     const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({pw:enteredPw, mode:'verify'})});
-    if(!res.ok){ if(res.status===401){ unlocked=false; toast('⚠ 비밀번호가 올바르지 않습니다'); } else toast('⚠ 확인에 실패했어요'); return; }
+      body:JSON.stringify({pw:sheetPw, mode:'verify'})});
+    if(!res.ok){ if(res.status===401){ sheetPw=''; toast('⚠ 강사용 비밀번호가 올바르지 않습니다'); } else toast('⚠ 확인에 실패했어요'); return; }
     renderSheet();
     document.getElementById('sheetBg').style.display='block';
     document.body.classList.add('printing');

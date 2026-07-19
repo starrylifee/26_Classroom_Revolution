@@ -8,10 +8,12 @@ module.exports = async function handler(req, res) {
   try {
     const { pw, mode } = req.body || {};
     // 화면 잠금과 별개로 서버에서도 비밀번호를 검사해 무단 API 호출을 막는다
+    // 강사용 답안지: 연수생용(tlsekq)과 다른 강사 전용 비밀번호만 통과 (LLM 호출 없음)
+    if (mode === 'verify') {
+      if (pw === 'tjdnfeo') { res.status(200).json({ ok: true }); return; }
+      res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' }); return;
+    }
     if (pw !== 'tlsekq') { res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' }); return; }
-
-    // 강사용 답안지 등 비밀번호 확인만 필요한 경우 (LLM 호출 없음)
-    if (mode === 'verify') { res.status(200).json({ ok: true }); return; }
 
     const ask = async (prompt, maxTokens, temp) => {
       const r = await fetch('https://api.upstage.ai/v1/chat/completions', {
