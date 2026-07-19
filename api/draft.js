@@ -1,5 +1,6 @@
 // 수업 설계안 파일을 받아 9과정 학습지 6종의 초안(표 셀 값)을 생성한다.
 const UPSTAGE_KEY = process.env.UPSTAGE_API_KEY;
+const JSON_NOTE = '\n(JSON 문자열 값 안에서는 큰따옴표를 쓰지 말 것 — 인용이 필요하면 작은따옴표나 「」 사용)';
 
 // 표별 [행 수, 열 수] — 프런트와 template.hwpx 자리표시자에 맞춰야 한다.
 const SHAPES = { g: [5, 6], s: [3, 5], t: [7, 5], e: [5, 4], p: [5, 3], c: [4, 8], q: [4, 8] };
@@ -68,7 +69,7 @@ JSON 외 다른 텍스트는 출력하지 마세요.`;
       headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'solar-pro3',
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{ role: 'user', content: prompt + JSON_NOTE }],
         temperature: 0.3,
         max_tokens: 5000,
       }),

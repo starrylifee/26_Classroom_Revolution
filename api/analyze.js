@@ -1,6 +1,7 @@
 // 수업 설계안 파일을 받아 Upstage Document Parse로 텍스트를 추출하고
 // Solar LLM으로 5가지 핵심 원리 점수를 평가해 반환한다.
 const UPSTAGE_KEY = process.env.UPSTAGE_API_KEY;
+const JSON_NOTE = '\n(JSON 문자열 값 안에서는 큰따옴표를 쓰지 말 것 — 인용이 필요하면 작은따옴표나 「」 사용)';
 
 const LABELS = [
   '학습자 주도성',
@@ -94,7 +95,7 @@ ${markdown.slice(0, 18000)}
       },
       body: JSON.stringify({
         model: 'solar-pro3',
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{ role: 'user', content: prompt + JSON_NOTE }],
         temperature: 0.3,
         max_tokens: 4500,
       }),

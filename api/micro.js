@@ -10,7 +10,7 @@ module.exports = async function handler(req, res) {
     // 화면 잠금과 별개로 서버에서도 비밀번호를 검사해 무단 API 호출을 막는다
     if (pw !== 'tlsekq') { res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' }); return; }
 
-    const ask = async (prompt, maxTokens, temp) => {
+    const askRaw = async (prompt, maxTokens, temp) => {
       const r = await fetch('https://api.upstage.ai/v1/chat/completions', {
         method: 'POST',
         headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
@@ -23,10 +23,17 @@ module.exports = async function handler(req, res) {
       });
       if (!r.ok) { const t = await r.text(); throw Object.assign(new Error(`AI 요청 실패 (${r.status})`), { detail: t.slice(0, 300) }); }
       const c = await r.json();
-      const raw = ((c.choices && c.choices[0] && c.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-      const s = raw.indexOf('{'); const e = raw.lastIndexOf('}');
-      if (s === -1 || e === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');
-      return JSON.parse(raw.slice(s, e + 1));
+      return ((c.choices && c.choices[0] && c.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    };
+    // JSON 값 속 큰따옴표가 파싱을 깨는 경우가 있어 지시 추가 + 실패 시 1회 재시도
+    const ask = async (prompt, maxTokens, temp) => {
+      const guarded = prompt + '\n(JSON 문자열 값 안에서는 큰따옴표를 쓰지 말 것 — 인용이 필요하면 작은따옴표나 「」 사용)';
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const raw = await askRaw(guarded, maxTokens, temp);
+        const s = raw.indexOf('{'); const e = raw.lastIndexOf('}');
+        if (s !== -1 && e !== -1) { try { return JSON.parse(raw.slice(s, e + 1)); } catch (err) { /* 재시도 */ } }
+      }
+      throw new Error('AI 응답 JSON 해석 실패 (2회 시도)');
     };
 
     if (mode === 'persona') {
@@ -39,15 +46,19 @@ module.exports = async function handler(req, res) {
 - 페르소나 특성: ${traits}
 
 이 학생이 AI·디지털 활용 수업 중에 보일 법한 모습을 만들어 주세요. 원칙:
-- behaviors: 수업 장면에서 보일 구체적 행동 3가지. 연수생이 바로 연기할 수 있게 대사나 행동으로. 각 30자 내외, 줄바꿈(\\n) 구분.
-- tip: 시연 교사가 이 학생을 만났을 때 시도해 볼 대응 힌트 1가지 (참여 촉진·상호작용·평가 관점에서). 40자 내외.
+- 1~3줄: 수업 장면에서 보일 구체적 행동 3가지. 연수생이 바로 연기할 수 있게 대사나 행동으로. 각 30자 내외.
+- 4줄: 시연 교사가 이 학생을 만났을 때 시도해 볼 대응 힌트 1가지 (참여 촉진·상호작용·평가 관점에서). 40자 내외.
 - 과장된 문제아 캐릭터로 만들지 말 것. 실제 교실에 있을 법한 수준으로.
 
-{"behaviors":"...","tip":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
-      const d = await ask(prompt, 1600, 0.8);
+출력 형식: 정확히 4줄, 한 줄에 하나씩. 번호·불릿·JSON 없이 문장만. 다른 텍스트 금지.`;
+      const raw = await askRaw(prompt, 1600, 0.8);
+      const lines = raw.split('\n')
+        .map((s) => s.trim().replace(/^\d+[.)]\s*/, '').replace(/^[-•*]+\s*/, '').replace(/^(팁|힌트|대응)\s*[:：]\s*/, '').trim())
+        .filter(Boolean);
+      if (lines.length < 2) throw new Error('AI 응답에서 행동 시나리오를 찾지 못함');
       res.status(200).json({
-        behaviors: String(d.behaviors ?? '').slice(0, 400),
-        tip: String(d.tip ?? '').slice(0, 200),
+        behaviors: lines.slice(0, Math.min(3, lines.length - 1)).join('\n').slice(0, 400),
+        tip: String(lines[Math.min(3, lines.length - 1)] ?? '').slice(0, 200),
       });
       return;
     }

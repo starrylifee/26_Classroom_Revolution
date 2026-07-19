@@ -1,5 +1,6 @@
 // 13과정: 자가 진단·스윗 스팟을 받아 성장 로드맵(단기/중기/장기)과 걸림돌 초안을 생성한다.
 const UPSTAGE_KEY = process.env.UPSTAGE_API_KEY;
+const JSON_NOTE = '\n(JSON 문자열 값 안에서는 큰따옴표를 쓰지 말 것 — 인용이 필요하면 작은따옴표나 「」 사용)';
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST만 지원합니다.' }); return; }
@@ -33,7 +34,7 @@ ${reviews}
         headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'solar-pro3',
-          messages: [{ role: 'user', content: kPrompt }],
+          messages: [{ role: 'user', content: kPrompt + JSON_NOTE }],
           temperature: 0.4,
           max_tokens: 2500,
         }),
@@ -83,7 +84,7 @@ ${kpt || '없음'}
         headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'solar-pro3',
-          messages: [{ role: 'user', content: bPrompt }],
+          messages: [{ role: 'user', content: bPrompt + JSON_NOTE }],
           temperature: 0.4,
           max_tokens: 6000,
         }),
@@ -129,7 +130,7 @@ ${kpt || '없음'}
         headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'solar-pro3',
-          messages: [{ role: 'user', content: sPrompt }],
+          messages: [{ role: 'user', content: sPrompt + JSON_NOTE }],
           temperature: 0.6,
           max_tokens: 2500,
         }),
@@ -229,7 +230,7 @@ ${pairs.join('\n')}
       headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'solar-pro3',
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{ role: 'user', content: prompt + JSON_NOTE }],
         temperature: 0.4,
         max_tokens: 4500,
       }),
