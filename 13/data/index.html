@@ -235,7 +235,8 @@ async function runScenario(){
     const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({pw:enteredPw, mode:'scenario', seed:String(Math.floor(Math.random()*100000))})});
     const j=await res.json();
-    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    if(res.status===401){ unlocked=false; enteredPw=''; askAI(pendingAI); document.getElementById('pwErr').style.display='block'; throw new Error('비밀번호가 올바르지 않습니다. 다시 입력해 주세요.'); }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
     data.scenario=j;
     // 새 데이터를 받으면 이전 해석·비교는 초기화한다
     data.fact=''; data.action=''; data.ai=null; save();
@@ -252,7 +253,8 @@ async function runCompare(){
     const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({pw:enteredPw, mode:'compare', scenario:scenarioText(), fact:data.fact||'', action:data.action||''})});
     const j=await res.json();
-    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    if(res.status===401){ unlocked=false; enteredPw=''; askAI(pendingAI); document.getElementById('pwErr').style.display='block'; throw new Error('비밀번호가 올바르지 않습니다. 다시 입력해 주세요.'); }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
     data.ai=j; save(); renderCompare();
     document.getElementById('compareCard').scrollIntoView({behavior:'smooth'});
     toast('AI 해석이 도착했어요. 관점의 차이를 찾아보세요 🔍');

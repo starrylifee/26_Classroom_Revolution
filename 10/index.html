@@ -337,7 +337,8 @@ async function runPersonaAI(){
     const res=await fetch('/api/micro',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({pw:enteredPw, mode:'persona', traits:data.persona.join(', ')})});
     const j=await res.json();
-    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    if(res.status===401){ unlocked=false; enteredPw=''; askAI(pendingAI); document.getElementById('pwErr').style.display='block'; throw new Error('비밀번호가 올바르지 않습니다. 다시 입력해 주세요.'); }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
     data.pBeh=j.behaviors||''; data.pTip=j.tip||''; save(); renderPersona();
     toast('행동 시나리오가 도착했어요. 자연스럽게 연기해 보세요 🎭');
   }catch(e){ toast('⚠ '+e.message); }
@@ -434,7 +435,8 @@ async function runSynAI(){
     const res=await fetch('/api/micro',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({pw:enteredPw, mode:'synthesize', feedbacks:(data.paste||'').slice(0,6000)})});
     const j=await res.json();
-    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    if(res.status===401){ unlocked=false; enteredPw=''; askAI(pendingAI); document.getElementById('pwErr').style.display='block'; throw new Error('비밀번호가 올바르지 않습니다. 다시 입력해 주세요.'); }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
     aggregate();
     document.getElementById('aiBox').style.display='block';
     document.getElementById('aiStr').textContent=j.strengths||'—';

@@ -289,7 +289,8 @@ async function runKptAI(){
     const res=await fetch('/api/roadmap',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({pw:enteredPw, mode:'kpt', reviews:reviewsText()})});
     const j=await res.json();
-    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    if(res.status===401){ unlocked=false; enteredPw=''; askAI(pendingAI); document.getElementById('pwErr').style.display='block'; throw new Error('비밀번호가 올바르지 않습니다. 다시 입력해 주세요.'); }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
     const fill=(k,v)=>{ if(!v) return; data[k]=v; const el=document.querySelector(`[data-k=${k}]`); if(el) el.value=v; };
     fill('kpK',j.keep); fill('kpP',j.problem); fill('kpT',j.try); save();
     toast('KPT 초안을 채웠어요. 내 말로 고친 뒤 PNG로 저장하세요 ✏️');
@@ -304,7 +305,8 @@ async function runBaAI(){
     const res=await fetch('/api/roadmap',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({pw:enteredPw, mode:'ba', reviews:reviewsText(), kpt})});
     const j=await res.json();
-    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    if(res.status===401){ unlocked=false; enteredPw=''; askAI(pendingAI); document.getElementById('pwErr').style.display='block'; throw new Error('비밀번호가 올바르지 않습니다. 다시 입력해 주세요.'); }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
     const fill=(k,v)=>{ if(!v) return; data[k]=v; const el=document.querySelector(`[data-k=${k}]`); if(el) el.value=v; };
     fill('baM1',j.mind_b); fill('baM2',j.mind_a);
     fill('baD1',j.design_b); fill('baD2',j.design_a);

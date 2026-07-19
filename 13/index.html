@@ -517,7 +517,8 @@ async function runGoalAI(){
         needs, wants
       })});
     const j=await res.json();
-    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    if(res.status===401){ unlocked=false; enteredPw=''; askAI(pendingAI); document.getElementById('pwErr').style.display='block'; throw new Error('비밀번호가 올바르지 않습니다. 다시 입력해 주세요.'); }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
     const goals=Array.isArray(j.goals)?j.goals:[];
     const cands=[];
     needs.forEach((n,ni)=>wants.forEach((w,wi)=>{
@@ -565,7 +566,8 @@ async function runAI(){
         goal:data.goal||''
       })});
     const j=await res.json();
-    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    if(res.status===401){ unlocked=false; enteredPw=''; askAI(pendingAI); document.getElementById('pwErr').style.display='block'; throw new Error('비밀번호가 올바르지 않습니다. 다시 입력해 주세요.'); }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
     const fill=(k,v)=>{ if(!v) return; data[k]=v; const el=document.querySelector(`[data-k=${k}]`); if(el) el.value=v; };
     fill('rShort',j.short); fill('rMid',j.mid); fill('rLong',j.long);
     // 극복 방안(sol1·sol2)은 채우지 않는다 — 교사가 직접 쓰거나 ④의 AI 제안 버튼을 쓰도록 비워 둔다
@@ -593,7 +595,8 @@ async function runSolAI(i){
         weak:sw?sw.weak.map(x=>x.c+' '+x.n).join(', '):''
       })});
     const j=await res.json();
-    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    if(res.status===401){ unlocked=false; enteredPw=''; askAI(pendingAI); document.getElementById('pwErr').style.display='block'; throw new Error('비밀번호가 올바르지 않습니다. 다시 입력해 주세요.'); }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
     const sols=(Array.isArray(j.solutions)?j.solutions:[]).map(s=>String(s).trim()).filter(Boolean);
     if(!sols.length) throw new Error('AI가 방안을 만들지 못했어요. 다시 시도해 주세요.');
     data.solCands=data.solCands||{}; data.solCands[i]=sols; save(); renderSolCands(i);
