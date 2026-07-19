@@ -212,7 +212,7 @@ body.chatfloat main{padding-right:466px}
         <button class="btn-outline" onclick="toggleChatMin()" style="margin-left:auto;padding:6px 12px;font-size:13px">— 접기</button>
       </div>
       <div class="set-chips" id="setChips" style="margin:8px 0 0"></div>
-      <p class="hint" style="margin:6px 0 0">원하는 학급을 골라 판독하세요. 문항마다 <b>봐야 할 위젯이 분홍 테두리</b>로 표시되고, 막히면 힌트를 드려요(두 번 막히면 정답 설명). <b>1개 완주 → 자유 판독</b>, <b>5개 모두 완주 → AI 새 학급 받기</b>가 열립니다.</p>
+      <p class="hint" style="margin:6px 0 0">원하는 학급을 골라 판독하세요. 문항마다 <b>봐야 할 위젯이 분홍 테두리</b>로 표시되고, 막히면 힌트를 드려요(두 번 막히면 정답 설명). <b>다섯 학급을 모두 완주하면 자유 판독과 AI 새 학급 받기</b>가 열립니다.</p>
       <div class="chat" id="chatLog"></div>
       <div class="chat-input">
         <textarea id="chatInput" placeholder="여기에 답을 적고 보내기를 누르세요"></textarea>
@@ -270,7 +270,7 @@ body.chatfloat main{padding-right:466px}
 <div class="modal-bg" id="unlockBg">
   <div class="modal" style="text-align:center">
     <h3>🎉 다섯 학급 완주!</h3>
-    <p>대시보드 판독의 눈이 생겼습니다.<br>이제 <b>🎲 새 학급 받기 (AI)</b> 버튼이 열렸어요.<br>AI가 만든 처음 보는 학급에서 함정 3개를 스스로 찾아보세요.</p>
+    <p>대시보드 판독의 눈이 생겼습니다.<br>이제 <b>✍ 자유 판독</b> 탭과 <b>🎲 새 학급 받기 (AI)</b> 버튼이 열렸어요.<br>AI가 만든 처음 보는 학급에서 함정 3개를 스스로 찾아보세요.</p>
     <div class="row"><button class="btn-grad" onclick="closeUnlock()">새 학급 받으러 가기</button></div>
   </div>
 </div>
@@ -943,7 +943,7 @@ function nextSet(){
 }
 function updateNewBtn(){
   document.getElementById('newBtn').style.display=allDone()?'inline-block':'none';
-  document.getElementById('mtFree').textContent=doneCount()>=1?'✍ 자유 판독':'🔒 자유 판독';
+  document.getElementById('mtFree').textContent=allDone()?'✍ 자유 판독':'🔒 자유 판독';
 }
 function closeUnlock(){
   document.getElementById('unlockBg').style.display='none';
@@ -960,7 +960,7 @@ function startGuideIfEmpty(){
   }
 }
 function setMode(m){
-  if(m==='free'&&doneCount()<1){ toast('가이드 학급을 하나 완주하면 자유 판독이 열려요 🔒'); m='guide'; }
+  if(m==='free'&&!allDone()){ toast(`다섯 학급을 모두 완주하면 자유 판독이 열려요 🔒 (지금 ${doneCount()}/5)`); m='guide'; }
   data.g.mode=m; save();
   document.getElementById('mtGuide').classList.toggle('active',m==='guide');
   document.getElementById('mtFree').classList.toggle('active',m==='free');
@@ -1010,18 +1010,13 @@ async function runStep(){
       pushLog('model',g.model);
       data.g.i++; data.g.tries=0;
       if(data.g.i>=curGuide().length){
-        const firstClear=doneCount()===0;
         data.g.done=true; data.doneSets[data.g.set]=true;
         if(allDone()){
           pushLog('coach','다섯 학급 모두 완주! 🎉 이제 어떤 대시보드를 만나도 숫자 하나로 단정하지 않고, 분포·추이·관찰 메모를 교차해서 읽으실 수 있을 거예요.');
           updateNewBtn();
           if(!data.unlockShown){ data.unlockShown=true; document.getElementById('unlockBg').style.display='flex'; }
-        } else if(firstClear){
-          pushLog('coach',`${curSet().name} 완주! 🎉 이제 ‘자유 판독’ 탭이 열렸어요. 스스로 판독을 정리해 봐도 좋고, 다른 학급을 골라 더 연습해도 좋아요. 다섯 학급을 모두 완주하면 AI 새 학급 받기가 열립니다. (1/5)`);
-          updateNewBtn();
-          toast('✍ 자유 판독 탭이 열렸어요!');
         } else {
-          pushLog('coach',`${curSet().name} 완주! 🎉 (${doneCount()}/5) 남은 학급도 골라 도전해 보세요. 다섯 학급을 모두 완주하면 AI 새 학급 받기가 열립니다.`);
+          pushLog('coach',`${curSet().name} 완주! 🎉 (${doneCount()}/5) 남은 학급도 골라 도전해 보세요. 다섯 학급을 모두 완주하면 자유 판독과 AI 새 학급 받기가 열립니다.`);
         }
       } else {
         pushLog('coach',`문항 ${data.g.i+1}. `+curGuide()[data.g.i].q);
