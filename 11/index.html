@@ -461,6 +461,12 @@ function askAI(kind){
   if(unlocked){ runByKind(kind); }
   else openPwModal('🔒 AI 기능 활성화','강사가 안내한 비밀번호를 입력하세요.');
 }
+function pwRetry(kind){
+  if(kind==='sheet') sheetPw=''; else { unlocked=false; enteredPw=''; }
+  pendingAI=kind;
+  openPwModal(kind==='sheet'?'🔒 강사용 답안지':'🔒 AI 기능 활성화','비밀번호가 올바르지 않았어요. 다시 입력해 주세요.');
+  document.getElementById('pwErr').style.display='block';
+}
 document.getElementById('pwCancel').onclick=()=>modalBg.style.display='none';
 function tryPw(){
   const v=pwInput.value.trim();
@@ -486,7 +492,8 @@ async function runNew(){
     const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({pw:enteredPw, mode:'class_scenario', seed:String(Math.floor(Math.random()*100000))})});
     const j=await res.json();
-    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    if(res.status===401){ pwRetry('new'); return; }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
     data.sc=j; data.custom=true; data.individual=''; data.classAdj=''; data.ai=null; save();
     document.querySelectorAll('[data-k]').forEach(el=>el.value='');
     document.getElementById('compareCard').style.display='none';
@@ -517,7 +524,8 @@ async function runCompare(){
     const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({pw:enteredPw, mode:'class_compare', scenario:scenarioText(data.sc), individual:data.individual||'', classAdj:data.classAdj||''})});
     const j=await res.json();
-    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    if(res.status===401){ pwRetry('cmp'); return; }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
     data.ai=j; save(); renderCompare();
     document.getElementById('compareCard').scrollIntoView({behavior:'smooth'});
     toast('AI 판독이 도착했어요. 관점의 차이를 찾아보세요 🔍');
@@ -935,13 +943,16 @@ async function runStep(){
   const btn=document.getElementById('sendBtn'), spin=document.getElementById('chatSpin'), inp=document.getElementById('chatInput');
   const g=curGuide()[data.g.i];
   const reveal=data.g.tries>=2;
-  pushLog('me',pendingAns); renderChat();
+  const last=data.g.log[data.g.log.length-1];
+  if(!(last&&last.who==='me'&&last.text===pendingAns)) pushLog('me',pendingAns);
+  renderChat();
   btn.disabled=true; spin.style.display='block';
   try{
     const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({pw:enteredPw, mode:'class_step', scenario:scenarioText(curSet().sc), question:g.q, keyHint:g.key, answer:pendingAns, reveal})});
     const j=await res.json();
-    if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
+    if(res.status===401){ pwRetry('step'); return; }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
     inp.value='';
     pushLog('coach',j.reply||'');
     if(j.verdict==='pass'){
@@ -972,7 +983,8 @@ async function runSheet(){
   try{
     const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({pw:sheetPw, mode:'verify'})});
-    if(!res.ok){ if(res.status===401){ sheetPw=''; toast('⚠ 강사용 비밀번호가 올바르지 않습니다'); } else toast('⚠ 확인에 실패했어요'); return; }
+    if(res.status===401){ pwRetry('sheet'); return; }
+    if(!res.ok){ toast('⚠ 확인에 실패했어요'); return; }
     renderSheet();
     document.getElementById('sheetBg').style.display='block';
     document.body.classList.add('printing');
