@@ -127,6 +127,28 @@ body.chatfloat main{padding-right:466px}
 .chat-pill{position:fixed;right:18px;bottom:18px;z-index:40;background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;border-radius:999px;padding:13px 22px;font-size:15px;box-shadow:0 8px 24px rgba(14,40,65,.3)}
 .toast{position:fixed;bottom:24px;left:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
 .toast.show{opacity:1;transform:none}
+/* 학급 세트 칩 */
+.set-chips{display:flex;gap:6px;flex-wrap:wrap}
+.set-chip{padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:700;background:#F1EFF8;color:#8A87A8;border:1.5px solid transparent;cursor:pointer}
+.set-chip.cur{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff}
+.set-chip.done:not(.cur){background:#EAF6EF;color:#1E7A4F}
+.set-chip.lock{opacity:.45;cursor:not-allowed}
+/* 강사용 답안지 */
+.sheet-bg{position:fixed;inset:0;background:rgba(14,40,65,.5);display:none;z-index:70;overflow:auto;padding:30px 16px}
+.sheet{background:#fff;border-radius:14px;max-width:900px;margin:0 auto;padding:26px 30px}
+.sheet-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.sheet-head h3{font-size:19px;color:var(--navy);flex:1}
+.sheet h4{font-size:15.5px;color:var(--teal);margin:20px 0 8px;padding-top:14px;border-top:1.5px solid var(--line)}
+.sheet .sq{font-size:13.5px;line-height:1.7;margin-bottom:10px}
+.sheet .sq b{color:var(--navy)}
+.sheet .sq .sm{color:#1E7A4F}
+.sheet .straps{background:#FDF1F1;border:1.5px solid #EFC1C1;border-radius:9px;padding:10px 14px;font-size:13px;line-height:1.7;color:#8A3030}
+@media print{
+  body.printing header,body.printing main,body.printing footer,body.printing .toast,body.printing .chat-pill,body.printing .modal-bg{display:none!important}
+  body.printing .sheet-bg{display:block!important;position:static;background:#fff;padding:0}
+  body.printing .sheet{max-width:none;padding:0}
+  body.printing .sheet-head button{display:none}
+}
 .modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
 .modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
 .modal h3{font-size:18px;color:var(--navy);margin-bottom:8px}
@@ -155,9 +177,10 @@ body.chatfloat main{padding-right:466px}
     </div>
     <p class="hint">에듀테크 도구가 보여주는 학급 대시보드입니다. 여러분이 만들 것은 차트가 아니라 <b>해석</b>입니다. 이 학급에는 <b>숫자만 보면 틀리게 읽히는 함정이 3개</b> 숨어 있습니다 — 관찰 메모까지 교차해서 읽고, 아래에 해석을 적은 뒤 AI 해석과 비교해 보세요.</p>
     <div class="tools">
-      <button class="btn-grad" id="newBtn">🎲 새 학급 받기 (AI)</button>
+      <button class="btn-grad" id="newBtn" style="display:none">🎲 새 학급 받기 (AI)</button>
       <div class="spin" id="newSpin"></div>
       <button class="btn-outline" onclick="savePng('dash','학급_대시보드')">🖼 대시보드 저장</button>
+      <button class="btn-outline" onclick="askAI('sheet')">🗝 강사용 답안지</button>
     </div>
   </div>
 
@@ -165,11 +188,11 @@ body.chatfloat main{padding-right:466px}
     <div class="kpis" id="kpis"></div>
     <div class="grid">
       <div class="widget" id="wBox"><h3>성취영역별 점수 분포 — 상자그림(box plot)</h3><div class="read">읽는 법 | 상자 = 가운데 50% 학생, 분홍 선 = 중앙값, 수염 끝 = 최고·최저점. <b>상자가 길고 아래 수염이 깊으면</b> 평균이 무난해도 하위권 뭉치가 숨어 있다는 뜻</div><svg id="boxSvg" viewBox="0 0 520 230" style="width:100%"></svg></div>
-      <div class="widget"><h3>회차별 평균 점수 추이</h3><div class="read">읽는 법 | 평평한 평균 뒤에 <b>특정 영역·특정 학생의 급등락</b>이 숨어 있을 수 있음 — 꺾인 영역부터 확인</div><svg id="trendSvg" viewBox="0 0 520 230" style="width:100%"></svg><div class="legend" id="trendLegend"></div></div>
+      <div class="widget" id="wTrend"><h3>회차별 평균 점수 추이</h3><div class="read">읽는 법 | 평평한 평균 뒤에 <b>특정 영역·특정 학생의 급등락</b>이 숨어 있을 수 있음 — 꺾인 영역부터 확인</div><svg id="trendSvg" viewBox="0 0 520 230" style="width:100%"></svg><div class="legend" id="trendLegend"></div></div>
       <div class="widget" id="wHeat"><h3>학습 행동 히트맵 (주차 × 요일, 평균 접속 분)</h3><div class="read">읽는 법 | <b>색이 갑자기 옅어진 구간 = 학습 공백 신호</b> — 단, 그 주에 무슨 일이 있었는지 먼저 확인</div><div id="heatBox"></div></div>
-      <div class="widget"><h3>영상 완주율 분포</h3><div class="read">읽는 법 | 분포가 <b>두 덩어리로 갈라지면</b> 학급 안에 서로 다른 두 집단이 있다는 뜻</div><div class="hist" id="histBox"></div></div>
-      <div class="widget"><h3>형성평가 오답 유형</h3><div class="read">읽는 법 | 가장 큰 항목이 <b>학급 공통 지도 1순위</b> — 비율이 비슷하면 개별 접근</div><div class="bars" id="errBox"></div></div>
-      <div class="widget"><h3>정의적 영역 사전 · 사후</h3><div class="read">읽는 법 | 면적이 <b>넓어진 방향 = 성장</b>, 줄어든 방향 = 점검 (학업스트레스는 낮아질수록 양호)</div><svg id="radarSvg" viewBox="0 0 340 250" style="width:100%;max-width:360px;display:block;margin:0 auto"></svg><div class="legend" style="justify-content:center"><span><i style="background:#C9C2E8"></i>사전</span><span><i style="background:#E85FA5"></i>사후</span></div></div>
+      <div class="widget" id="wHist"><h3>영상 완주율 분포</h3><div class="read">읽는 법 | 분포가 <b>두 덩어리로 갈라지면</b> 학급 안에 서로 다른 두 집단이 있다는 뜻</div><div class="hist" id="histBox"></div></div>
+      <div class="widget" id="wErr"><h3>형성평가 오답 유형</h3><div class="read">읽는 법 | 가장 큰 항목이 <b>학급 공통 지도 1순위</b> — 비율이 비슷하면 개별 접근</div><div class="bars" id="errBox"></div></div>
+      <div class="widget" id="wRadar"><h3>정의적 영역 사전 · 사후</h3><div class="read">읽는 법 | 면적이 <b>넓어진 방향 = 성장</b>, 줄어든 방향 = 점검 (학업스트레스는 낮아질수록 양호)</div><svg id="radarSvg" viewBox="0 0 340 250" style="width:100%;max-width:360px;display:block;margin:0 auto"></svg><div class="legend" style="justify-content:center"><span><i style="background:#C9C2E8"></i>사전</span><span><i style="background:#E85FA5"></i>사후</span></div></div>
     </div>
     <div class="grid" style="margin-top:14px">
       <div class="widget" id="wStu"><h3>주목 학생 요약 (일부)</h3><div class="read">읽는 법 | 숫자가 좋아도 <b>시간·완주율·관찰 메모와 교차 확인</b> — 한 지표로 단정하지 않기</div><table id="stuTable"></table></div>
@@ -188,7 +211,8 @@ body.chatfloat main{padding-right:466px}
         <span class="chip" id="stepChip">문항 1 / 5</span>
         <button class="btn-outline" onclick="toggleChatMin()" style="margin-left:auto;padding:6px 12px;font-size:13px">— 접기</button>
       </div>
-      <p class="hint" style="margin:6px 0 0">문항마다 <b>봐야 할 위젯이 분홍 테두리</b>로 표시됩니다. 답이 빗나가면 정답 대신 힌트를 드리고, 두 번 막히면 정답을 설명하고 넘어갑니다. (가이드는 기본 학급 전용)</p>
+      <div class="set-chips" id="setChips" style="margin:8px 0 0"></div>
+      <p class="hint" style="margin:6px 0 0">학급 5개를 차례로 판독합니다. 문항마다 <b>봐야 할 위젯이 분홍 테두리</b>로 표시되고, 두 번 막히면 정답을 설명하고 넘어갑니다. 5개 학급을 완주하면 <b>AI 새 학급 받기</b>가 열립니다.</p>
       <div class="chat" id="chatLog"></div>
       <div class="chat-input">
         <textarea id="chatInput" placeholder="여기에 답을 적고 보내기를 누르세요"></textarea>
@@ -196,7 +220,8 @@ body.chatfloat main{padding-right:466px}
         <div class="spin" id="chatSpin"></div>
       </div>
       <div class="tools" style="margin-top:12px">
-        <button class="btn-outline" onclick="restartGuide()">↺ 처음부터 다시</button>
+        <button class="btn-grad" id="nextSetBtn" style="display:none" onclick="nextSet()">▶ 다음 학급으로</button>
+        <button class="btn-outline" onclick="restartGuide()">↺ 이 학급 다시</button>
       </div>
     </div>
     <button class="chat-pill" id="chatPill" style="display:none" onclick="toggleChatMin()">🧭 수석교사 대화 열기</button>
@@ -239,6 +264,26 @@ body.chatfloat main{padding-right:466px}
       <button class="btn-outline" id="pwCancel">취소</button>
       <button class="btn-navy" id="pwOk">확인</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="unlockBg">
+  <div class="modal" style="text-align:center">
+    <h3>🎉 다섯 학급 완주!</h3>
+    <p>대시보드 판독의 눈이 생겼습니다.<br>이제 <b>🎲 새 학급 받기 (AI)</b> 버튼이 열렸어요.<br>AI가 만든 처음 보는 학급에서 함정 3개를 스스로 찾아보세요.</p>
+    <div class="row"><button class="btn-grad" onclick="closeUnlock()">새 학급 받으러 가기</button></div>
+  </div>
+</div>
+
+<div class="sheet-bg" id="sheetBg">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h3>🗝 강사용 답안지 — 가이드 판독 5개 학급</h3>
+      <button class="btn-outline" onclick="printSheet()">🖨 인쇄</button>
+      <button class="btn-navy" onclick="closeSheet()">닫기</button>
+    </div>
+    <p class="hint">연수생 화면에는 보이지 않습니다. 문항별 모범답안과 학급마다 심긴 함정 3개의 해설입니다.</p>
+    <div id="sheetBody"></div>
   </div>
 </div>
 
@@ -303,8 +348,9 @@ document.querySelectorAll('[data-k]').forEach(el=>{
 });
 
 // ---------- 렌더링 ----------
+function activeSc(){ return (data.g&&data.g.mode==='guide')?SETS[data.g.set||0].sc:data.sc; }
 function render(){
-  const sc=data.sc;
+  const sc=activeSc();
   document.getElementById('ctx').textContent=sc.context;
   // KPI
   const d=sc.kpi.delta;
@@ -395,12 +441,11 @@ function renderStu(sc){
 function renderMemo(sc){
   document.getElementById('memoBox').innerHTML=sc.memos.map((m,i)=>`<div>📝 ${esc(m)}</div>`).join('');
 }
-render();
 
 // ---------- 비밀번호 ----------
 let unlocked=false, enteredPw='', pendingAI='new';
 const modalBg=document.getElementById('modalBg'), pwInput=document.getElementById('pwInput');
-function runByKind(kind){ if(kind==='new') runNew(); else if(kind==='step') runStep(); else runCompare(); }
+function runByKind(kind){ if(kind==='new') runNew(); else if(kind==='step') runStep(); else if(kind==='sheet') runSheet(); else runCompare(); }
 function askAI(kind){
   pendingAI=kind;
   if(unlocked){ runByKind(kind); }
@@ -438,8 +483,7 @@ async function runNew(){
   }catch(e){ toast('⚠ '+e.message); }
   finally{ btn.disabled=false; spin.style.display='none'; }
 }
-function scenarioText(){
-  const sc=data.sc;
+function scenarioText(sc){
   return [
    sc.context,
    'KPI: 평균 '+sc.kpi.avg+'점('+sc.kpi.delta+'), A·B비율 '+sc.kpi.ab+'%, 주당학습 '+sc.kpi.study+'분, 제출률 '+sc.kpi.submit+'%',
@@ -459,7 +503,7 @@ async function runCompare(){
   btn.disabled=true; spin.style.display='block';
   try{
     const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({pw:enteredPw, mode:'class_compare', scenario:scenarioText(), individual:data.individual||'', classAdj:data.classAdj||''})});
+      body:JSON.stringify({pw:enteredPw, mode:'class_compare', scenario:scenarioText(data.sc), individual:data.individual||'', classAdj:data.classAdj||''})});
     const j=await res.json();
     if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
     data.ai=j; save(); renderCompare();
@@ -504,12 +548,282 @@ const GUIDE=[
   key:'학생12는 가정 기기 고장(메모 3)이라 결손이 아님. 학급 조정은 도형 하위권 대상 구체물·단계별 지도, 또는 최다 오답인 문제 해석 오류(34%)를 줄이는 지문 읽기 지도를 제시하면 정답.',
   model:'학생12는 가정 기기 고장(메모 3)으로 영상 대신 종이 자료로 학습했으니 결손이 아닙니다. 학급 조정으로는 도형 하위권을 위한 구체물·단계별 지도, 또는 오답의 34%를 차지하는 문제 해석 오류를 줄이는 지문 읽기 지도가 우선입니다.'}
 ];
-if(!data.g) data.g={i:0,tries:0,log:[],mode:'guide',done:false};
+const SC2={
+ context:'5학년 국어 · 3단원 토의와 발표 · 23명 · 6주 운영 · 평가 3회',
+ kpi:{avg:71.8,delta:2.1,ab:54,study:172,submit:91},
+ areas:['듣기말하기','읽기','쓰기','문법','문학'],
+ box:[
+  {area:'듣기말하기',min:40,q1:58,med:70,q3:80,max:94},
+  {area:'읽기',min:46,q1:60,med:72,q3:83,max:95},
+  {area:'쓰기',min:35,q1:52,med:68,q3:78,max:92},
+  {area:'문법',min:50,q1:68,med:78,q3:88,max:98},
+  {area:'문학',min:44,q1:62,med:73,q3:84,max:96}
+ ],
+ trend:[
+  {area:'듣기말하기',values:[69,71,72]},
+  {area:'읽기',values:[70,72,71]},
+  {area:'쓰기',values:[65,67,68]},
+  {area:'문법',values:[66,68,81]},
+  {area:'문학',values:[70,72,73]}
+ ],
+ heat:[[35,38,36,40,37],[38,36,39,41,38],[36,40,38,37,39],[52,58,61,63,66],[40,42,39,41,40],[37,39,38,40,38]],
+ hist:[0,1,1,2,3,5,6,5],
+ errors:[{type:'주장-근거 연결 미흡',pct:32},{type:'중심 문장 파악 오류',pct:27},{type:'맞춤법·띄어쓰기',pct:18},{type:'발표 수행 불안',pct:13},{type:'기타',pct:10}],
+ radar:{axes:['흥미','자신감','효능감','협력','학업스트레스'],pre:[3.2,2.9,3.0,3.5,2.8],post:[3.5,3.1,3.3,3.9,3.4]},
+ students:[
+  {id:'학생02',score:88,time:140,complete:85},
+  {id:'학생05',score:91,time:310,complete:97},
+  {id:'학생09',score:63,time:120,complete:72},
+  {id:'학생14',score:70,time:135,complete:80},
+  {id:'학생19',score:52,time:150,complete:98},
+  {id:'학생23',score:76,time:160,complete:82}
+ ],
+ memos:[
+  '3회차 형성평가는 범위가 좁고 쉬운 단원(낱말의 종류)이었다.',
+  '학생05는 학급 발표회 사회를 맡아 대본 연습을 반복한다. 밤 10시 넘어 접속한 기록이 많다.',
+  '학생19는 영상을 끝까지 틀어 두지만 중간 퀴즈에는 거의 답하지 않는다.',
+  '학생14는 토의 시간에 발언은 없지만 친구들의 의견을 공책에 꼼꼼히 정리한다.'
+ ],
+ traps:[
+  '문법 3회차 급등(68→81)은 실력 향상이 아니라 평가 범위가 좁고 쉬웠던 것(메모 1) — 점수 변화는 평가 조건부터 확인해야 한다.',
+  '4주차 학습시간 급증은 학급의 몰입이 아니라 발표회 준비로 학생05가 심야까지 반복 접속한 것(메모 2) — 시간 증가가 곧 긍정 신호는 아니다.',
+  '학생19의 완주율 98%는 학습이 아니라 재생 기록(메모 3, 퀴즈 무응답)이고, 발언 없는 학생14는 경청형 참여(메모 4) — 지표 하나로 성실과 불참을 단정할 수 없다.'
+ ]
+};
+const GUIDE2=[
+ {focus:'wTrend',
+  q:'회차별 추이를 보세요. 문법 영역이 3회차에 68점에서 81점으로 크게 뛰었습니다. 문법 실력이 확 늘었다고 기록해도 될까요?',
+  key:'메모 1 — 3회차 평가는 범위가 좁고 쉬운 단원이라 급등을 실력 향상으로 단정할 수 없음. 평가 난이도·범위 확인을 짚으면 정답.',
+  model:'아직 이릅니다. 관찰 메모 1번에 3회차 평가는 범위가 좁고 쉬운 단원이었다고 적혀 있어요. 점수 변화를 읽을 때는 평가의 난이도와 범위부터 확인해야 합니다.'},
+ {focus:'wHeat',
+  q:'히트맵에서 4주차 학습시간이 눈에 띄게 늘었습니다(하루 평균 60분대). 학급의 몰입이 높아진 좋은 신호로 봐도 될까요?',
+  key:'학생05의 발표회 준비·밤 10시 이후 접속(메모 2)이 끌어올린 수치 — 시간 증가가 무조건 긍정이 아니며 수면·과부하 점검이 필요하다는 점을 짚으면 정답.',
+  model:'좋게만 볼 수 없습니다. 메모 2를 보면 발표회 사회를 맡은 학생05가 밤 10시 넘어까지 반복 접속하며 평균을 끌어올렸어요. 학습시간 증가는 몰입일 수도, 과부하일 수도 있습니다.'},
+ {focus:'wStu',
+  q:'학생19는 영상 완주율이 98%인데 점수는 52점입니다. 완주율이 높으니 성실하게 공부하고 있다고 봐도 될까요?',
+  key:'메모 3 — 영상을 틀어 두지만 중간 퀴즈 무응답. 완주율은 재생 기록일 뿐 학습의 증거가 아니라는 점을 짚으면 정답.',
+  model:'아니요. 메모 3에 학생19는 영상을 끝까지 틀어 두지만 중간 퀴즈에는 거의 답하지 않는다고 적혀 있어요. 완주율은 재생 기록일 뿐, 학습했다는 증거가 아닙니다.'},
+ {focus:'wRadar',
+  q:'정의적 영역에서 학업스트레스가 2.8에서 3.4로 올랐습니다. 어떤 학생부터 살펴봐야 할까요?',
+  key:'학생05 — 91점 상위권이지만 주당 310분·심야 접속(메모 2)의 과부하 신호. 점수가 좋아도 지원 대상이 될 수 있다는 점을 짚으면 정답.',
+  model:'학생05부터 봐야 합니다. 91점으로 점수는 좋지만 주당 310분, 밤 10시 이후 접속(메모 2)까지 과부하 신호가 뚜렷해요. 잘하는 학생도 지원 대상이 될 수 있습니다.'},
+ {focus:'wMemo',
+  q:'마지막 문항입니다. 학생14는 토의 시간 발언 기록이 없습니다. 참여도 미달로 기록해야 할까요? 그리고 오답 유형을 참고해 학급 조정 한 가지를 정해 보세요.',
+  key:'메모 4 — 발언은 없지만 공책 정리하는 경청형 참여라 미달 아님. 학급 조정은 오답 1위 주장-근거 연결 미흡(32%) 대응(근거 문장 만들기 등)을 제시하면 정답.',
+  model:'학생14는 발언은 없지만 친구 의견을 공책에 정리하는 경청형 참여자입니다(메모 4). 발언 횟수만으로 참여를 판단하면 안 돼요. 학급 조정으로는 오답 1위인 주장-근거 연결 미흡(32%)을 줄이는 근거 문장 만들기 연습이 우선입니다.'}
+];
+const SC3={
+ context:'3학년 과학 · 동물의 한살이 · 22명 · 6주 운영 · 평가 3회',
+ kpi:{avg:74.5,delta:1.4,ab:61,study:158,submit:78},
+ areas:['물질','에너지','생명','지구와우주','통합탐구'],
+ box:[
+  {area:'물질',min:42,q1:60,med:72,q3:82,max:94},
+  {area:'에너지',min:45,q1:62,med:73,q3:84,max:96},
+  {area:'생명',min:55,q1:70,med:82,q3:90,max:98},
+  {area:'지구와우주',min:40,q1:58,med:70,q3:80,max:92},
+  {area:'통합탐구',min:38,q1:56,med:69,q3:81,max:95}
+ ],
+ trend:[
+  {area:'물질',values:[70,72,73]},
+  {area:'에너지',values:[71,73,74]},
+  {area:'생명',values:[76,80,83]},
+  {area:'지구와우주',values:[69,70,71]},
+  {area:'통합탐구',values:[67,69,70]}
+ ],
+ heat:[[30,32,31,33,30],[31,33,32,34,31],[33,31,34,32,33],[32,34,33,31,32],[34,32,33,35,34],[31,33,32,34,33]],
+ hist:[2,3,4,1,0,2,5,5],
+ errors:[{type:'문제 이해 오류',pct:36},{type:'개념 혼동',pct:28},{type:'관찰-결론 연결 미흡',pct:20},{type:'용어 표기 오류',pct:10},{type:'기타',pct:6}],
+ radar:{axes:['흥미','자신감','효능감','협력','학업스트레스'],pre:[3.4,3.0,3.1,3.3,2.9],post:[3.9,3.3,3.4,3.7,2.8]},
+ students:[
+  {id:'학생04',score:92,time:150,complete:88},
+  {id:'학생08',score:67,time:130,complete:38},
+  {id:'학생11',score:49,time:85,complete:70},
+  {id:'학생16',score:38,time:170,complete:85},
+  {id:'학생20',score:81,time:160,complete:90},
+  {id:'학생22',score:73,time:140,complete:35}
+ ],
+ memos:[
+  '배추흰나비 알 관찰 조(6명)는 교실 사육장 실물 관찰로 영상 시청을 대신했다.',
+  '관찰일지는 종이 공책으로 걷고 있어서 LMS 제출률에는 잡히지 않는다.',
+  '학생16은 긴 문장을 읽는 속도가 느려 문제를 끝까지 읽지 못할 때가 있다.',
+  '학생11은 2주 전 전학을 와서 LMS 계정을 늦게 받았다.'
+ ],
+ traps:[
+  '제출률 78%는 실제 미제출이 아니라 종이로 걷는 관찰일지가 LMS에 안 잡히는 것(메모 2) — 대시보드 밖의 학습을 확인해야 한다.',
+  '완주율 분포의 낮은 덩어리는 결손이 아니라 실물 관찰 조 6명이 영상을 대신한 것(메모 1) — 학습 경로가 다른 것을 결손으로 읽으면 안 된다.',
+  '학생11의 낮은 학습시간은 태도 문제가 아니라 전학·계정 지연(메모 4)이고, 학생16의 38점은 과학 결손이 아니라 읽기 어려움(메모 3, 오답 1위 문제 이해 오류 36%)이다.'
+ ]
+};
+const GUIDE3=[
+ {focus:'kpis',
+  q:'KPI 카드를 보세요. 과제 제출률이 78%로 낮은 편입니다. 과제 지도를 강화해야 할까요?',
+  key:'메모 2 — 관찰일지는 종이로 걷어 LMS에 안 잡힘. 시스템 밖 학습이 있어 수치가 실제보다 낮게 보인다는 점을 짚으면 정답.',
+  model:'아직입니다. 메모 2에 관찰일지는 종이 공책으로 걷어서 LMS 제출률에 안 잡힌다고 되어 있어요. 대시보드 밖에서 이뤄지는 학습이 있는지 먼저 확인해야 합니다.'},
+ {focus:'wHist',
+  q:'영상 완주율 분포가 두 덩어리로 갈라져 있습니다. 왼쪽의 낮은 완주율 집단은 학습 결손일까요?',
+  key:'메모 1 — 나비 실물 관찰 조 6명은 영상 대신 실물 관찰. 낮은 완주율은 결손이 아니라 학습 경로가 다른 것임을 짚으면 정답.',
+  model:'아니요. 메모 1을 보면 배추흰나비 알 관찰 조 6명은 교실 사육장에서 실물을 관찰하느라 영상을 보지 않았어요. 완주율이 낮은 집단은 결손이 아니라 다른 경로로 배우는 중입니다.'},
+ {focus:'wStu',
+  q:'학생11은 주당 학습시간이 85분으로 가장 적습니다. 학습 태도에 문제가 있다고 봐야 할까요?',
+  key:'메모 4 — 2주 전 전학·계정 발급 지연. 쌓인 데이터가 적어 판단 유보, 적응 지원이 먼저라는 점을 짚으면 정답.',
+  model:'판단은 이릅니다. 학생11은 2주 전 전학을 와서 LMS 계정을 늦게 받았어요(메모 4). 쌓인 데이터 자체가 적으니 태도 문제로 단정하지 말고 적응부터 도와야 합니다.'},
+ {focus:'wErr',
+  q:'학생16은 38점으로 가장 낮습니다. 오답 유형 위젯과 메모를 교차해 보면, 이 학생에게 필요한 지원은 과학 보충일까요?',
+  key:'메모 3(긴 문장 읽기 느림) + 오답 1위 문제 이해 오류(36%) — 과학 개념이 아니라 읽기 지원이 먼저라는 점을 짚으면 정답.',
+  model:'과학 보충보다 읽기 지원이 먼저입니다. 메모 3에 학생16은 긴 문장을 읽는 속도가 느리다고 했고, 오답 1위도 문제 이해 오류(36%)예요. 낮은 점수의 원인이 과목 밖에 있을 수 있습니다.'},
+ {focus:'wMemo',
+  q:'마지막 문항입니다. 이 학급의 데이터와 메모를 종합해서, 학급 전체를 위한 수업 조정 한 가지를 근거와 함께 정해 보세요.',
+  key:'오답 1위(문제 이해 오류 36%) 대응 — 문제 지문 함께 읽기, 문항 문장 다듬기. 또는 실물 관찰 등 대시보드 밖 학습의 기록 방식 마련. 근거와 함께 제시하면 정답.',
+  model:'오답의 36%가 문제 이해 오류이니, 평가 전에 문제 지문을 함께 소리 내어 읽는 연습이나 문항 문장을 쉽게 다듬는 조정이 우선입니다. 실물 관찰처럼 대시보드에 안 잡히는 학습을 기록하는 방법을 만드는 것도 좋습니다.'}
+];
+const SC4={
+ context:'6학년 사회 · 2단원 우리나라의 정치 발전 · 25명 · 7주 운영 · 평가 3회',
+ kpi:{avg:70.6,delta:-4.2,ab:52,study:178,submit:88},
+ areas:['역사','지리','정치','경제','사회문화'],
+ box:[
+  {area:'역사',min:40,q1:58,med:72,q3:84,max:97},
+  {area:'지리',min:45,q1:60,med:71,q3:82,max:95},
+  {area:'정치',min:38,q1:55,med:68,q3:80,max:93},
+  {area:'경제',min:42,q1:57,med:69,q3:79,max:92},
+  {area:'사회문화',min:46,q1:61,med:73,q3:83,max:96}
+ ],
+ trend:[
+  {area:'역사',values:[74,75,70]},
+  {area:'지리',values:[72,73,69]},
+  {area:'정치',values:[73,72,68]},
+  {area:'경제',values:[70,71,68]},
+  {area:'사회문화',values:[74,74,71]}
+ ],
+ heat:[[39,41,40,42,7],[40,39,41,43,6],[41,42,40,39,8],[38,40,42,41,7],[42,41,39,40,9],[40,43,41,42,6],[39,40,42,41,8]],
+ hist:[1,1,2,3,4,6,5,3],
+ errors:[{type:'서술 표현 미흡',pct:33},{type:'자료 해석 오류',pct:25},{type:'개념 혼동',pct:22},{type:'시대 순서 오류',pct:12},{type:'기타',pct:8}],
+ radar:{axes:['흥미','자신감','효능감','협력','학업스트레스'],pre:[3.0,3.1,3.0,3.4,3.1],post:[3.3,3.0,3.1,3.6,3.3]},
+ students:[
+  {id:'학생01',score:84,time:175,complete:86},
+  {id:'학생06',score:96,time:120,complete:30},
+  {id:'학생10',score:55,time:240,complete:92},
+  {id:'학생13',score:72,time:150,complete:78},
+  {id:'학생17',score:61,time:90,complete:65},
+  {id:'학생24',score:78,time:165,complete:82}
+ ],
+ memos:[
+  '3회차 평가부터 서술형 문항을 처음 도입했다.',
+  '금요일은 동아리 활동의 날이라 LMS 차시가 없다.',
+  '학생06은 영상 대신 역사책과 신문 기사로 공부하는 것을 좋아한다.',
+  '학생10은 토론에서는 근거를 잘 드는데, 답안을 글로 쓰는 것을 유난히 힘들어한다.'
+ ],
+ traps:[
+  '평균 4.2점 하락은 학급 실력이 아니라 3회차 서술형 첫 도입(메모 1) 때문 — 전 영역이 같이 내려간 것이 단서다.',
+  '금요일 히트맵이 옅은 것은 주말 앞 이탈이 아니라 동아리 활동의 날이라 차시가 없는 것(메모 2)이다.',
+  '학생06의 완주율 30%는 결손이 아니라 책·신문으로 배우는 다른 학습 경로(메모 3)이고, 학생10의 55점은 지식 부족이 아니라 쓰기 표현의 어려움(메모 4, 오답 1위 서술 표현 미흡 33%)이다.'
+ ]
+};
+const GUIDE4=[
+ {focus:'kpis',
+  q:'평균이 1회차보다 4.2점 내려갔습니다(▼4.2). 학급 전체 실력이 흔들리는 걸까요? 추이 위젯과 메모를 교차해 보세요.',
+  key:'메모 1 — 3회차부터 서술형 첫 도입, 전 영역이 함께 하락. 평가 형식 변화의 영향이지 실력 하락으로 단정할 수 없다는 점을 짚으면 정답.',
+  model:'학급이 흔들린 게 아니라 평가가 바뀌었습니다. 메모 1에 3회차부터 서술형을 처음 도입했다고 되어 있고, 추이를 보면 특정 영역이 아니라 전 영역이 같이 내려갔어요. 형식 변화의 영향부터 의심해야 합니다.'},
+ {focus:'wHeat',
+  q:'히트맵에서 금요일만 색이 옅습니다. 주말을 앞두고 학습 이탈이 생기는 걸까요?',
+  key:'메모 2 — 금요일은 동아리 활동의 날이라 LMS 차시 자체가 없음. 요일 패턴도 일정 맥락을 먼저 확인해야 한다는 점을 짚으면 정답.',
+  model:'아니요. 메모 2에 금요일은 동아리 활동의 날이라 LMS 차시가 없다고 적혀 있어요. 요일별 패턴도 숫자보다 학급 일정을 먼저 확인해야 합니다.'},
+ {focus:'wStu',
+  q:'학생06은 96점으로 1등인데 영상 완주율은 30%뿐입니다. 온라인 학습 결손으로 기록해야 할까요?',
+  key:'메모 3 — 영상 대신 역사책·신문으로 학습. 완주율은 영상이라는 한 경로만 재는 지표라 결손이 아니라는 점을 짚으면 정답.',
+  model:'아닙니다. 메모 3을 보면 학생06은 영상 대신 역사책과 신문 기사로 공부해요. 완주율은 영상이라는 한 가지 경로만 재는 지표라, 다른 길로 배우는 학생에게는 결손처럼 보일 뿐입니다.'},
+ {focus:'wStu',
+  q:'학생10은 주당 240분을 쓰는데 55점입니다. 이 학생에게 필요한 지원은 무엇일까요? 오답 유형도 참고하세요.',
+  key:'메모 4(토론은 잘하는데 글쓰기를 힘들어함) + 오답 1위 서술 표현 미흡(33%) — 지식 보충이 아니라 쓰기 표현 지원이라는 점을 짚으면 정답.',
+  model:'지식이 아니라 표현입니다. 메모 4에 학생10은 토론에서는 근거를 잘 드는데 글로 쓰는 걸 힘들어한다고 했고, 오답 1위도 서술 표현 미흡(33%)이에요. 아는 것을 글로 옮기는 연습을 지원해야 합니다.'},
+ {focus:'wErr',
+  q:'마지막 문항입니다. 서술형 도입 이후를 대비해, 이 학급 전체를 위한 수업 조정 한 가지를 정해 보세요.',
+  key:'오답 1위 서술 표현 미흡(33%) 대응 — 서술형 답안 쓰기 연습, 주장-근거-예시 문장 틀 제공 등을 제시하면 정답.',
+  model:'서술형 쓰기 연습이 우선입니다. 오답의 33%가 서술 표현 미흡이니, 주장-근거-예시 문장 틀을 제공하고 짧은 서술 답안을 매 차시 한 번씩 써 보는 조정이 효과적입니다.'}
+];
+const SC5={
+ context:'5학년 수학 · 4단원 소수의 곱셈 · 24명 · 8주 운영 · 평가 3회',
+ kpi:{avg:79.4,delta:3.8,ab:67,study:182,submit:95},
+ areas:['수와연산','도형','측정','규칙성','자료와가능성'],
+ box:[
+  {area:'수와연산',min:48,q1:64,med:78,q3:88,max:98},
+  {area:'도형',min:44,q1:60,med:74,q3:85,max:96},
+  {area:'측정',min:60,q1:74,med:84,q3:90,max:97},
+  {area:'규칙성',min:46,q1:62,med:75,q3:86,max:95},
+  {area:'자료와가능성',min:50,q1:66,med:79,q3:88,max:97}
+ ],
+ trend:[
+  {area:'수와연산',values:[74,77,80]},
+  {area:'도형',values:[71,73,75]},
+  {area:'측정',values:[76,79,84]},
+  {area:'규칙성',values:[72,74,76]},
+  {area:'자료와가능성',values:[75,77,79]}
+ ],
+ heat:[[40,42,41,43,40],[41,40,42,44,41],[42,41,43,42,44],[40,43,41,42,40],[41,42,40,43,41],[43,41,42,40,42],[36,35,37,34,36],[33,32,34,31,33]],
+ hist:[0,1,1,2,3,5,7,5],
+ errors:[{type:'계산 실수',pct:30},{type:'소수점 자리 오류',pct:26},{type:'문제 해석 오류',pct:24},{type:'단위 누락',pct:12},{type:'기타',pct:8}],
+ radar:{axes:['흥미','자신감','효능감','협력','학업스트레스'],pre:[3.6,3.4,3.3,3.5,2.9],post:[3.1,3.0,3.0,3.5,3.6]},
+ students:[
+  {id:'학생02',score:91,time:150,complete:93},
+  {id:'학생08',score:83,time:160,complete:90},
+  {id:'학생13',score:68,time:175,complete:80},
+  {id:'학생17',score:77,time:155,complete:85},
+  {id:'학생22',score:74,time:45,complete:55},
+  {id:'학생24',score:86,time:145,complete:94}
+ ],
+ memos:[
+  '단원평가를 앞두고 2주째 문제 풀이 중심으로 수업했다. 아이들 표정이 예전만큼 밝지 않다.',
+  '3회차 평가에서 측정 영역 문항은 2개뿐이었다.',
+  '학생22가 요즘 점심시간마다 보건실에 다녀온다.',
+  '4회차부터는 수행 과제(생활 속 소수 찾기)로 평가 방식을 바꿀 예정이다.'
+ ],
+ traps:[
+  '평균·제출률 등 인지 지표는 모두 좋지만 정의적 영역은 흥미·자신감·효능감 하락, 스트레스 상승(메모 1의 문제 풀이 반복) — 숫자가 좋아도 마음은 지칠 수 있다.',
+  '측정 영역 중앙값 84점은 완성이 아니라 3회차 평가에 측정 문항이 2개뿐이었던 것(메모 2) — 문항 수가 적으면 점수를 과신할 수 없다.',
+  '가장 주목할 학생은 최고점도 최저점도 아닌 학생22 — 점수(74)는 평범하지만 학습시간·완주율이 급감했고 보건실 신호(메모 3)가 있다. 평균 근처에 묻힌 학생을 찾아야 한다.'
+ ]
+};
+const GUIDE5=[
+ {focus:'kpis',
+  q:'평균 79.4점(▲3.8), 제출률 95% — 지표만 보면 모범 학급입니다. 이대로 쭉 가면 될까요? 다른 위젯 하나를 더 확인해 보세요.',
+  key:'정의적 영역(레이더) — 흥미·자신감·효능감 하락, 스트레스 상승. 인지 지표가 좋아도 정의적 지표를 점검해야 한다는 점을 짚으면 정답.',
+  model:'점수만 보면 그렇지만, 정의적 영역을 보면 흥미(3.6→3.1)·자신감·효능감이 모두 내려가고 스트레스는 올랐습니다. 성적이 오르는 학급도 마음은 지치고 있을 수 있어요.'},
+ {focus:'wRadar',
+  q:'정의적 영역 사전·사후에서 가장 걱정되는 변화는 무엇이고, 원인은 어디에서 찾을 수 있을까요?',
+  key:'흥미·자신감·효능감 동반 하락 + 스트레스 상승(2.9→3.6), 원인은 메모 1의 2주째 문제 풀이 중심 수업. 둘을 연결하면 정답.',
+  model:'흥미·자신감·효능감이 동시에 내려가고 학업스트레스가 2.9에서 3.6으로 올랐습니다. 메모 1의 2주째 문제 풀이 중심 수업이 원인으로 보여요. 점수 상승의 대가가 정의적 영역에서 나타나고 있습니다.'},
+ {focus:'wBox',
+  q:'상자그림에서 측정 영역은 중앙값 84점으로 가장 높습니다. 측정은 완성됐다고 기록해도 될까요?',
+  key:'메모 2 — 3회차 평가의 측정 문항은 2개뿐. 문항 수(표본)가 적으면 점수를 과신할 수 없다는 점을 짚으면 정답.',
+  model:'이릅니다. 메모 2에 3회차 평가의 측정 문항은 2개뿐이었다고 적혀 있어요. 문항 두 개로 잰 점수는 우연에 크게 흔들리니, 문항 수를 확인하기 전에는 완성이라고 기록할 수 없습니다.'},
+ {focus:'wStu',
+  q:'주목 학생 표에서 가장 먼저 살펴야 할 학생은 누구인가요? 점수 순위에 속지 마세요.',
+  key:'학생22 — 점수(74)는 평범하지만 주당 45분·완주율 55%로 급감 + 보건실 신호(메모 3). 평균에 묻힌 학생을 찾는 것이 핵심.',
+  model:'학생22입니다. 74점이라 눈에 안 띄지만 주당 45분, 완주율 55%로 학습량이 뚝 떨어져 있고, 메모 3에는 점심시간마다 보건실에 간다는 건강 신호까지 있어요. 평균 근처 점수에 묻힌 학생을 찾아내는 것이 판독의 마지막 기술입니다.'},
+ {focus:'wMemo',
+  q:'마지막 문항입니다. 다섯 학급 판독의 마무리 — 이 학급을 위한 수업 조정 한 가지를 근거와 함께 정해 보세요.',
+  key:'문제 풀이 반복 축소, 메모 4의 수행 과제 전환 지지, 정의적 회복 활동 등 — 정의적 하락(메모 1)과 연결해 근거를 들면 정답.',
+  model:'문제 풀이 반복을 줄이고 메모 4의 계획대로 생활 속 소수 찾기 같은 수행 과제로 전환하는 것이 우선입니다. 점수는 이미 충분히 올랐고, 지금 필요한 것은 흥미와 자신감의 회복이니까요.'}
+];
+const SETS=[
+ {name:'학급 1 · 4학년 수학',sc:DEFAULT_SC,guide:GUIDE},
+ {name:'학급 2 · 5학년 국어',sc:SC2,guide:GUIDE2},
+ {name:'학급 3 · 3학년 과학',sc:SC3,guide:GUIDE3},
+ {name:'학급 4 · 6학년 사회',sc:SC4,guide:GUIDE4},
+ {name:'학급 5 · 5학년 수학',sc:SC5,guide:GUIDE5}
+];
+function curSet(){ return SETS[data.g.set||0]; }
+function curGuide(){ return curSet().guide; }
+function doneCount(){ return data.doneSets.filter(Boolean).length; }
+function allDone(){ return doneCount()>=SETS.length; }
+if(!data.g) data.g={set:0,i:0,tries:0,log:[],mode:'guide',done:false};
+if(data.g.set===undefined) data.g.set=0;
+if(!data.doneSets) data.doneSets=[false,false,false,false,false];
+if(data.g.done) data.doneSets[data.g.set]=true;
 function pushLog(who,text){ data.g.log.push({who,text}); save(); }
 function focusWidget(scroll){
   document.querySelectorAll('.wfocus').forEach(el=>el.classList.remove('wfocus'));
   if(data.g.mode!=='guide'||data.g.done) return;
-  const g=GUIDE[data.g.i];
+  const g=curGuide()[data.g.i];
   if(g){ const el=document.getElementById(g.focus); if(el){ el.classList.add('wfocus'); if(scroll!==false) el.scrollIntoView({behavior:'smooth',block:'center'}); } }
 }
 let chatMin=false;
@@ -530,16 +844,49 @@ function renderChat(){
     return `<div class="msg ${cls}">${prefix}${esc(m.text)}</div>`;
   }).join('');
   box.scrollTop=box.scrollHeight;
-  const chip=data.g.done?'완주! 🎉':`문항 ${Math.min(data.g.i+1,5)} / 5`;
+  const chip=`${curSet().name.split(' · ')[0]} · `+(data.g.done?'완주! 🎉':`문항 ${Math.min(data.g.i+1,5)} / 5`);
   document.getElementById('stepChip').textContent=chip;
   document.getElementById('chatPill').textContent=`🧭 수석교사 대화 열기 · ${chip}`;
   document.getElementById('chatInput').disabled=data.g.done;
   document.getElementById('sendBtn').disabled=data.g.done;
+  document.getElementById('nextSetBtn').style.display=(data.g.done&&data.g.set<SETS.length-1)?'inline-block':'none';
+  renderSetChips();
+}
+function renderSetChips(){
+  document.getElementById('setChips').innerHTML=SETS.map((s,idx)=>{
+    const unlocked=idx===0||data.doneSets[idx]||data.doneSets[idx-1];
+    const cls='set-chip'+(idx===data.g.set?' cur':'')+(data.doneSets[idx]?' done':'')+(unlocked?'':' lock');
+    return `<button class="${cls}" onclick="switchSet(${idx})">${data.doneSets[idx]?'✓ ':''}${esc(s.name)}</button>`;
+  }).join('');
+}
+function switchSet(idx){
+  if(idx===data.g.set) return;
+  const unlocked=idx===0||data.doneSets[idx]||data.doneSets[idx-1];
+  if(!unlocked){ toast('앞 학급을 먼저 완주하면 열려요 🔒'); return; }
+  if(!data.g.done&&data.g.log.length>2&&!confirm('지금 학급의 대화를 지우고 다른 학급으로 이동할까요?')) return;
+  data.g={set:idx,i:0,tries:0,log:[],mode:'guide',done:false}; save();
+  startGuideIfEmpty(); render(); renderChat(); focusWidget();
+}
+function nextSet(){
+  if(data.g.set>=SETS.length-1) return;
+  data.g={set:data.g.set+1,i:0,tries:0,log:[],mode:'guide',done:false}; save();
+  startGuideIfEmpty(); render(); renderChat(); focusWidget();
+}
+function updateNewBtn(){
+  document.getElementById('newBtn').style.display=allDone()?'inline-block':'none';
+}
+function closeUnlock(){
+  document.getElementById('unlockBg').style.display='none';
+  document.getElementById('newBtn').scrollIntoView({behavior:'smooth',block:'center'});
 }
 function startGuideIfEmpty(){
   if(data.g.log.length===0){
-    pushLog('coach','안녕하세요, 오늘 대시보드 읽기를 함께할 수석교사입니다. 정답이 있는 다섯 문항을 차례로 풀어 볼게요. 분홍 테두리가 생긴 위젯을 보고 답해 주세요.');
-    pushLog('coach','문항 1. '+GUIDE[0].q);
+    if(data.g.set===0){
+      pushLog('coach','안녕하세요, 대시보드 읽기를 함께할 수석교사입니다. 학급 다섯 개를 차례로 판독해 볼 거예요. 학급마다 정답이 있는 다섯 문항이 나옵니다. 분홍 테두리가 생긴 위젯을 보고 답해 주세요.');
+    } else {
+      pushLog('coach',`${curSet().name} 대시보드입니다. (${curSet().sc.context}) 이 학급에도 함정 3개가 숨어 있어요. 시작할게요.`);
+    }
+    pushLog('coach','문항 1. '+curGuide()[0].q);
   }
 }
 function setMode(m){
@@ -547,17 +894,16 @@ function setMode(m){
   document.getElementById('mtGuide').classList.toggle('active',m==='guide');
   document.getElementById('mtFree').classList.toggle('active',m==='free');
   document.getElementById('interpCard').style.display=m==='free'?'block':'none';
-  applyFloat();
+  applyFloat(); render(); updateNewBtn();
   if(m==='guide'){
-    if(data.custom){ data.sc=DEFAULT_SC; data.custom=false; save(); render(); toast('가이드 판독은 기본 학급으로 진행합니다'); }
     startGuideIfEmpty(); renderChat(); focusWidget();
   } else {
     document.querySelectorAll('.wfocus').forEach(el=>el.classList.remove('wfocus'));
   }
 }
 function restartGuide(){
-  if(!confirm('가이드 대화를 처음부터 다시 시작할까요?')) return;
-  data.g={i:0,tries:0,log:[],mode:'guide',done:false}; save();
+  if(!confirm('이 학급의 가이드 대화를 처음부터 다시 시작할까요?')) return;
+  data.g={set:data.g.set,i:0,tries:0,log:[],mode:'guide',done:false}; save();
   startGuideIfEmpty(); renderChat(); focusWidget();
 }
 document.getElementById('sendBtn').onclick=sendAnswer;
@@ -575,13 +921,13 @@ function sendAnswer(){
 let pendingAns='';
 async function runStep(){
   const btn=document.getElementById('sendBtn'), spin=document.getElementById('chatSpin'), inp=document.getElementById('chatInput');
-  const g=GUIDE[data.g.i];
+  const g=curGuide()[data.g.i];
   const reveal=data.g.tries>=2;
   pushLog('me',pendingAns); renderChat();
   btn.disabled=true; spin.style.display='block';
   try{
     const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({pw:enteredPw, mode:'class_step', scenario:scenarioText(), question:g.q, keyHint:g.key, answer:pendingAns, reveal})});
+      body:JSON.stringify({pw:enteredPw, mode:'class_step', scenario:scenarioText(curSet().sc), question:g.q, keyHint:g.key, answer:pendingAns, reveal})});
     const j=await res.json();
     if(!res.ok){ if(res.status===401) unlocked=false; throw new Error(j.error||'요청 실패'); }
     inp.value='';
@@ -589,11 +935,17 @@ async function runStep(){
     if(j.verdict==='pass'){
       pushLog('model',g.model);
       data.g.i++; data.g.tries=0;
-      if(data.g.i>=GUIDE.length){
-        data.g.done=true;
-        pushLog('coach','다섯 문항 완주! 🎉 핵심은 하나였어요 — 숫자 하나로 단정하지 말고, 분포·추이·관찰 메모를 교차해서 읽기. 이제 ‘자유 판독’ 탭에서 스스로 정리해 보거나, 새 학급을 받아 연습해 보세요.');
+      if(data.g.i>=curGuide().length){
+        data.g.done=true; data.doneSets[data.g.set]=true;
+        if(allDone()){
+          pushLog('coach','다섯 학급 모두 완주! 🎉 이제 어떤 대시보드를 만나도 숫자 하나로 단정하지 않고, 분포·추이·관찰 메모를 교차해서 읽으실 수 있을 거예요.');
+          updateNewBtn();
+          document.getElementById('unlockBg').style.display='flex';
+        } else {
+          pushLog('coach',`${curSet().name} 완주! 🎉 (${doneCount()}/5) 아래 ‘다음 학급으로’ 버튼을 눌러 새 대시보드를 읽어 보세요.`);
+        }
       } else {
-        pushLog('coach',`문항 ${data.g.i+1}. `+GUIDE[data.g.i].q);
+        pushLog('coach',`문항 ${data.g.i+1}. `+curGuide()[data.g.i].q);
       }
     } else {
       data.g.tries++;
@@ -602,6 +954,30 @@ async function runStep(){
   }catch(e){ toast('⚠ '+e.message); }
   finally{ btn.disabled=data.g.done; spin.style.display='none'; }
 }
+
+// ---------- 강사용 답안지 ----------
+async function runSheet(){
+  try{
+    const res=await fetch('/api/literacy',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw, mode:'verify'})});
+    if(!res.ok){ if(res.status===401){ unlocked=false; toast('⚠ 비밀번호가 올바르지 않습니다'); } else toast('⚠ 확인에 실패했어요'); return; }
+    renderSheet();
+    document.getElementById('sheetBg').style.display='block';
+    document.body.classList.add('printing');
+  }catch(e){ toast('⚠ '+e.message); }
+}
+function renderSheet(){
+  document.getElementById('sheetBody').innerHTML=SETS.map((s,idx)=>`
+    <h4>${esc(s.name)} — ${esc(s.sc.context)}</h4>
+    ${s.guide.map((g,qi)=>`<div class="sq"><b>문항 ${qi+1}.</b> ${esc(g.q)}<br><span class="sm"><b>모범답안</b> — ${esc(g.model)}</span></div>`).join('')}
+    <div class="straps"><b>🪤 이 학급의 함정 3개</b><br>${s.sc.traps.map((t,ti)=>`${ti+1}) ${esc(t)}`).join('<br>')}</div>
+  `).join('');
+}
+function closeSheet(){
+  document.getElementById('sheetBg').style.display='none';
+  document.body.classList.remove('printing');
+}
+function printSheet(){ window.print(); }
 
 // ---------- 공용 ----------
 function savePng(id,name){
@@ -630,12 +1006,12 @@ function savePng(id,name){
   }).catch(()=>toast('⚠ 이미지 저장에 실패했어요'));
 }
 function clearAll(){
-  if(!confirm('입력한 판독과 가이드 대화를 지우고 기본 학급으로 되돌릴까요?')) return;
-  data={sc:DEFAULT_SC, g:{i:0,tries:0,log:[],mode:'guide',done:false}}; localStorage.removeItem(LS_KEY);
+  if(!confirm('입력한 판독·가이드 진행(5개 학급 완주 기록 포함)을 모두 지우고 처음으로 되돌릴까요?')) return;
+  data={sc:DEFAULT_SC, g:{set:0,i:0,tries:0,log:[],mode:'guide',done:false}, doneSets:[false,false,false,false,false]}; localStorage.removeItem(LS_KEY);
   document.querySelectorAll('textarea[data-k]').forEach(el=>el.value='');
   document.getElementById('compareCard').style.display='none';
-  render(); setMode('guide');
-  toast('기본 학급으로 되돌렸어요');
+  setMode('guide');
+  toast('처음으로 되돌렸어요');
 }
 function toast(msg){
   const t=document.getElementById('toast');
