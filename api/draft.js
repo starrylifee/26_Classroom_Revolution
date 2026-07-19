@@ -79,7 +79,7 @@ JSON 외 다른 텍스트는 출력하지 마세요.`;
       return;
     }
     const chat = await chatRes.json();
-    const raw = (chat.choices && chat.choices[0] && chat.choices[0].message.content) || '';
+    const raw = ((chat.choices && chat.choices[0] && chat.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
     const start = raw.indexOf('{');
     const end = raw.lastIndexOf('}');
     if (start === -1 || end === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');

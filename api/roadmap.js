@@ -35,7 +35,7 @@ ${reviews}
           model: 'solar-pro3',
           messages: [{ role: 'user', content: kPrompt }],
           temperature: 0.4,
-          max_tokens: 800,
+          max_tokens: 2500,
         }),
       });
       if (!kRes.ok) {
@@ -44,7 +44,7 @@ ${reviews}
         return;
       }
       const kChat = await kRes.json();
-      const kRaw = (kChat.choices && kChat.choices[0] && kChat.choices[0].message.content) || '';
+      const kRaw = ((kChat.choices && kChat.choices[0] && kChat.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
       const ks = kRaw.indexOf('{'); const ke = kRaw.lastIndexOf('}');
       if (ks === -1 || ke === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');
       const kDraft = JSON.parse(kRaw.slice(ks, ke + 1));
@@ -85,7 +85,7 @@ ${kpt || '없음'}
           model: 'solar-pro3',
           messages: [{ role: 'user', content: bPrompt }],
           temperature: 0.4,
-          max_tokens: 600,
+          max_tokens: 6000,
         }),
       });
       if (!bRes.ok) {
@@ -94,7 +94,7 @@ ${kpt || '없음'}
         return;
       }
       const bChat = await bRes.json();
-      const bRaw = (bChat.choices && bChat.choices[0] && bChat.choices[0].message.content) || '';
+      const bRaw = ((bChat.choices && bChat.choices[0] && bChat.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
       const bs = bRaw.indexOf('{'); const be = bRaw.lastIndexOf('}');
       if (bs === -1 || be === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');
       const bDraft = JSON.parse(bRaw.slice(bs, be + 1));
@@ -131,7 +131,7 @@ ${kpt || '없음'}
           model: 'solar-pro3',
           messages: [{ role: 'user', content: sPrompt }],
           temperature: 0.6,
-          max_tokens: 800,
+          max_tokens: 2500,
         }),
       });
       if (!sRes.ok) {
@@ -140,7 +140,7 @@ ${kpt || '없음'}
         return;
       }
       const sChat = await sRes.json();
-      const sRaw = (sChat.choices && sChat.choices[0] && sChat.choices[0].message.content) || '';
+      const sRaw = ((sChat.choices && sChat.choices[0] && sChat.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
       const ss = sRaw.indexOf('{');
       const se = sRaw.lastIndexOf('}');
       if (ss === -1 || se === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');
@@ -184,7 +184,7 @@ ${pairs.join('\n')}
           model: 'solar-pro3',
           messages: [{ role: 'user', content: gPrompt }],
           temperature: 0.5,
-          max_tokens: 2000,
+          max_tokens: 6000,
         }),
       });
       if (!gRes.ok) {
@@ -193,7 +193,7 @@ ${pairs.join('\n')}
         return;
       }
       const gChat = await gRes.json();
-      const gRaw = (gChat.choices && gChat.choices[0] && gChat.choices[0].message.content) || '';
+      const gRaw = ((gChat.choices && gChat.choices[0] && gChat.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
       const gs = gRaw.indexOf('{');
       const ge = gRaw.lastIndexOf('}');
       if (gs === -1 || ge === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');
@@ -231,7 +231,7 @@ ${pairs.join('\n')}
         model: 'solar-pro3',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.4,
-        max_tokens: 1500,
+        max_tokens: 4500,
       }),
     });
     if (!chatRes.ok) {
@@ -240,7 +240,7 @@ ${pairs.join('\n')}
       return;
     }
     const chat = await chatRes.json();
-    const raw = (chat.choices && chat.choices[0] && chat.choices[0].message.content) || '';
+    const raw = ((chat.choices && chat.choices[0] && chat.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
     const start = raw.indexOf('{');
     const end = raw.lastIndexOf('}');
     if (start === -1 || end === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');

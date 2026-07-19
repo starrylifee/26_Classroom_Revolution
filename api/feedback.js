@@ -23,7 +23,7 @@ module.exports = async function handler(req, res) {
       });
       if (!r.ok) { const t = await r.text(); throw Object.assign(new Error(`AI 요청 실패 (${r.status})`), { detail: t.slice(0, 300) }); }
       const c = await r.json();
-      const raw = (c.choices && c.choices[0] && c.choices[0].message.content) || '';
+      const raw = ((c.choices && c.choices[0] && c.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
       const s = raw.indexOf('{'); const e = raw.lastIndexOf('}');
       if (s === -1 || e === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');
       return JSON.parse(raw.slice(s, e + 1));
@@ -58,7 +58,7 @@ Feed-Forward (다음 단계 제시): ${feedforward || '(비어 있음)'}
 - caution: 이 학생에게 피드백할 때 특히 조심할 점 1가지. 30자 내외.
 
 {"checks":"...","revised":"...","caution":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
-      const d = await ask(prompt, 1000, 0.4);
+      const d = await ask(prompt, 3000, 0.4);
       res.status(200).json({
         checks: String(d.checks ?? '').slice(0, 700),
         revised: String(d.revised ?? '').slice(0, 800),
@@ -93,7 +93,7 @@ ${fbPlan || '없음'}
 - 각 항목 줄바꿈(\\n) 구분. 메모에 없는 내용을 지어내지 말고, 근거가 부족하면 짧게.
 
 {"interpret":"...","plan":"...","revise":"...","reflect":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
-      const d = await ask(prompt, 900, 0.4);
+      const d = await ask(prompt, 2800, 0.4);
       res.status(200).json({
         interpret: String(d.interpret ?? '').slice(0, 600),
         plan: String(d.plan ?? '').slice(0, 600),

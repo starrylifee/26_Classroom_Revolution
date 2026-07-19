@@ -28,7 +28,7 @@ module.exports = async function handler(req, res) {
       });
       if (!r.ok) { const t = await r.text(); throw Object.assign(new Error(`AI 요청 실패 (${r.status})`), { detail: t.slice(0, 300) }); }
       const c = await r.json();
-      const raw = (c.choices && c.choices[0] && c.choices[0].message.content) || '';
+      const raw = ((c.choices && c.choices[0] && c.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
       const s = raw.indexOf('{'); const e = raw.lastIndexOf('}');
       if (s === -1 || e === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');
       return JSON.parse(raw.slice(s, e + 1));
@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
 - 관찰 메모는 수업 상황을 담백하게 1~2문장.
 
 {"context":"3학년 수학 · 분수 개념 도입 · 모둠 활동 수업","metrics":[{"name":"교사 발화 점유율","value":70},{"name":"학생 침묵 비율","value":20},{"name":"학생 상호작용 비율","value":10},{"name":"발언 학생 비율","value":25}],"memo":"관찰 메모 1~2문장"} 형식의 JSON으로만 출력하세요. 다른 텍스트 금지.`;
-      const d = await ask(prompt, 700);
+      const d = await ask(prompt, 2200);
       const metrics = (Array.isArray(d.metrics) ? d.metrics : []).slice(0, 5).map((m) => ({
         name: String((m && m.name) ?? '').slice(0, 40),
         value: Math.max(0, Math.min(100, Number((m && m.value) ?? 0) || 0)),
@@ -78,7 +78,7 @@ module.exports = async function handler(req, res) {
 아래 JSON 스키마로만 출력하세요. 다른 텍스트 금지.
 {"context":"4학년 수학 · 3단원 분수 · 24명 · 8주 운영 · 평가 3회","kpi":{"avg":73.2,"delta":-0.9,"ab":58,"study":187,"submit":86},"areas":["수와연산","도형","측정","규칙성","자료와가능성"],"box":[{"area":"수와연산","min":30,"q1":55,"med":72,"q3":85,"max":98}],"trend":[{"area":"수와연산","values":[70,74,72]}],"heat":[[38,42,40,35,41]],"hist":[1,0,2,3,6,8,3,1],"errors":[{"type":"문제 해석 오류","pct":34}],"radar":{"axes":["흥미","자신감","효능감","협력","학업스트레스"],"pre":[3.1,2.8,3.0,3.4,3.2],"post":[3.6,3.2,3.4,3.8,2.9]},"students":[{"id":"학생03","score":95,"time":210,"complete":88,"flag":""}],"memos":["..."],"traps":["..."]}
 - box와 trend는 areas 5개 각각 1항목씩(총 5개). heat는 8주×5요일(월~금) 분 단위. hist는 영상 완주율 8구간(0-12.5%부터). errors는 4~5개(pct 합계 100). students 6명.`;
-      const d = await ask(prompt, 2600, 0.75);
+      const d = await ask(prompt, 7000, 0.75);
       // 형태 보정: 필수 구조가 없으면 실패 처리, 수치는 범위로 클램프
       const num = (v, lo, hi) => Math.max(lo, Math.min(hi, Number(v) || 0));
       const out = {
@@ -154,7 +154,7 @@ ${reveal
 - reply는 3문장 이내, 존댓말. 훈계하지 말 것.
 
 {"learner_claim":"...","verdict":"pass 또는 retry","reply":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
-      const d = await ask(prompt, 500, 0.1);
+      const d = await ask(prompt, 1600, 0.1);
       const verdict = d.verdict === 'pass' ? 'pass' : 'retry';
       res.status(200).json({ verdict: reveal ? 'pass' : verdict, reply: String(d.reply ?? '').slice(0, 500) });
       return;
@@ -187,7 +187,7 @@ ${scenario}
 - 훈계하지 말고, 데이터의 근거를 함께 제시할 것.
 
 {"ai_individual":"...","ai_class":"...","missed":"...","comment":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
-      const d = await ask(prompt, 1000, 0.4);
+      const d = await ask(prompt, 3000, 0.4);
       res.status(200).json({
         ai_individual: String(d.ai_individual ?? '').slice(0, 700),
         ai_class: String(d.ai_class ?? '').slice(0, 500),
@@ -222,7 +222,7 @@ ${scenario}
 - comment: 교사의 해석에서 좋았던 점 1가지 + 더 생각해 볼 관점 1가지. 평가·훈계 말고 동료 관점으로, 2~3문장.
 
 {"ai_fact":"...","ai_action":"...","ai_caution":"...","comment":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
-      const d = await ask(prompt, 900);
+      const d = await ask(prompt, 2800);
       res.status(200).json({
         ai_fact: String(d.ai_fact ?? '').slice(0, 600),
         ai_action: String(d.ai_action ?? '').slice(0, 600),

@@ -96,7 +96,7 @@ ${markdown.slice(0, 18000)}
         model: 'solar-pro3',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
-        max_tokens: 1500,
+        max_tokens: 4500,
       }),
     });
     if (!chatRes.ok) {
@@ -105,7 +105,7 @@ ${markdown.slice(0, 18000)}
       return;
     }
     const chat = await chatRes.json();
-    const raw = (chat.choices && chat.choices[0] && chat.choices[0].message.content) || '';
+    const raw = ((chat.choices && chat.choices[0] && chat.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 
     // JSON만 추출 (코드펜스·앞뒤 잡담 제거)
     const start = raw.indexOf('{');

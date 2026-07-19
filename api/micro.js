@@ -23,7 +23,7 @@ module.exports = async function handler(req, res) {
       });
       if (!r.ok) { const t = await r.text(); throw Object.assign(new Error(`AI 요청 실패 (${r.status})`), { detail: t.slice(0, 300) }); }
       const c = await r.json();
-      const raw = (c.choices && c.choices[0] && c.choices[0].message.content) || '';
+      const raw = ((c.choices && c.choices[0] && c.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
       const s = raw.indexOf('{'); const e = raw.lastIndexOf('}');
       if (s === -1 || e === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');
       return JSON.parse(raw.slice(s, e + 1));
@@ -44,7 +44,7 @@ module.exports = async function handler(req, res) {
 - 과장된 문제아 캐릭터로 만들지 말 것. 실제 교실에 있을 법한 수준으로.
 
 {"behaviors":"...","tip":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
-      const d = await ask(prompt, 500, 0.8);
+      const d = await ask(prompt, 1600, 0.8);
       res.status(200).json({
         behaviors: String(d.behaviors ?? '').slice(0, 400),
         tip: String(d.tip ?? '').slice(0, 200),
@@ -71,7 +71,7 @@ ${feedbacks}
 - 기록에 없는 내용을 지어내지 말 것.
 
 {"strengths":"...","improvements":"...","revisions":"...","comment":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
-      const d = await ask(prompt, 900, 0.4);
+      const d = await ask(prompt, 2800, 0.4);
       res.status(200).json({
         strengths: String(d.strengths ?? '').slice(0, 600),
         improvements: String(d.improvements ?? '').slice(0, 600),
