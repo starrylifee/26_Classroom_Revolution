@@ -158,15 +158,18 @@ ${reveal
 - 근거 없이 이름·번호·단어만 던진 답은 "retry". 근거(그래프 모양, 관찰 메모, 수치)를 스스로 말해야 "pass".
 - 결론과 근거가 모두 채점 기준의 핵심을 짚었을 때만 "pass" — 칭찬하고 정답 요지를 한 문장으로 보강.
 - 채점 기준에 "예상 답변 처리"가 있으면 그 지침을 우선 따를 것.
-- "retry"일 때 reply: 학습자의 답을 한마디로 짚어준 뒤(비난 금지), 아래 [준비된 힌트]를 자연스러운 대화체로 전달. 힌트에 없는 정보·정답·결론을 덧붙이지 말 것.
-[준비된 힌트] ${hint || '어느 위젯을 다시 보면 좋을지 방향만 안내'}
-- 애매하면 "retry". "맞습니다" 같은 긍정 표현은 pass일 때만 사용.`}
+- verdict가 "retry"면 reply는 빈 문자열("")로 두세요. 힌트는 시스템이 따로 전달합니다.
+- 애매하면 "retry". reply(칭찬·보강)는 pass일 때만 작성.`}
 - reply는 3문장 이내, 존댓말. 훈계하지 말 것.
 
 {"learner_claim":"...","verdict":"pass 또는 retry","reply":"..."} JSON으로만 출력하세요. 다른 텍스트 금지.`;
       const d = await ask(prompt, 1600, 0.1);
-      const verdict = d.verdict === 'pass' ? 'pass' : 'retry';
-      res.status(200).json({ verdict: reveal ? 'pass' : verdict, reply: String(d.reply ?? '').slice(0, 500) });
+      const verdict = reveal ? 'pass' : (d.verdict === 'pass' ? 'pass' : 'retry');
+      let reply = String(d.reply ?? '').slice(0, 500);
+      // retry면 LLM이 아니라 문항에 심어둔 힌트를 그대로 전달 — 정답 유출을 구조적으로 차단
+      if (verdict === 'retry' && hint) reply = hint;
+      if (verdict === 'retry' && !reply) reply = '조금 더 생각해 볼까요? 분홍 테두리 위젯과 관찰 메모를 교차해서 다시 읽어 보세요.';
+      res.status(200).json({ verdict, reply });
       return;
     }
 
