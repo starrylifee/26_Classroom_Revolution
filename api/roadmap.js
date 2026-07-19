@@ -172,11 +172,11 @@ ${kpt || '없음'}
 
 ${pairs.join('\n')}
 
-형식 예시: "생성형 AI를 활용해 느린 학습자 맞춤 문제를 만드는 교사 되기 (C·F 역량 보완)"
+형식 예시: 생성형 AI를 활용해 느린 학습자 맞춤 문제를 만드는 교사 되기 (C·F 역량 보완)
 - "~하는 교사 되기" 꼴로 끝내고, 보완 역량이 있으면 괄호로 덧붙일 것.
 - 각 문장 40자 내외, 자연스러운 한국어로. 조합 순서를 그대로 지킬 것.
 
-{"goals":["문장1","문장2",...]} JSON으로만 출력하세요. 배열 길이는 정확히 ${pairs.length}개. 다른 텍스트 금지.`;
+출력 형식: 한 줄에 목표 문장 하나씩, 정확히 ${pairs.length}줄. 번호·따옴표·불릿 없이 문장만. 다른 텍스트 금지.`;
       const gRes = await fetch('https://api.upstage.ai/v1/chat/completions', {
         method: 'POST',
         headers: { Authorization: `Bearer ${UPSTAGE_KEY}`, 'Content-Type': 'application/json' },
@@ -194,11 +194,11 @@ ${pairs.join('\n')}
       }
       const gChat = await gRes.json();
       const gRaw = ((gChat.choices && gChat.choices[0] && gChat.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-      const gs = gRaw.indexOf('{');
-      const ge = gRaw.lastIndexOf('}');
-      if (gs === -1 || ge === -1) throw new Error('AI 응답에서 JSON을 찾지 못함');
-      const gDraft = JSON.parse(gRaw.slice(gs, ge + 1));
-      const src = Array.isArray(gDraft.goals) ? gDraft.goals : [];
+      // 줄 단위 파싱 (JSON 아님 — 문장 속 따옴표가 배열을 깨는 문제를 원천 차단)
+      const src = gRaw.split('\n')
+        .map((s) => s.trim().replace(/^\d+[.)]\s*/, '').replace(/^[-•*"']+\s*/, '').replace(/["']+$/, '').trim())
+        .filter(Boolean);
+      if (!src.length) throw new Error('AI 응답에서 목표 문장을 찾지 못함');
       // 배열 길이를 조합 수에 강제로 맞춘다 (부족하면 빈칸 — 프런트에서 걸러짐)
       const goals = Array.from({ length: pairs.length }, (_, i) => String(src[i] ?? '').slice(0, 200));
       res.status(200).json({ goals });
