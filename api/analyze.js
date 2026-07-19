@@ -23,7 +23,7 @@ module.exports = async function handler(req, res) {
   try {
     const { filename, mime, data, pw } = req.body || {};
     // 화면 잠금과 별개로 서버에서도 비밀번호를 검사해 무단 API 호출을 막는다
-    if (pw !== '20260717') {
+    if (pw !== 'tlsekq') {
       res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' });
       return;
     }
