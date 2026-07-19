@@ -129,9 +129,10 @@ module.exports = async function handler(req, res) {
     // 11과정: 가이드 판독 — 단계별 학습자 답을 판정하고 힌트/정답을 대화로 제공
     if (mode === 'class_step') {
       const scenario = String(req.body.scenario ?? '').trim().slice(0, 4000);
-      const question = String(req.body.question ?? '').trim().slice(0, 300);
+      const question = String(req.body.question ?? '').trim().slice(0, 400);
       const answer = String(req.body.answer ?? '').trim().slice(0, 600);
-      const keyHint = String(req.body.keyHint ?? '').trim().slice(0, 400);
+      const keyHint = String(req.body.keyHint ?? '').trim().slice(0, 800);
+      const hint = String(req.body.hint ?? '').trim().slice(0, 300);
       const reveal = req.body.reveal === true;
       if (!scenario || !question) { res.status(400).json({ error: '단계 정보가 없습니다.' }); return; }
       if (!answer) { res.status(400).json({ error: '답을 먼저 적어 주세요.' }); return; }
@@ -156,7 +157,9 @@ ${reveal
 - 학습자의 결론이 채점 기준과 반대 방향이면 무조건 "retry". (예: 기준은 "개입 불필요"인데 개입하자고 답함, 기준은 "결손 아님"인데 결손이라고 답함)
 - 근거 없이 이름·번호·단어만 던진 답은 "retry". 근거(그래프 모양, 관찰 메모, 수치)를 스스로 말해야 "pass".
 - 결론과 근거가 모두 채점 기준의 핵심을 짚었을 때만 "pass" — 칭찬하고 정답 요지를 한 문장으로 보강.
-- "retry"일 때 reply에는 정답·결론·함정 해설 내용을 한 글자도 담지 말 것. 오직 "어디를 다시 보라"는 안내만 1~2문장. (좋은 예: "관찰 메모 1번을 다시 읽어 보세요." / 나쁜 예: "5주차 공백은 현장체험학습 때문이므로 개입 대상이 아닙니다" ← 정답 유출 금지)
+- 채점 기준에 "예상 답변 처리"가 있으면 그 지침을 우선 따를 것.
+- "retry"일 때 reply: 학습자의 답을 한마디로 짚어준 뒤(비난 금지), 아래 [준비된 힌트]를 자연스러운 대화체로 전달. 힌트에 없는 정보·정답·결론을 덧붙이지 말 것.
+[준비된 힌트] ${hint || '어느 위젯을 다시 보면 좋을지 방향만 안내'}
 - 애매하면 "retry". "맞습니다" 같은 긍정 표현은 pass일 때만 사용.`}
 - reply는 3문장 이내, 존댓말. 훈계하지 말 것.
 
