@@ -114,7 +114,6 @@ td[contenteditable]:empty::before{content:'클릭해 입력';color:#C0BACF;font-
 <div class="toast" id="toast"></div>
 
 <script>
-const PASSWORD='tlsekq';
 let unlocked=false, enteredPw='', currentFile=null;
 
 // 표 정의: key, hwpx 자리표시자 규칙(rowStart=1, colStart), 헤더, 행 라벨(없으면 전체 편집)
@@ -251,11 +250,23 @@ draftBtn.onclick=()=>{
   const inp=document.getElementById('pwInput'); inp.value=''; inp.focus();
   document.getElementById('pwErr').style.display='none';
 };
-function checkPw(){
-  if(document.getElementById('pwInput').value===PASSWORD){
-    unlocked=true; enteredPw=document.getElementById('pwInput').value;
+// 비밀번호 값은 서버에만 두고 여기서는 확인만 요청한다
+let pwChecking=false;
+async function checkPw(){
+  if(pwChecking) return;
+  const pw=document.getElementById('pwInput').value.trim();
+  const err=document.getElementById('pwErr'), okBtn=document.getElementById('pwOk');
+  if(!pw){ err.textContent='비밀번호가 일치하지 않습니다.'; err.style.display='block'; return; }
+  pwChecking=true; okBtn.disabled=true; err.style.display='none';
+  try{
+    const resp=await fetch('/api/draft',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw, mode:'verify'})});
+    if(resp.status===401){ err.textContent='비밀번호가 일치하지 않습니다.'; err.style.display='block'; return; }
+    if(!resp.ok) throw new Error('확인 실패');
+    unlocked=true; enteredPw=pw;
     document.getElementById('modalBg').style.display='none'; runDraft();
-  } else { document.getElementById('pwErr').style.display='block'; }
+  }catch(e){ err.textContent='서버와 통신하지 못했습니다. 잠시 후 다시 시도해 주세요.'; err.style.display='block'; }
+  finally{ pwChecking=false; okBtn.disabled=false; }
 }
 document.getElementById('pwOk').onclick=checkPw;
 document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkPw();});

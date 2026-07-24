@@ -22,10 +22,15 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { filename, mime, data, pw } = req.body || {};
-    // 화면 잠금과 별개로 서버에서도 비밀번호를 검사해 무단 API 호출을 막는다
+    const { filename, mime, data, pw, mode } = req.body || {};
+    // 비밀번호는 서버에만 두고 검사한다 (소스 보기로 노출되지 않도록)
     if (pw !== 'tlsekq') {
       res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' });
+      return;
+    }
+    // 화면 잠금 해제용 확인 요청 (LLM 호출 없음)
+    if (mode === 'verify') {
+      res.status(200).json({ ok: true });
       return;
     }
     if (!filename || !data) {
