@@ -84,9 +84,10 @@ button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-siz
 .tr-list{display:flex;flex-direction:column;gap:8px;margin:12px 0 14px}
 .tr-item{font-size:14.5px;line-height:1.7;color:#33415C;background:#F7F9FF;border:1.5px solid var(--line);border-radius:10px;padding:10px 14px}
 .tr-item b{color:var(--navy);margin-right:6px}
-.tr-copy{font-size:15.5px;line-height:1.7;color:var(--navy);background:#FFF9EC;border:1.5px solid #E8D5A0;border-radius:10px;padding:12px 16px;margin-bottom:10px}
-.tr-copy b{display:block;margin-bottom:2px}
-.tr-item.pick{border-color:#E8D5A0;background:#FFF9EC}
+.tr-overlay{position:fixed;inset:0;background:rgba(20,28,60,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+.tr-modal{background:#fff;border-radius:16px;max-width:640px;width:100%;padding:24px 26px;box-shadow:0 10px 40px rgba(14,40,65,.25)}
+.tr-copy{font-size:15.5px;line-height:1.7;color:var(--navy);background:#FFF9EC;border:1.5px solid #E8D5A0;border-radius:10px;padding:12px 16px;margin:12px 0 10px}
+.tr-copy b{display:block;font-size:18px;margin-bottom:4px}
 #trInput{width:100%;font-family:inherit;font-size:18px;padding:12px 16px;border:2px solid var(--line);border-radius:10px;outline:none}
 #trInput:focus{border-color:#8F86DD}
 #trInput.err{border-color:var(--bad);animation:shake .3s}
@@ -131,13 +132,23 @@ button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-siz
     </div>
     <span class="tr-dim" id="trDim"></span>
     <div class="tr-list" id="trList"></div>
-    <div class="tr-copy" id="trCopy"></div>
-    <div style="font-size:14px;color:#33415C;margin-bottom:6px">✏ 위 대표 카드의 설명을 <b>그대로 따라 쓰고</b> Enter (띄어쓰기·기호는 달라도 괜찮아요)</div>
-    <input id="trInput" autocomplete="off" placeholder="여기에 따라 쓰세요">
-    <div class="tr-msg" id="trMsg"></div>
     <div class="tools" style="justify-content:flex-end">
       <button class="btn-outline" style="font-size:13px;padding:9px 14px" onclick="finishTrain()">건너뛰기</button>
-      <button class="btn-grad" id="trNextBtn" onclick="trainNext()">다음 →</button>
+      <button class="btn-grad" onclick="openTrainModal()">다음 →</button>
+    </div>
+  </div>
+
+  <div class="tr-overlay hide" id="trOverlay">
+    <div class="tr-modal">
+      <span class="tr-dim" id="trModalDim"></span>
+      <div class="tr-copy" id="trCopy"></div>
+      <div style="font-size:14px;color:#33415C;margin-bottom:6px">✏ 위 대표 카드의 설명을 <b>그대로 따라 쓰고</b> Enter (띄어쓰기·기호는 달라도 괜찮아요)</div>
+      <input id="trInput" autocomplete="off" placeholder="여기에 따라 쓰세요">
+      <div class="tr-msg" id="trMsg"></div>
+      <div class="tools" style="justify-content:flex-end;margin-top:8px">
+        <button class="btn-outline" style="font-size:13px;padding:9px 14px" onclick="closeTrainModal()">← 목록 다시 보기</button>
+        <button class="btn-grad" id="trNextBtn" onclick="trainCheck()">확인</button>
+      </div>
     </div>
   </div>
 
@@ -251,19 +262,29 @@ function startTrain(){
   showTrain();
 }
 function showTrain(){
-  const c=DIM_COLORS[trIdx], pick=trPick[trIdx];
+  const c=DIM_COLORS[trIdx];
   $('trProg').textContent=`${trIdx+1} / 4`;
   $('trDim').textContent=DIMS[trIdx]+' 서랍';
   $('trDim').style.color=c[0]; $('trDim').style.borderColor=c[0]; $('trDim').style.background=c[1];
   $('trList').innerHTML=ITEMS.filter(it=>it.d===trIdx).map(it=>
-    `<div class="tr-item${it===pick?' pick':''}"><b>🃏 ${it.t}</b>${it.g}</div>`).join('');
-  $('trCopy').innerHTML=`<b>✏ 대표 카드 · 🃏 ${pick.t}</b>${pick.g}`;
-  $('trMsg').textContent='';
-  const inp=$('trInput'); inp.value=''; inp.classList.remove('err'); inp.focus();
-  $('trNextBtn').textContent=trIdx===3?'🃏 게임 시작':'다음 →';
+    `<div class="tr-item"><b>🃏 ${it.t}</b>${it.g}</div>`).join('');
   window.scrollTo({top:0});
 }
-function trainNext(){
+function openTrainModal(){
+  const c=DIM_COLORS[trIdx], pick=trPick[trIdx];
+  $('trModalDim').textContent=DIMS[trIdx]+' 서랍 대표 카드';
+  $('trModalDim').style.color=c[0]; $('trModalDim').style.borderColor=c[0]; $('trModalDim').style.background=c[1];
+  $('trCopy').innerHTML=`<b>🃏 ${pick.t}</b>${pick.g}`;
+  $('trMsg').textContent='';
+  $('trNextBtn').textContent=trIdx===3?'🃏 게임 시작':'확인';
+  const inp=$('trInput'); inp.value=''; inp.classList.remove('err');
+  $('trOverlay').classList.remove('hide');
+  inp.focus();
+}
+function closeTrainModal(){
+  $('trOverlay').classList.add('hide');
+}
+function trainCheck(){
   const inp=$('trInput');
   if(norm(inp.value)!==norm(trPick[trIdx].g)){
     inp.classList.remove('err'); void inp.offsetWidth; inp.classList.add('err');
@@ -271,16 +292,17 @@ function trainNext(){
     inp.focus();
     return;
   }
+  closeTrainModal();
   trIdx++;
   if(trIdx<4) showTrain(); else finishTrain();
 }
 function finishTrain(){
   localStorage.setItem(TRAIN_KEY,'1');
-  $('trainCard').classList.add('hide');
+  $('trainCard').classList.add('hide'); closeTrainModal();
   beginPlay();
 }
 document.addEventListener('DOMContentLoaded',()=>{
-  $('trInput').addEventListener('keydown',e=>{ if(e.key==='Enter') trainNext(); });
+  $('trInput').addEventListener('keydown',e=>{ if(e.key==='Enter') trainCheck(); });
   if(localStorage.getItem(TRAIN_KEY)) $('reTrainBtn').classList.remove('hide');
 });
 
