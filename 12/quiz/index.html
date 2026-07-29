@@ -140,6 +140,7 @@ textarea:focus{border-color:var(--sky);background:#FEFBFE}
     <div class="phase-box" id="ph1">
       <h3>🧩 1단계 · 가설 세우기</h3>
       <p class="ph">이 데이터가 말하는 것은 무엇일까요? <b>단정하지 말고</b>, 무엇을 더 확인할지까지 적어 보세요.</p>
+      <p style="font-size:12.5px;color:#8A6D1F;margin:-4px 0 8px">채점 기준 3가지 — ① 데이터를 근거로 들었나 ② 단정하지 않았나 ③ 추가 확인 계획이 있나 (각 100점)</p>
       <textarea id="hypoInput" placeholder="예) 학습시간에 비해 푼 문제가 적은 걸 보면 어딘가 막혀 있을 수 있다. 어떤 문제에서 멈췄는지 풀이 기록을 열어 보고, 본인과 짧게 이야기해 확인하고 싶다."></textarea>
       <div class="tools" style="margin-top:10px">
         <button class="btn-grad" id="hypoBtn" onclick="submitHypo()">🧩 가설 제출</button>
@@ -154,8 +155,8 @@ textarea:focus{border-color:var(--sky);background:#FEFBFE}
       <h3>📂 2단계 · 사정 공개</h3>
       <div class="context" id="cContext"></div>
       <h3 style="margin-top:14px">🎯 3단계 · 교사의 다음 행동</h3>
-      <p class="ph">공개된 사정을 반영해, 교사로서 <b>다음에 할 행동</b>을 구체적으로 적어 보세요.</p>
-      <textarea id="actInput" placeholder="예) …"></textarea>
+      <p class="ph">공개된 사정을 반영해, 교사로서 <b>다음에 할 행동</b>을 구체적으로 적어 보세요. <span style="color:#8A6D1F">사정을 모른 척한 대응이나 벌·질책은 감점!</span></p>
+      <textarea id="actInput" placeholder="예) 막힌 문제를 함께 열어 어디서 멈췄는지 확인하고, 다음 시간 첫 5분에 힌트 카드를 건네며 다시 도전하게 한다."></textarea>
       <div class="tools" style="margin-top:10px">
         <button class="btn-grad" id="actBtn" onclick="submitAct()">🎯 행동 제출</button>
         <div class="spin" id="actSpin"></div>

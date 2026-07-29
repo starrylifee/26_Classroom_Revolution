@@ -132,6 +132,7 @@ textarea:focus{border-color:var(--sky);background:#FEFBFE}
     <div class="tools" style="margin-top:10px">
       <button class="btn-navy" id="aiBtn">🤖 진단 받기</button>
       <div class="spin" id="aiSpin"></div>
+      <button class="btn-outline" style="font-size:13px" onclick="fillSampleDesc()">📝 예시 수업으로 해보기</button>
     </div>
     <div class="ai-grid hide" id="aiBox">
       <div class="lst s"><h4>👍 갖춰진 특징</h4><div class="pre" id="aiStr"></div></div>
@@ -205,6 +206,13 @@ renderOpts();
 const descEl=document.querySelector('[data-k=desc]');
 if(data.desc) descEl.value=data.desc;
 descEl.addEventListener('input',()=>{ data.desc=descEl.value; save(); });
+
+// 최근 실행한 수업이 없는 연수생용 — 예시 수업 설명을 채워 AI 진단 흐름을 체험
+function fillSampleDesc(){
+  descEl.value='4학년 수학 분수 단원. 매 차시 끝에 AI 코스웨어로 형성평가 5문항을 풀고, 단원 끝에 지필 평가를 본다. 모둠 활동은 관찰하지만 따로 기록하지는 않는다. 피드백은 단원평가가 끝난 뒤 오답을 같이 푸는 방식이라 수업 중에는 따로 주지 않는다.';
+  data.desc=descEl.value; save();
+  toast('예시 수업을 넣었어요 — 🤖 진단 받기를 눌러 보세요 (내 수업으로 바꿔 써도 좋아요)');
+}
 
 function showResult(){
   const missing=QUESTIONS.filter((q,i)=>data.ans[i]===undefined).length;

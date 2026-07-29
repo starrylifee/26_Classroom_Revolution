@@ -109,6 +109,7 @@ td textarea:focus{background:#FBF7FE}
 <main>
   <div class="card" style="flex:1;display:flex;flex-direction:column">
     <div class="tabs" id="tabs"></div>
+    <p class="hint" style="margin-bottom:10px">진행 순서 — <b>①</b> 피드백 리허설(내 학생 1명으로 실습) → <b>②</b> 환류 전략 템플릿(제출 재료, 11과정 분석 이어받기) → <b>③</b> 동료 코칭 기록지(발표 시간에 사용)</p>
 
     <!-- ① 피드백 리허설 -->
     <section class="step" id="step1">
@@ -138,14 +139,15 @@ td textarea:focus{background:#FBF7FE}
     <section class="step" id="step2">
       <h2>② 환류 전략 템플릿</h2>
       <p class="hint">데이터에서 발견한 것을 메모하면, ①의 리허설 내용과 함께 AI가 템플릿 초안을 채워 줍니다. 고쳐 쓴 뒤 복사해 제출 양식에 붙여 넣으세요.</p>
-      <div style="margin-bottom:14px"><label class="fl">데이터에서 발견한 것 (분석 보고서·대시보드에서 본 내용 메모)</label><textarea data-k="findings" style="min-height:54px" placeholder="예) 도형 영역 양극화 — 30~40점대 하위권 다수. 3회차에 학습시간 급감한 학생 2명. 오답유형은 문제 해석 오류가 최다."></textarea></div>
+      <div style="margin-bottom:6px"><label class="fl">데이터에서 발견한 것 (분석 보고서·대시보드에서 본 내용 메모)</label><textarea data-k="findings" style="min-height:54px" placeholder="예) 도형 영역 양극화 — 30~40점대 하위권 다수. 3회차에 학습시간 급감한 학생 2명. 오답유형은 문제 해석 오류가 최다."></textarea></div>
+      <div style="margin-bottom:14px"><button class="btn-outline" style="font-size:13px" onclick="importP11()">⬅ 11과정 판독 훈련·보고서에서 가져오기 (기록이 없으면 샘플 데이터)</button></div>
       <div id="tplSheet">
       <table>
         <tr><th style="width:150px">항목</th><th>내용</th></tr>
-        <tr><td class="label">데이터 해석<small>학생들의 학습 상태</small></td><td><textarea data-k="tInterpret"></textarea></td></tr>
-        <tr><td class="label">피드백 계획<small>개별 + 학급</small></td><td><textarea data-k="tPlan"></textarea></td></tr>
-        <tr><td class="label">수업 수정 전략<small>다음 차시·단원</small></td><td><textarea data-k="tRevise"></textarea></td></tr>
-        <tr><td class="label">교육적 성찰</td><td><textarea data-k="tReflect"></textarea></td></tr>
+        <tr><td class="label">데이터 해석<small>학생들의 학습 상태</small></td><td><textarea data-k="tInterpret" placeholder="예) 도형 하위권 5~6명은 개념 이해 전 단계에 머물러 있고, 나머지는 안정적 — 학급이 두 집단으로 갈라져 있다."></textarea></td></tr>
+        <tr><td class="label">피드백 계획<small>개별 + 학급</small></td><td><textarea data-k="tPlan" placeholder="예) 개별 — 학생07에게 노력 인정 후 학습 방법 점검 상담. 학급 — 도형 도입마다 오개념 확인 퀴즈 1문항."></textarea></td></tr>
+        <tr><td class="label">수업 수정 전략<small>다음 차시·단원</small></td><td><textarea data-k="tRevise" placeholder="예) 다음 단원 도입에 구체물 조작 5분 배치, 문장제 풀이 전 지문 함께 읽기 루틴 추가."></textarea></td></tr>
+        <tr><td class="label">교육적 성찰</td><td><textarea data-k="tReflect" placeholder="예) 평균만 봤다면 하위권 뭉치를 놓쳤을 것이다. 분포와 관찰 메모를 함께 읽는 습관이 필요하다."></textarea></td></tr>
       </table>
       </div>
       <div class="tools">
@@ -159,7 +161,7 @@ td textarea:focus{background:#FBF7FE}
     <!-- ③ 동료 코칭 기록지 -->
     <section class="step" id="step3">
       <h2>③ 동료 코칭 기록지</h2>
-      <p class="hint">우수 설계안 발표를 들으며 작성합니다. 잘잘못 판단이 아니라 <b>'학생 성장 지원' 관점</b>에서 강점과 보완을 남기고, 내 수업에 가져갈 것까지 적어 보세요. 완성하면 복사해 발표자에게 전해 주세요.</p>
+      <p class="hint"><b>발표가 시작되기 전에는 비워 두세요</b> — 우수 설계안 발표를 들으며 실시간으로 채우는 기록지입니다. 잘잘못 판단이 아니라 <b>'학생 성장 지원' 관점</b>에서 강점과 보완을 남기고, 내 수업에 가져갈 것까지 적어 보세요. 완성하면 복사해 발표자에게 전해 주세요.</p>
       <div id="coachSheet">
       <div class="obs-names" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
         <div style="flex:1;min-width:200px"><label class="fl">설계안 작성자</label><input type="text" data-k="cTarget" placeholder="예) 김선생"></div>
@@ -204,6 +206,30 @@ const STEPS=['① 피드백 리허설','② 환류 전략 템플릿','③ 동료
 let data={};
 try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); if(s) data=s; }catch(e){}
 function save(){ localStorage.setItem(LS_KEY,JSON.stringify(data)); }
+
+// 11과정 산출물(보고서 메모 → 없으면 판독 훈련 답변) → findings로. 둘 다 없으면 샘플 학급 데이터
+function importP11(){
+  const el=document.querySelector('[data-k=findings]');
+  let lines=[], msg='11과정 분석 내용을 가져왔어요 ⬅ 이제 🤖 템플릿 초안을 받아 보세요';
+  try{
+    const rep=JSON.parse(localStorage.getItem('p11-report')||'{}');
+    if(rep.memo&&rep.memo.trim()) lines.push(rep.memo.trim());
+  }catch(e){}
+  if(!lines.length){
+    try{
+      const d=JSON.parse(localStorage.getItem('p11-dash')||'{}');
+      Object.values(d.bank||{}).forEach(b=>(b.qa||[]).forEach(x=>lines.push('· '+x.a)));
+      if((d.individual||'').trim()) lines.push('개별 지원: '+d.individual.trim());
+      if((d.classAdj||'').trim()) lines.push('학급 조정: '+d.classAdj.trim());
+    }catch(e){}
+  }
+  if(!lines.length){
+    lines=['[샘플 학급 · 4학년 수학] 도형 영역 양극화 — 중앙값 71점이지만 최저 28점, 하위권 뭉치 존재. 오답 1위는 문제 해석 오류 34%. 학생07은 학습시간 최다(주 238분)인데 44점, 관찰 메모에 표정이 어두워진다는 기록. 5주차 학습 공백은 현장체험학습 일정 때문(이탈 아님).'];
+    msg='11과정 기록이 없어 샘플 학급 데이터를 넣었어요 (연습용) — 🤖 템플릿 초안을 받아 보세요';
+  }
+  el.value=(el.value?el.value.trim()+'\n':'')+lines.join('\n');
+  data.findings=el.value; save(); toast(msg);
+}
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 const tabsEl=document.getElementById('tabs');
