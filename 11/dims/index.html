@@ -81,8 +81,12 @@ button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-siz
 
 #trainCard .tr-prog{font-size:14px;color:var(--muted);font-weight:700}
 .tr-dim{display:inline-block;padding:4px 16px;border-radius:999px;font-weight:900;font-size:15px;border:2px solid;background:#fff}
-.tr-title{font-size:28px;font-weight:900;color:var(--navy);margin:10px 0 12px}
-.tr-desc{font-size:15.5px;line-height:1.8;color:#33415C;background:#F7F9FF;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.tr-list{display:flex;flex-direction:column;gap:8px;margin:12px 0 14px}
+.tr-item{font-size:14.5px;line-height:1.7;color:#33415C;background:#F7F9FF;border:1.5px solid var(--line);border-radius:10px;padding:10px 14px}
+.tr-item b{color:var(--navy);margin-right:6px}
+.tr-copy{font-size:15.5px;line-height:1.7;color:var(--navy);background:#FFF9EC;border:1.5px solid #E8D5A0;border-radius:10px;padding:12px 16px;margin-bottom:10px}
+.tr-copy b{display:block;margin-bottom:2px}
+.tr-item.pick{border-color:#E8D5A0;background:#FFF9EC}
 #trInput{width:100%;font-family:inherit;font-size:18px;padding:12px 16px;border:2px solid var(--line);border-radius:10px;outline:none}
 #trInput:focus{border-color:#8F86DD}
 #trInput.err{border-color:var(--bad);animation:shake .3s}
@@ -107,7 +111,7 @@ button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-siz
     <h2>🃏 이 데이터, 어느 서랍에 넣을까?</h2>
     <p class="lead">초등 수업 데이터는 <b>성취 · 참여 · 정서 · 행동</b> 네 서랍으로 나뉩니다.<br>
     데이터 카드 18장이 쏟아집니다 — 카드마다 <b>8초 안에</b> 맞는 서랍을 고르세요. 서랍 버튼의 위치는 <b>카드마다 섞이니</b> 자리를 외워 찍을 수 없어요. 연속으로 맞히면 콤보 보너스, 틀리면 해설이 나옵니다. 키보드 <b>1·2·3·4</b>(화면에 보이는 순서)로도 답할 수 있어요.<br>
-    <span style="font-size:13.5px;color:var(--muted)">처음 1회는 카드 설명을 읽고 따라 쓴 뒤 시작합니다. 다시 하기부터는 바로 시작돼요.</span></p>
+    <span style="font-size:13.5px;color:var(--muted)">처음 1회는 서랍별 카드 설명을 읽고 대표 카드 설명 4개를 따라 쓴 뒤 시작합니다. 다시 하기부터는 바로 시작돼요.</span></p>
     <div class="dims-info">
       <div class="di1"><b>1 · 성취</b>얼마나 알게 됐나 — 점수·정답률·루브릭</div>
       <div class="di2"><b>2 · 참여</b>얼마나 함께했나 — 접속·제출·발표</div>
@@ -126,9 +130,9 @@ button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-siz
       <span class="tr-prog" id="trProg"></span>
     </div>
     <span class="tr-dim" id="trDim"></span>
-    <div class="tr-title" id="trTitle"></div>
-    <p class="tr-desc" id="trDesc"></p>
-    <div style="font-size:14px;color:#33415C;margin-bottom:6px">✏ 위 데이터 이름을 <b>그대로 따라 쓰고</b> Enter (띄어쓰기·기호는 달라도 괜찮아요)</div>
+    <div class="tr-list" id="trList"></div>
+    <div class="tr-copy" id="trCopy"></div>
+    <div style="font-size:14px;color:#33415C;margin-bottom:6px">✏ 위 대표 카드의 설명을 <b>그대로 따라 쓰고</b> Enter (띄어쓰기·기호는 달라도 괜찮아요)</div>
     <input id="trInput" autocomplete="off" placeholder="여기에 따라 쓰세요">
     <div class="tr-msg" id="trMsg"></div>
     <div class="tools" style="justify-content:flex-end">
@@ -236,33 +240,39 @@ function startGame(){
   if(!localStorage.getItem(TRAIN_KEY)){ startTrain(); return; }
   beginPlay();
 }
+let trPick=[]; // 서랍별 대표 카드(랜덤 1장) — 이 설명을 따라 쓴다
 function startTrain(){
   trIdx=0;
+  trPick=[0,1,2,3].map(d=>{
+    const cs=ITEMS.filter(it=>it.d===d);
+    return cs[Math.floor(Math.random()*cs.length)];
+  });
   $('startCard').classList.add('hide'); $('trainCard').classList.remove('hide');
   showTrain();
 }
 function showTrain(){
-  const it=ITEMS[trIdx], c=DIM_COLORS[it.d];
-  $('trProg').textContent=`${trIdx+1} / ${ITEMS.length}`;
-  $('trDim').textContent=DIMS[it.d]+' 서랍';
+  const c=DIM_COLORS[trIdx], pick=trPick[trIdx];
+  $('trProg').textContent=`${trIdx+1} / 4`;
+  $('trDim').textContent=DIMS[trIdx]+' 서랍';
   $('trDim').style.color=c[0]; $('trDim').style.borderColor=c[0]; $('trDim').style.background=c[1];
-  $('trTitle').textContent='🃏 '+it.t;
-  $('trDesc').textContent=it.g;
+  $('trList').innerHTML=ITEMS.filter(it=>it.d===trIdx).map(it=>
+    `<div class="tr-item${it===pick?' pick':''}"><b>🃏 ${it.t}</b>${it.g}</div>`).join('');
+  $('trCopy').innerHTML=`<b>✏ 대표 카드 · 🃏 ${pick.t}</b>${pick.g}`;
   $('trMsg').textContent='';
   const inp=$('trInput'); inp.value=''; inp.classList.remove('err'); inp.focus();
-  $('trNextBtn').textContent=trIdx===ITEMS.length-1?'🃏 게임 시작':'다음 →';
+  $('trNextBtn').textContent=trIdx===3?'🃏 게임 시작':'다음 →';
   window.scrollTo({top:0});
 }
 function trainNext(){
-  const it=ITEMS[trIdx], inp=$('trInput');
-  if(norm(inp.value)!==norm(it.t)){
+  const inp=$('trInput');
+  if(norm(inp.value)!==norm(trPick[trIdx].g)){
     inp.classList.remove('err'); void inp.offsetWidth; inp.classList.add('err');
-    $('trMsg').textContent='이름과 똑같이 써 주세요. (띄어쓰기·기호는 달라도 괜찮아요)';
+    $('trMsg').textContent='대표 카드의 설명과 똑같이 써 주세요. (띄어쓰기·기호는 달라도 괜찮아요)';
     inp.focus();
     return;
   }
   trIdx++;
-  if(trIdx<ITEMS.length) showTrain(); else finishTrain();
+  if(trIdx<4) showTrain(); else finishTrain();
 }
 function finishTrain(){
   localStorage.setItem(TRAIN_KEY,'1');
