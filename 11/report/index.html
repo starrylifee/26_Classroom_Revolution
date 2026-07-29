@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학급 데이터 분석 보고서 · 11과정</title>
+<meta property="og:title" content="학급 데이터 분석 보고서 작성기">
+<meta property="og:description" content="판독한 것을 보고서로 — AI 초안·제출 전 점검·hwpx 내려받기까지.">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2C59'/%3E%3Cpath d='M20 14h18l8 8v28H20z' fill='none' stroke='%23F6C2E4' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M26 32h14M26 40h14' stroke='%23FCE303' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E2C59;--teal:#7A2E6E;--sky:#F6C2E4;--pink:#E85FA5;--bg:#F7F9FF;--line:#DDE1EB;--muted:#5B6B7C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:#1B2A3A;min-height:100vh;display:flex;flex-direction:column}
+header{background:linear-gradient(90deg,#C9C4F2 0%,#F9C8E8 100%);color:var(--navy);padding:14px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(420px 420px at 6% 16%,rgba(178,158,240,.30),transparent 70%),radial-gradient(520px 520px at 2% 78%,rgba(120,205,242,.22),transparent 70%),radial-gradient(400px 400px at 14% 46%,rgba(250,150,205,.22),transparent 70%)}
+header,main,footer{position:relative;z-index:1}
+footer{background:#E7F2FB;color:#6B7A99;font-size:13px;padding:10px 28px}
+header .badge{background:#fff;color:#C2447A;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+header h1{font-size:22px;font-weight:700}
+header .home{color:#52609B;text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px;margin-left:auto}
+header .home~.home{margin-left:0}
+header .home:hover{color:var(--navy)}
+
+main{flex:1;max-width:1060px;width:100%;margin:0 auto;padding:18px 28px 26px;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05);padding:22px 24px}
+.card h2{font-size:19px;color:var(--navy);margin-bottom:4px}
+.card .hint{font-size:14px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.card .hint b{color:var(--pink)}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:700;transition:.15s}
+.btn-grad{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;padding:12px 26px;border-radius:999px}
+.btn-grad:hover{filter:brightness(.93)}
+.btn-grad:disabled{background:#CBA9C6;filter:none;cursor:not-allowed}
+.btn-navy{background:var(--teal);color:#fff;padding:12px 22px}
+.btn-navy:hover{background:#5C2253}
+.btn-navy:disabled{background:#B99DB4;cursor:not-allowed}
+.btn-outline{background:#fff;border:1.5px solid var(--line);color:#1B2A3A;font-weight:500;padding:12px 18px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.spin{display:none;width:22px;height:22px;border:3px solid #E8E2F2;border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+input[type=text]{width:100%;font-family:inherit;font-size:14.5px;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;outline:none;background:#fff}
+input[type=text]:focus{border-color:var(--sky);background:#FEFBFE}
+textarea{width:100%;font-family:inherit;font-size:14.5px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;outline:none;background:#fff;line-height:1.7;resize:vertical}
+textarea:focus{border-color:var(--sky);background:#FEFBFE}
+label.fl{display:block;font-size:13px;font-weight:700;color:var(--navy);margin:0 0 4px}
+
+table.frm{width:100%;border-collapse:collapse;margin-bottom:4px}
+table.frm th{background:var(--navy);color:#fff;font-size:13.5px;font-weight:700;padding:8px;border:1px solid #2A3A6E}
+table.frm td{border:1px solid var(--line);padding:5px;vertical-align:top}
+table.frm textarea{border:none;border-radius:0;min-height:52px;padding:7px 9px}
+table.frm input[type=text]{border:none;border-radius:0}
+.ov-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:860px){.ov-grid{grid-template-columns:1fr 1fr}}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;max-width:520px}
+
+.ai-result{display:none;margin-top:14px}
+.lst{border-radius:12px;padding:13px 16px;font-size:14px;line-height:1.8;border:1.5px solid;margin-bottom:10px}
+.lst h4{font-size:14.5px;margin-bottom:6px}
+.lst.good{background:#F0F9F4;border-color:#BFE3CE}.lst.good h4{color:#1E7A4F}
+.lst.fix{background:#FDF1F6;border-color:#F2C4DA}.lst.fix h4{color:#C2447A}
+.lst.cmt{background:#F4F8FF;border-color:#C6D8F5}.lst.cmt h4{color:#2E5AA8}
+.pre{white-space:pre-wrap}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
+.toast.show{opacity:1;transform:none}
+.modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
+.modal h3{font-size:18px;color:var(--navy);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);margin-bottom:14px}
+.modal input{width:100%;padding:13px;font-size:16px;border:1.5px solid var(--line);border-radius:9px;outline:none;font-family:inherit}
+.modal input:focus{border-color:var(--sky)}
+.modal .err{display:none;color:#C0392B;font-size:13px;margin-top:8px}
+.modal .row{display:flex;gap:10px;margin-top:16px}
+.modal .row button{flex:1;padding:12px}
+
+/* 인쇄 전용 보기 */
+#printView{display:none}
+@media print{
+  body::before{display:none}
+  header,footer,main{display:none}
+  #printView{display:block;font-size:12.5pt;line-height:1.7;color:#000}
+  #printView h1{font-size:19pt;text-align:center;margin:0 0 6pt}
+  #printView .meta{text-align:right;font-size:10.5pt;margin-bottom:10pt}
+  #printView h2{font-size:13pt;margin:12pt 0 5pt;color:#1E2C59}
+  #printView table{width:100%;border-collapse:collapse;margin-bottom:6pt}
+  #printView th{background:#E8ECF6;border:1px solid #444;padding:4pt 6pt;font-size:10.5pt}
+  #printView td{border:1px solid #444;padding:4pt 6pt;font-size:10.5pt;white-space:pre-wrap}
+}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">11과정</span>
+  <h1>학급 데이터 분석 보고서</h1>
+  <button class="home" onclick="clearAll()" style="border:none;cursor:pointer;color:#C0392B">🗑 지우기</button>
+  <a class="home" href="/11/">📊 판독 훈련</a>
+  <a class="home" href="/">🏠 홈</a>
+</header>
+
+<main>
+  <div class="card">
+    <h2>✍ 판독한 것을 보고서로</h2>
+    <p class="hint">11과정 최종 산출물입니다. 판독 훈련(또는 샘플사이트 분석)에서 본 것을 정리해 <b>KERIS LMS 제출용 hwpx</b>로 내려받으세요. 아래 메모만 적고 <b>AI 초안</b>을 받아 고쳐 써도 됩니다.</p>
+    <div style="margin-bottom:10px"><label class="fl">차트에서 본 것 메모 (AI 초안의 재료)</label>
+    <textarea data-k="memo" style="min-height:76px" placeholder="예) 도형 상자그림이 길고 아래 수염 깊음(양극화). 오답 1위 문제 해석 오류 34%. 학생07 학습시간 최다인데 44점, 표정 어두움 메모. 5주차 히트맵 공백은 체험학습."></textarea></div>
+    <div class="tools" style="margin-top:0">
+      <button class="btn-outline" onclick="importDash()">⬅ 판독 훈련에서 쓴 내용 가져오기</button>
+      <button class="btn-navy" id="draftBtn">🤖 AI 초안 받기</button>
+      <div class="spin" id="draftSpin"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>① 데이터 개요</h2>
+    <div class="ov-grid">
+      <div><label class="fl">과목 · 학년</label><input type="text" data-k="o_1_0" placeholder="예) 4학년 수학"></div>
+      <div><label class="fl">학생 수</label><input type="text" data-k="o_1_1" placeholder="예) 24명"></div>
+      <div><label class="fl">운영 기간 · 평가 회차</label><input type="text" data-k="o_1_2" placeholder="예) 8주 · 평가 3회"></div>
+      <div><label class="fl">데이터 출처</label><input type="text" data-k="o_1_3" placeholder="예) 샘플 데이터(시드 1234) / 우리 반 LMS"></div>
+    </div>
+    <div class="meta-grid">
+      <div><label class="fl">작성자</label><input type="text" data-k="o_1_4" placeholder="예) 김선생"></div>
+      <div><label class="fl">작성일</label><input type="text" data-k="o_1_5"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 학급 차원 분석 — 차트에서 본 것</h2>
+    <p class="hint">근거 차트는 목록에서 고르거나 직접 적으세요. <b>사실(차트가 보여준 것)</b>과 <b>해석(그게 의미하는 것)</b>을 나눠 쓰는 것이 핵심입니다.</p>
+    <table class="frm"><thead><tr><th style="width:20%">근거 차트</th><th style="width:40%">발견한 사실</th><th style="width:40%">해석 · 의미</th></tr></thead>
+    <tbody id="tbA"></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>③ 개별 맞춤 지원 지점</h2>
+    <p class="hint">학생은 <b>번호·익명만</b> 사용하세요(학생07 등). 실명은 hwpx에도, 어디에도 넣지 않습니다.</p>
+    <table class="frm"><thead><tr><th style="width:12%">학생</th><th style="width:30%">신호가 된 데이터</th><th style="width:29%">해석</th><th style="width:29%">지원 계획</th></tr></thead>
+    <tbody id="tbI"></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>④ 학급 차원 수업 조정</h2>
+    <table class="frm"><thead><tr><th style="width:25%">조정 지점</th><th style="width:37%">데이터 근거</th><th style="width:38%">실행 방법</th></tr></thead>
+    <tbody id="tbC"></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>⑤ 환류 계획</h2>
+    <table class="frm"><thead><tr><th style="width:50%">다음 차시 · 단원 반영</th><th style="width:50%">효과 확인 방법 (어떤 데이터로 검증할까)</th></tr></thead>
+    <tbody id="tbF"></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>⑥ 종합 성찰 — 교사의 판단</h2>
+    <p class="hint">수치(AI가 찾은 신호) → 맥락(관찰·원문 확인) → 판단(종합). 마지막 판단은 언제나 교사의 몫입니다.</p>
+    <textarea data-k="r_1_0" style="min-height:80px" placeholder="예) 대시보드는 도형 양극화와 학생07의 신호를 보여 주었지만, 관찰 메모와 교차했을 때 개입이 필요한 지점과 아닌 지점이 갈렸다. 다음 단원에서는…"></textarea>
+    <div class="tools">
+      <button class="btn-navy" id="reviewBtn">🔍 제출 전 AI 점검</button>
+      <div class="spin" id="reviewSpin"></div>
+      <button class="btn-grad" onclick="dlHwpx()">⬇ hwpx 내려받기 (KERIS 제출용)</button>
+      <button class="btn-outline" onclick="doPrint()">🖨 인쇄 · PDF</button>
+      <button class="btn-outline" onclick="copyAll()">📋 텍스트 복사</button>
+    </div>
+    <div class="ai-result" id="revBox">
+      <div class="lst good"><h4>👍 잘한 점</h4><div class="pre" id="revPraise"></div></div>
+      <div class="lst fix"><h4>🔧 제출 전에 보완하면 좋은 점</h4><div class="pre" id="revIssues"></div></div>
+      <div class="lst cmt"><h4>🧭 수석교사의 한마디</h4><div class="pre" id="revComment"></div></div>
+    </div>
+  </div>
+</main>
+
+<div id="printView"></div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>🔒 AI 기능 활성화</h3>
+    <p>강사가 안내한 비밀번호를 입력하세요.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호">
+    <div class="err" id="pwErr">비밀번호가 일치하지 않습니다.</div>
+    <div class="row">
+      <button class="btn-outline" id="pwCancel">취소</button>
+      <button class="btn-navy" id="pwOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>2026년 인공지능 활용 선도교사 연수 · 11과정 데이터를 읽고 다음을 그리다 — 분석의 종착점은 보고서가 아니라 학생을 위한 다음 한 걸음</footer>
+
+<script>
+const LS_KEY='p11-report';
+const CHARTS=['성취영역 상자그림','회차별 평균 추이','학습 행동 히트맵','완주율(제출률) 분포','오답 유형 도넛','정의적 영역 레이더','포트폴리오 루브릭 막대','AI 도구 활용 누적막대','주목 학생 표','교사 관찰 메모'];
+const $=id=>document.getElementById(id);
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600); }
+
+let data={};
+try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); if(s) data=s; }catch(e){}
+function save(){ localStorage.setItem(LS_KEY,JSON.stringify(data)); }
+
+// ---- 표 행 생성 (data-key는 hwpx 자리표시자와 동일: key_row_col) ----
+function rows(tbodyId,key,nRows,nCols,firstChart){
+  const tb=$(tbodyId);
+  for(let r=1;r<=nRows;r++){
+    const tr=document.createElement('tr');
+    for(let c=0;c<nCols;c++){
+      const td=document.createElement('td');
+      if(firstChart&&c===0){
+        const inp=document.createElement('input'); inp.type='text'; inp.setAttribute('list','chartList');
+        inp.dataset.k=`${key}_${r}_${c}`; inp.placeholder='차트 선택/입력';
+        td.appendChild(inp);
+      } else if(key==='i'&&c===0){
+        const inp=document.createElement('input'); inp.type='text';
+        inp.dataset.k=`${key}_${r}_${c}`; inp.placeholder='학생07';
+        td.appendChild(inp);
+      } else {
+        const ta=document.createElement('textarea'); ta.dataset.k=`${key}_${r}_${c}`;
+        td.appendChild(ta);
+      }
+      tr.appendChild(td);
+    }
+    tb.appendChild(tr);
+  }
+}
+rows('tbA','a',3,3,true);
+rows('tbI','i',3,4,false);
+rows('tbC','c',2,3,false);
+rows('tbF','f',2,2,false);
+const dl=document.createElement('datalist'); dl.id='chartList';
+CHARTS.forEach(c=>{ const o=document.createElement('option'); o.value=c; dl.appendChild(o); });
+document.body.appendChild(dl);
+
+document.querySelectorAll('[data-k]').forEach(el=>{
+  const k=el.dataset.k;
+  if(data[k]) el.value=data[k];
+  el.addEventListener('input',()=>{ data[k]=el.value; save(); });
+});
+// 작성일 기본값
+(function(){ const el=document.querySelector('[data-k=o_1_5]'); if(el&&!el.value){ const d=new Date(); el.value=`${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}.`; data.o_1_5=el.value; save(); } })();
+
+// ---- 판독 훈련 내용 가져오기 ----
+function importDash(){
+  try{
+    const s=JSON.parse(localStorage.getItem('p11-dash')||'{}');
+    const parts=[];
+    if(s.individual&&s.individual.trim()) parts.push('개별 지원: '+s.individual.trim());
+    if(s.classAdj&&s.classAdj.trim()) parts.push('학급 조정: '+s.classAdj.trim());
+    if(!parts.length){ toast('판독 훈련의 자유 판독에 적은 내용이 없어요 — 먼저 /11/에서 적어 보세요'); return; }
+    const memoEl=document.querySelector('[data-k=memo]');
+    memoEl.value=(memoEl.value?memoEl.value.trim()+'\n':'')+parts.join('\n');
+    data.memo=memoEl.value; save();
+    toast('판독 훈련 내용을 메모에 가져왔어요 ⬅ AI 초안을 받아 보세요');
+  }catch(e){ toast('가져오기에 실패했어요'); }
+}
+
+// ---- 비밀번호 ----
+let unlocked=false, enteredPw='', pendingAI='draft';
+const modalBg=$('modalBg'), pwInput=$('pwInput');
+function askAI(kind){
+  pendingAI=kind;
+  if(unlocked){ kind==='draft'?runDraft():runReview(); }
+  else { modalBg.style.display='flex'; pwInput.value=''; $('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50); }
+}
+$('pwCancel').onclick=()=>modalBg.style.display='none';
+function tryPw(){
+  enteredPw=pwInput.value.trim();
+  if(!enteredPw){ $('pwErr').style.display='block'; return; }
+  unlocked=true; modalBg.style.display='none';
+  pendingAI==='draft'?runDraft():runReview();
+}
+$('pwOk').onclick=tryPw;
+pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
+
+// ---- AI 초안 ----
+$('draftBtn').onclick=()=>{
+  if(!(data.memo||'').trim()){ toast('차트에서 본 것을 먼저 메모해 주세요 ✏️'); return; }
+  askAI('draft');
+};
+async function runDraft(){
+  const btn=$('draftBtn'), spin=$('draftSpin');
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const overview=['과목·학년: '+(data.o_1_0||''),'학생 수: '+(data.o_1_1||''),'기간·회차: '+(data.o_1_2||''),'출처: '+(data.o_1_3||'')].join(' / ');
+    const res=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw,mode:'draft',overview,memo:(data.memo||'').slice(0,2500)})});
+    const j=await res.json();
+    if(res.status===401){ unlocked=false; enteredPw=''; askAI(pendingAI); $('pwErr').style.display='block'; throw new Error('비밀번호가 올바르지 않습니다. 다시 입력해 주세요.'); }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
+    const fill=(k,v)=>{ if(!v) return; data[k]=v; const el=document.querySelector(`[data-k="${k}"]`); if(el) el.value=v; };
+    (j.analysis||[]).forEach((row,i)=>row.forEach((v,c)=>fill(`a_${i+1}_${c}`,v)));
+    (j.individual||[]).forEach((row,i)=>row.forEach((v,c)=>fill(`i_${i+1}_${c}`,v)));
+    (j.adjust||[]).forEach((row,i)=>row.forEach((v,c)=>fill(`c_${i+1}_${c}`,v)));
+    (j.flow||[]).forEach((row,i)=>row.forEach((v,c)=>fill(`f_${i+1}_${c}`,v)));
+    fill('r_1_0',j.reflect);
+    save();
+    toast('초안을 채웠어요. 내 판단으로 고쳐 쓰는 것까지가 분석입니다 ✏️');
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+
+// ---- 보고서 텍스트 조립 ----
+function get(k){ return (data[k]||'').trim(); }
+function reportText(){
+  const L=[];
+  L.push('학급 데이터 분석 보고서');
+  L.push(`작성자: ${get('o_1_4')} · 작성일: ${get('o_1_5')}`);
+  L.push('');
+  L.push('1. 데이터 개요');
+  L.push(`과목·학년: ${get('o_1_0')} / 학생 수: ${get('o_1_1')} / 기간·회차: ${get('o_1_2')} / 출처: ${get('o_1_3')}`);
+  L.push('');
+  L.push('2. 학급 차원 분석');
+  for(let r=1;r<=3;r++){ if(get(`a_${r}_0`)||get(`a_${r}_1`)) L.push(`- [${get(`a_${r}_0`)}] 사실: ${get(`a_${r}_1`)} → 해석: ${get(`a_${r}_2`)}`); }
+  L.push('');
+  L.push('3. 개별 맞춤 지원');
+  for(let r=1;r<=3;r++){ if(get(`i_${r}_0`)||get(`i_${r}_1`)) L.push(`- ${get(`i_${r}_0`)}: 신호 ${get(`i_${r}_1`)} / 해석 ${get(`i_${r}_2`)} / 지원 ${get(`i_${r}_3`)}`); }
+  L.push('');
+  L.push('4. 학급 차원 수업 조정');
+  for(let r=1;r<=2;r++){ if(get(`c_${r}_0`)||get(`c_${r}_1`)) L.push(`- ${get(`c_${r}_0`)}: 근거 ${get(`c_${r}_1`)} / 실행 ${get(`c_${r}_2`)}`); }
+  L.push('');
+  L.push('5. 환류 계획');
+  for(let r=1;r<=2;r++){ if(get(`f_${r}_0`)) L.push(`- ${get(`f_${r}_0`)} (검증: ${get(`f_${r}_1`)})`); }
+  L.push('');
+  L.push('6. 종합 성찰');
+  L.push(get('r_1_0'));
+  return L.join('\n');
+}
+function filled(){ return ['a_1_1','i_1_1','r_1_0'].some(k=>get(k)); }
+
+// ---- AI 점검 ----
+$('reviewBtn').onclick=()=>{
+  if(!filled()){ toast('먼저 보고서 내용을 채워 주세요 ✏️'); return; }
+  askAI('review');
+};
+async function runReview(){
+  const btn=$('reviewBtn'), spin=$('reviewSpin');
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const res=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw,mode:'review',report:reportText().slice(0,6000)})});
+    const j=await res.json();
+    if(res.status===401){ unlocked=false; enteredPw=''; askAI(pendingAI); $('pwErr').style.display='block'; throw new Error('비밀번호가 올바르지 않습니다. 다시 입력해 주세요.'); }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
+    $('revBox').style.display='block';
+    $('revPraise').textContent=j.praise||'—';
+    $('revIssues').textContent=j.issues||'—';
+    $('revComment').textContent=j.comment||'—';
+    toast('점검이 끝났어요. 보완 후 hwpx로 내려받으세요 🔍');
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+
+// ---- hwpx (09 패턴 재사용) ----
+function xmlEscape(s){return String(s??'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]);}
+function escapeRegex(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function applyPlaceholder(xml,key,value){
+  const text=String(value||'').replace(/\n{2,}/g,'\n').trim();
+  const lines=text.split('\n');
+  if(lines.length===1){return xml.replace(new RegExp(escapeRegex(key),'g'),xmlEscape(text));}
+  const escapedKey=escapeRegex(key);
+  const pPattern=new RegExp(`<hp:p\\b[^>]*>(?:(?!<hp:p\\b)[\\s\\S])*?${escapedKey}(?:(?!<hp:p\\b)[\\s\\S])*?</hp:p>`,'g');
+  const replaced=xml.replace(pPattern,match=>lines.map(line=>match.replace(key,xmlEscape(line))).join(''));
+  if(replaced===xml){return xml.replace(new RegExp(escapedKey,'g'),xmlEscape(text.replace(/\n/g,' ')));}
+  return replaced;
+}
+async function dlHwpx(){
+  if(!filled()){ toast('먼저 보고서 내용을 채워 주세요 ✏️'); return; }
+  try{
+    const resp=await fetch('./template.hwpx');
+    if(!resp.ok) throw new Error('템플릿 로드 실패');
+    const zip=await JSZip.loadAsync(await resp.arrayBuffer());
+    let xml=await zip.file('Contents/section0.xml').async('string');
+    Object.keys(data).forEach(k=>{
+      if(/^[a-z]_\d+_\d+$/.test(k)) xml=applyPlaceholder(xml,`{{${k}}}`,data[k]);
+    });
+    xml=xml.replace(/\{\{[a-z]_\d+_\d+\}\}/g,'');
+    xml=xml.replace(/<hp:linesegarray>[\s\S]*?<\/hp:linesegarray>/g,'').replace(/<hp:linesegarray\s*\/>/g,'');
+    zip.file('Contents/section0.xml',xml);
+    const blob=await zip.generateAsync({type:'blob',mimeType:'application/hwp+zip',compression:'DEFLATE'});
+    const a=document.createElement('a');
+    a.download=`11과정_학급데이터분석보고서_${new Date().toISOString().slice(0,10)}.hwpx`;
+    a.href=URL.createObjectURL(blob); a.click();
+    URL.revokeObjectURL(a.href);
+    toast('hwpx로 저장했어요. 한글에서 열어 확인 후 KERIS LMS에 올리세요 ⬇');
+  }catch(err){ toast('⚠ 다운로드 오류: '+err.message); }
+}
+
+// ---- 인쇄 ----
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function doPrint(){
+  if(!filled()){ toast('먼저 보고서 내용을 채워 주세요 ✏️'); return; }
+  const tr=(cells)=>'<tr>'+cells.map(c=>`<td>${esc(c)}</td>`).join('')+'</tr>';
+  let h=`<h1>학급 데이터 분석 보고서</h1><div class="meta">작성자: ${esc(get('o_1_4'))} · 작성일: ${esc(get('o_1_5'))}</div>`;
+  h+=`<h2>1. 데이터 개요</h2><table><tr><th>과목 · 학년</th><th>학생 수</th><th>운영 기간 · 회차</th><th>데이터 출처</th></tr>${tr([get('o_1_0'),get('o_1_1'),get('o_1_2'),get('o_1_3')])}</table>`;
+  h+=`<h2>2. 학급 차원 분석</h2><table><tr><th>근거 차트</th><th>발견한 사실</th><th>해석 · 의미</th></tr>`;
+  for(let r=1;r<=3;r++) if(get(`a_${r}_0`)||get(`a_${r}_1`)) h+=tr([get(`a_${r}_0`),get(`a_${r}_1`),get(`a_${r}_2`)]);
+  h+=`</table><h2>3. 개별 맞춤 지원</h2><table><tr><th>학생</th><th>신호가 된 데이터</th><th>해석</th><th>지원 계획</th></tr>`;
+  for(let r=1;r<=3;r++) if(get(`i_${r}_0`)||get(`i_${r}_1`)) h+=tr([get(`i_${r}_0`),get(`i_${r}_1`),get(`i_${r}_2`),get(`i_${r}_3`)]);
+  h+=`</table><h2>4. 학급 차원 수업 조정</h2><table><tr><th>조정 지점</th><th>데이터 근거</th><th>실행 방법</th></tr>`;
+  for(let r=1;r<=2;r++) if(get(`c_${r}_0`)||get(`c_${r}_1`)) h+=tr([get(`c_${r}_0`),get(`c_${r}_1`),get(`c_${r}_2`)]);
+  h+=`</table><h2>5. 환류 계획</h2><table><tr><th>다음 차시 · 단원 반영</th><th>효과 확인 방법</th></tr>`;
+  for(let r=1;r<=2;r++) if(get(`f_${r}_0`)) h+=tr([get(`f_${r}_0`),get(`f_${r}_1`)]);
+  h+=`</table><h2>6. 종합 성찰 — 교사의 판단</h2><table>${tr([get('r_1_0')])}</table>`;
+  $('printView').innerHTML=h;
+  window.print();
+}
+function copyAll(){
+  if(!filled()){ toast('먼저 보고서 내용을 채워 주세요 ✏️'); return; }
+  navigator.clipboard.writeText(reportText()).then(()=>toast('보고서 텍스트를 복사했어요 📋'));
+}
+function clearAll(){
+  if(!confirm('보고서 내용을 모두 지울까요? 되돌릴 수 없습니다.')) return;
+  data={}; localStorage.removeItem(LS_KEY);
+  document.querySelectorAll('input[data-k],textarea[data-k]').forEach(el=>el.value='');
+  $('revBox').style.display='none';
+  toast('내용을 지웠어요');
+}
+</script>
+</body>
+</html>
