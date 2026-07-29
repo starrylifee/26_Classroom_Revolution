@@ -57,12 +57,18 @@ ${target || '(비어 있음)'}
       const c = await r.json();
       return ((c.choices && c.choices[0] && c.choices[0].message.content) || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
     };
-    let d = null;
+    // solar-pro3는 추론(<think>) 토큰을 많이 쓰므로 출력 여유를 크게 잡는다
+    let d = null, lastSlice = '';
     for (let attempt = 0; attempt < 2 && !d; attempt++) {
-      const raw = await askRaw(prompt + JSON_NOTE, 3600, 0.4);
+      const raw = await askRaw(prompt + JSON_NOTE + '\n(문자열 값 안의 줄바꿈은 반드시 \\n 두 글자로 쓸 것 — 실제 줄바꿈 금지)', 6000, 0.4);
       const s = raw.indexOf('{'); const e = raw.lastIndexOf('}');
-      if (s !== -1 && e !== -1) { try { d = JSON.parse(raw.slice(s, e + 1)); } catch (err) { /* 재시도 */ } }
+      if (s !== -1 && e !== -1) {
+        lastSlice = raw.slice(s, e + 1);
+        try { d = JSON.parse(lastSlice); } catch (err) { /* 재시도 */ }
+      }
     }
+    // 마지막 방어: 문자열 안 실제 줄바꿈 때문에 깨진 경우 공백으로 눌러 다시 시도
+    if (!d && lastSlice) { try { d = JSON.parse(lastSlice.replace(/[\r\n]+/g, ' ')); } catch (err) { /* 포기 */ } }
     if (!d) throw new Error('AI 응답 JSON 해석 실패 (2회 시도)');
 
     res.status(200).json({
