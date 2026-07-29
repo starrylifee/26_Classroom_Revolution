@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>바이브코딩 기획서 · 10과정</title>
+<meta property="og:title" content="바이브코딩 기획서 — 과정 기록 도구 만들기">
+<meta property="og:description" content="내 수업의 과정중심평가 기록 웹앱을 기획하고, 제미나이 캔버스에 붙여넣을 프롬프트를 뽑습니다.">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2C59'/%3E%3Cpath d='M18 44l8-24 8 16 6-10 6 18' fill='none' stroke='%23F6C2E4' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E2C59;--teal:#7A2E6E;--sky:#F6C2E4;--pink:#E85FA5;--bg:#F7F9FF;--line:#DDE1EB;--muted:#5B6B7C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:#1B2A3A;min-height:100vh;display:flex;flex-direction:column}
+header{background:linear-gradient(90deg,#C9C4F2 0%,#F9C8E8 100%);color:var(--navy);padding:14px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(420px 420px at 6% 16%,rgba(178,158,240,.30),transparent 70%),radial-gradient(520px 520px at 2% 78%,rgba(120,205,242,.22),transparent 70%),radial-gradient(400px 400px at 14% 46%,rgba(250,150,205,.22),transparent 70%)}
+header,main,footer{position:relative;z-index:1}
+footer{background:#E7F2FB;color:#6B7A99;font-size:13px;padding:10px 28px}
+header .badge{background:#fff;color:#C2447A;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+header h1{font-size:22px;font-weight:700}
+header .home{color:#52609B;text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px;margin-left:auto}
+header .home~.home{margin-left:0}
+header .home:hover{color:var(--navy)}
+
+main{flex:1;max-width:1020px;width:100%;margin:0 auto;padding:18px 28px 26px;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05);padding:22px 24px}
+.card h2{font-size:19px;color:var(--navy);margin-bottom:4px}
+.card .hint{font-size:14px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.card .hint b{color:var(--pink)}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:700;transition:.15s}
+.btn-grad{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;padding:12px 26px;border-radius:999px}
+.btn-grad:hover{filter:brightness(.93)}
+.btn-grad:disabled{background:#CBA9C6;filter:none;cursor:not-allowed}
+.btn-navy{background:var(--teal);color:#fff;padding:12px 22px}
+.btn-navy:hover{background:#5C2253}
+.btn-outline{background:#fff;border:1.5px solid var(--line);color:#1B2A3A;font-weight:500;padding:12px 18px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.spin{display:none;width:22px;height:22px;border:3px solid #E8E2F2;border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+input[type=text]{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;outline:none;background:#fff}
+input[type=text]:focus{border-color:var(--sky);background:#FEFBFE}
+textarea{width:100%;font-family:inherit;font-size:14.5px;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;outline:none;background:#fff;line-height:1.7;resize:vertical}
+textarea:focus{border-color:var(--sky);background:#FEFBFE}
+label.fl{display:block;font-size:13.5px;font-weight:700;color:var(--navy);margin:0 0 5px}
+label.fl small{font-weight:500;color:var(--muted)}
+
+.sec{border:1.5px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.sec h3{font-size:16px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec .no{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#8F86DD,#EC6FB2);color:#fff;font-size:14px;font-weight:900;flex:none}
+.sec.s1{background:#F4F8FF;border-color:#C6D8F5}.sec.s1 h3{color:#2E5AA8}
+.sec.s2{background:#FFF5FA;border-color:#F5C6E0}.sec.s2 h3{color:#C2447A}
+.sec.s3{background:#F6F1FE;border-color:#DDD2F0}.sec.s3 h3{color:var(--teal)}
+.sec.s4{background:#F0F9F4;border-color:#BFE3CE}.sec.s4 h3{color:#1E7A4F}
+.sec.s5{background:#FFF9EC;border-color:#E8D5A0}.sec.s5 h3{color:#9C7A1E}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:760px){.row2{grid-template-columns:1fr}}
+.fitem{margin-bottom:10px}
+.fitem:last-child{margin-bottom:0}
+.checks{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+.checks label{display:flex;align-items:center;gap:7px;font-size:14.5px;font-weight:700;color:#33415C;cursor:pointer}
+.checks input{width:18px;height:18px;accent-color:var(--pink)}
+
+/* 프롬프트 결과 */
+.prompt-box{display:none;margin-top:16px}
+.prompt-box pre{background:#1E2C59;color:#E8ECFA;border-radius:12px;padding:18px 20px;font-size:13.5px;line-height:1.75;white-space:pre-wrap;word-break:break-word;font-family:'Noto Sans KR',sans-serif;max-height:420px;overflow-y:auto}
+.gemini-tip{margin-top:10px;background:#F4F8FF;border:1.5px solid #C6D8F5;border-radius:10px;padding:11px 14px;font-size:13.5px;line-height:1.7;color:#2E5AA8}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
+.toast.show{opacity:1;transform:none}
+.modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
+.modal h3{font-size:18px;color:var(--navy);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);margin-bottom:14px}
+.modal input{width:100%;padding:13px;font-size:16px;border:1.5px solid var(--line);border-radius:9px;outline:none;font-family:inherit}
+.modal input:focus{border-color:var(--sky)}
+.modal .err{display:none;color:#C0392B;font-size:13px;margin-top:8px}
+.modal .row{display:flex;gap:10px;margin-top:16px}
+.modal .row button{flex:1;padding:12px}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">10과정</span>
+  <h1>바이브코딩 기획서</h1>
+  <button class="home" onclick="clearAll()" style="border:none;cursor:pointer;color:#C0392B">🗑 지우기</button>
+  <a class="home" href="/10/game/">🩺 클리닉</a>
+  <a class="home" href="/10/">🧑‍🏫 도우미</a>
+  <a class="home" href="/">🏠 홈</a>
+</header>
+
+<main>
+  <div class="card">
+    <h2>📐 과정 기록 도구, 내가 기획한다</h2>
+    <p class="hint">사례 6에서 봤듯 결과물만 남고 <b>과정은 휘발</b>됩니다. 내 수업에 딱 맞는 '과정중심평가 기록 웹앱'을 기획해 보세요. 어떤 학습활동을 넣을지는 <b>전적으로 선생님 마음</b>입니다. ①②만 적고 AI 초안을 받아도 되고, 다 채우면 <b>제미나이 캔버스에 붙여넣을 프롬프트</b>가 완성됩니다.</p>
+
+    <div id="planSheet">
+    <div class="sec s1">
+      <h3><span class="no">1</span>수업 정보</h3>
+      <div class="row2 fitem">
+        <div><label class="fl">학년 · 교과</label><input type="text" data-k="grade" placeholder="예) 4학년 사회"></div>
+        <div><label class="fl">단원 · 수업 주제</label><input type="text" data-k="unit" placeholder="예) 우리 지역의 문제 해결 프로젝트"></div>
+      </div>
+      <div class="fitem"><label class="fl">학습 활동 <small>— 어떤 활동이든 좋아요. 자유롭게.</small></label><textarea data-k="lesson" style="min-height:60px" placeholder="예) 모둠별로 지역 문제를 정해 4차시 동안 조사→토의→해결책 제안→발표까지 진행"></textarea></div>
+    </div>
+
+    <div class="sec s2">
+      <h3><span class="no">2</span>휘발되는 과정 데이터 — 무엇을 남기고 싶은가</h3>
+      <div class="fitem"><label class="fl">지금은 사라지고 마는, 기록하고 싶은 과정 <small>— 시행착오·기여도·태도·생각의 변화…</small></label><textarea data-k="target" style="min-height:60px" placeholder="예) 모둠 활동에서 누가 어떤 역할을 했는지, 학생마다 처음 생각이 어떻게 바뀌었는지가 학기말이면 하나도 기억나지 않는다"></textarea></div>
+    </div>
+
+    <div class="sec s3">
+      <h3><span class="no">3</span>기록 설계</h3>
+      <div class="fitem"><label class="fl">기록 항목 <small>— 항목명(입력 형태) 꼴로 한 줄에 하나씩</small></label><textarea data-k="fields" style="min-height:70px" placeholder="예) 오늘 내가 맡은 역할(선택형)&#10;오늘 우리 모둠에서 나온 가장 좋은 생각(한 줄 글)&#10;내 참여도 스스로 별점(1~5)"></textarea></div>
+      <div class="row2">
+        <div class="fitem"><label class="fl">입력 주체</label><input type="text" data-k="who" placeholder="예) 학생 스스로 (교사는 확인만)"></div>
+        <div class="fitem"><label class="fl">입력 시점</label><input type="text" data-k="when" placeholder="예) 매 차시 마무리 3분"></div>
+      </div>
+      <div class="fitem"><label class="fl">입력 방식 <small>— 1분 안에 끝나야 매일 씁니다</small></label><textarea data-k="how" style="min-height:48px" placeholder="예) 별점은 탭 한 번, 글은 한 줄만. 번호로 로그인 없이 자기 카드 선택"></textarea></div>
+    </div>
+
+    <div class="sec s4">
+      <h3><span class="no">4</span>화면 구성</h3>
+      <div class="row2">
+        <div class="fitem"><label class="fl">학생 화면</label><textarea data-k="studentView" style="min-height:70px" placeholder="예) 내 번호 선택 → 오늘 기록 3칸 → 제출하면 내 지난 기록이 타임라인으로 보임"></textarea></div>
+        <div class="fitem"><label class="fl">교사 화면</label><textarea data-k="teacherView" style="min-height:70px" placeholder="예) 오늘 입력 현황 한눈에(안 낸 학생 표시), 학생별 누적 기록 카드, 별점 추이"></textarea></div>
+      </div>
+    </div>
+
+    <div class="sec s5">
+      <h3><span class="no">5</span>산출물</h3>
+      <div class="checks">
+        <label><input type="checkbox" data-c="png" checked>PNG 카드 (학생별 성장 카드)</label>
+        <label><input type="checkbox" data-c="pdf" checked>PDF 보고서 (인쇄용)</label>
+        <label><input type="checkbox" data-c="csv">CSV 내려받기 (엑셀용)</label>
+      </div>
+      <div class="fitem"><label class="fl">산출물 쓰임새 <small>— 어디에 쓸 건가요</small></label><textarea data-k="output" style="min-height:48px" placeholder="예) 학기말 생활기록부 참고 자료, 학부모 상담 때 성장 근거로 제시"></textarea></div>
+    </div>
+    </div>
+
+    <div class="tools">
+      <button class="btn-navy" id="draftBtn">🤖 AI 초안 받기 (①②만 적으면 ③④⑤를 채워요)</button>
+      <div class="spin" id="draftSpin"></div>
+      <button class="btn-grad" onclick="makePrompt()">📜 바이브코딩 프롬프트 만들기</button>
+      <button class="btn-outline" onclick="savePng()">🖼 기획서 저장</button>
+    </div>
+
+    <div class="prompt-box" id="promptBox">
+      <h2 style="font-size:17px;margin:2px 0 8px">📜 완성 프롬프트 — 제미나이 캔버스에 붙여넣으세요</h2>
+      <pre id="promptText"></pre>
+      <div class="tools" style="margin-top:10px">
+        <button class="btn-grad" onclick="copyPrompt()">📋 프롬프트 복사</button>
+        <a class="btn-outline" href="https://gemini.google.com" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block">↗ 제미나이 열기</a>
+      </div>
+      <div class="gemini-tip">💡 제미나이에서 <b>Canvas</b>를 켜고 붙여넣으면 화면 옆에 앱이 바로 만들어집니다. 마음에 안 드는 부분은 "별점을 이모지로 바꿔 줘"처럼 <b>말로 고치면</b> 됩니다. 완성되면 공유 버튼으로 학생에게 링크를 주세요.</div>
+    </div>
+  </div>
+</main>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>🔒 AI 기능 활성화</h3>
+    <p>강사가 안내한 비밀번호를 입력하세요.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호">
+    <div class="err" id="pwErr">비밀번호가 일치하지 않습니다.</div>
+    <div class="row">
+      <button class="btn-outline" id="pwCancel">취소</button>
+      <button class="btn-navy" id="pwOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>2026년 인공지능 활용 선도교사 연수 · 10과정 교실처럼 실행하다 — 과정을 남기는 도구는 교사가 기획한다</footer>
+
+<script>
+const LS_KEY='p10-plan';
+const $=id=>document.getElementById(id);
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600); }
+
+let data={};
+try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); if(s) data=s; }catch(e){}
+function save(){ localStorage.setItem(LS_KEY,JSON.stringify(data)); }
+
+document.querySelectorAll('[data-k]').forEach(el=>{
+  const k=el.dataset.k;
+  if(data[k]) el.value=data[k];
+  el.addEventListener('input',()=>{ data[k]=el.value; save(); });
+});
+document.querySelectorAll('[data-c]').forEach(el=>{
+  const k='c_'+el.dataset.c;
+  if(k in data) el.checked=data[k];
+  el.addEventListener('change',()=>{ data[k]=el.checked; save(); });
+});
+
+// ---------- 비밀번호 ----------
+let unlocked=false, enteredPw='';
+const modalBg=$('modalBg'), pwInput=$('pwInput');
+$('pwCancel').onclick=()=>modalBg.style.display='none';
+function tryPw(){
+  enteredPw=pwInput.value.trim();
+  if(!enteredPw){ $('pwErr').style.display='block'; return; }
+  unlocked=true; modalBg.style.display='none'; runDraft();
+}
+$('pwOk').onclick=tryPw;
+pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
+
+// ---------- AI 초안 ----------
+$('draftBtn').onclick=()=>{
+  const lesson=[data.grade,data.unit,data.lesson].filter(Boolean).join(' / ');
+  if(!lesson.trim() && !(data.target||'').trim()){ toast('①수업 정보나 ②기록하고 싶은 것을 먼저 적어 주세요 ✏️'); return; }
+  if(unlocked) runDraft();
+  else { modalBg.style.display='flex'; pwInput.value=''; $('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50); }
+};
+async function runDraft(){
+  const btn=$('draftBtn'), spin=$('draftSpin');
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const res=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw,mode:'draft',
+        lesson:[data.grade,data.unit,data.lesson].filter(Boolean).join(' / '),
+        target:data.target||''})});
+    const j=await res.json();
+    if(res.status===401){ unlocked=false; enteredPw=''; $('draftBtn').click(); $('pwErr').style.display='block'; throw new Error('비밀번호가 올바르지 않습니다. 다시 입력해 주세요.'); }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
+    const fill=(k,v)=>{ if(!v) return; data[k]=v; const el=document.querySelector(`[data-k=${k}]`); if(el) el.value=v; };
+    fill('fields',j.fields); fill('who',j.who); fill('when',j.when); fill('how',j.how);
+    fill('studentView',j.studentView); fill('teacherView',j.teacherView); fill('output',j.output);
+    save();
+    toast('초안을 채웠어요. 내 수업에 맞게 고쳐 쓰세요 ✏️');
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+
+// ---------- 프롬프트 조립 (로컬, AI 불필요) ----------
+function makePrompt(){
+  const need=['lesson','target','fields'];
+  const missing=need.filter(k=>!(data[k]||'').trim());
+  if(missing.length){ toast('학습 활동·기록할 데이터·기록 항목은 꼭 채워 주세요 ✏️'); return; }
+  const outs=[];
+  if(data.c_png!==false) outs.push('학생별 기록을 모은 카드 화면 + PNG 저장 버튼(html2canvas CDN 사용)');
+  if(data.c_pdf!==false) outs.push('교사용 종합 보고서 화면 + 인쇄(PDF 저장) 버튼 — 인쇄 전용 CSS로 깔끔하게');
+  if(data.c_csv) outs.push('전체 기록 CSV 내려받기 버튼(엑셀에서 열리도록 UTF-8 BOM)');
+  const p=`너는 초등학교 교사를 돕는 웹 개발자야. 아래 기획서대로 '과정중심평가 기록 웹앱'을 만들어 줘.
+
+[수업 정보]
+- 대상: ${data.grade||'초등학교 학급'}${data.unit?' · '+data.unit:''}
+- 학습 활동: ${data.lesson}
+
+[이 앱이 기록하려는 과정 데이터]
+${data.target}
+
+[기록 설계]
+- 기록 항목:
+${(data.fields||'').split('\n').filter(Boolean).map(s=>'  · '+s.trim()).join('\n')}
+- 입력 주체: ${data.who||'학생 스스로'}
+- 입력 시점: ${data.when||'매 차시 마무리'}
+- 입력 방식: ${data.how||'1분 안에 끝나는 간단한 입력(선택·별점·한 줄 글)'}
+
+[화면 구성]
+- 학생 화면: ${data.studentView||'자기 번호를 고르고 오늘 기록을 입력, 제출하면 자기 누적 기록이 보임'}
+- 교사 화면: ${data.teacherView||'오늘 입력 현황(미입력 학생 표시)과 학생별 누적 기록을 한눈에'}
+- 첫 화면에서 '학생'과 '교사' 중 선택해 들어가는 구조로.
+
+[산출물]
+${outs.map(s=>'- '+s).join('\n')}
+${data.output?'- 쓰임새: '+data.output:''}
+
+[반드시 지킬 기술 조건]
+1. 하나의 HTML 파일(바닐라 HTML/CSS/JS)로. 서버·로그인·외부 DB 없이 작동해야 함.
+2. 모든 기록은 localStorage에 자동 저장 — 새로고침해도 유지되고, 교사 화면에 '전체 초기화' 버튼(확인 창 포함)을 둘 것.
+3. 학생 기기는 크롬북(16:9 가로 화면). 글씨는 크게, 버튼은 손가락으로 누르기 쉽게.
+4. 학생 이름은 절대 입력받지 말 것 — 출석 번호나 별칭만 사용(개인정보 보호).
+5. 디자인은 모던하고 단정하게(파스텔 톤). 유치한 게임 느낌·과한 이모지·세로로 끝없이 길어지는 화면은 피하고 탭으로 정리할 것.
+6. 학생 입력은 1분 안에 끝나야 함 — 입력 칸을 최소화하고 엔터로 제출되게.
+
+다 만들면 마지막에 교사용 사용 방법을 3줄로 요약해 줘.`;
+  $('promptText').textContent=p;
+  $('promptBox').style.display='block';
+  setTimeout(()=>$('promptBox').scrollIntoView({behavior:'smooth',block:'start'}),100);
+  toast('프롬프트가 완성됐어요 📜 복사해서 제미나이 캔버스에 붙여넣으세요');
+}
+function copyPrompt(){
+  navigator.clipboard.writeText($('promptText').textContent).then(()=>toast('복사했어요 📋 제미나이 캔버스에 붙여넣으세요'));
+}
+
+// ---------- 공용 ----------
+function savePng(){
+  toast('이미지를 만드는 중…');
+  html2canvas($('planSheet'),{scale:2,backgroundColor:'#ffffff',
+    onclone:doc=>{
+      doc.querySelectorAll('textarea').forEach(t=>{
+        const src=t.dataset.k?document.querySelector(`textarea[data-k="${t.dataset.k}"]`):null;
+        const cs=getComputedStyle(src||t);
+        const d=doc.createElement('div');
+        d.textContent=(src?src.value:t.value);
+        d.style.whiteSpace='pre-wrap'; d.style.wordBreak='break-word'; d.style.width='100%';
+        d.style.minHeight=(src?src.clientHeight:40)+'px';
+        d.style.fontFamily=cs.fontFamily; d.style.fontSize=cs.fontSize; d.style.lineHeight=cs.lineHeight;
+        d.style.padding=cs.padding; d.style.border=cs.border; d.style.borderRadius=cs.borderRadius;
+        d.style.background='#fff'; d.style.color='#1B2A3A';
+        t.replaceWith(d);
+      });
+    }}).then(cv=>{
+    const a=document.createElement('a');
+    a.download='바이브코딩_기획서'+(data.grade?'_'+data.grade:'')+'.png';
+    a.href=cv.toDataURL('image/png'); a.click();
+    toast('기획서를 저장했어요 🖼');
+  }).catch(()=>toast('⚠ 이미지 저장에 실패했어요'));
+}
+function clearAll(){
+  if(!confirm('기획서 내용을 모두 지울까요? 되돌릴 수 없습니다.')) return;
+  data={}; localStorage.removeItem(LS_KEY);
+  document.querySelectorAll('input[data-k],textarea[data-k]').forEach(el=>el.value='');
+  document.querySelectorAll('[data-c]').forEach(el=>el.checked=el.dataset.c!=='csv');
+  $('promptBox').style.display='none';
+  toast('내용을 지웠어요');
+}
+</script>
+</body>
+</html>
