@@ -133,7 +133,7 @@ button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-siz
     <span class="tr-dim" id="trDim"></span>
     <div class="tr-list" id="trList"></div>
     <div class="tools" style="justify-content:flex-end">
-      <button class="btn-outline" style="font-size:13px;padding:9px 14px" onclick="finishTrain()">건너뛰기</button>
+      <button class="btn-outline hide" id="trQuitBtn" style="font-size:13px;padding:9px 14px" onclick="finishTrain()">그만 보고 시작</button>
       <button class="btn-grad" onclick="openTrainModal()">다음 →</button>
     </div>
   </div>
@@ -258,6 +258,8 @@ function startTrain(){
     const cs=ITEMS.filter(it=>it.d===d);
     return cs[Math.floor(Math.random()*cs.length)];
   });
+  // 처음 1회는 건너뛸 수 없고, '다시 보기'로 들어온 경우만 중간에 나갈 수 있다
+  $('trQuitBtn').classList.toggle('hide',!localStorage.getItem(TRAIN_KEY));
   $('startCard').classList.add('hide'); $('trainCard').classList.remove('hide');
   showTrain();
 }
