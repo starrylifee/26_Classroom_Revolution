@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>데이터 탐정 · 12과정</title>
+<meta property="og:title" content="데이터 탐정 — 숫자 뒤의 아이">
+<meta property="og:description" content="데이터 신호만 보고 가설을 세우고, 맥락이 공개되면 교사 행동을 결정하는 판독 퀴즈.">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2C59'/%3E%3Ccircle cx='28' cy='28' r='12' fill='none' stroke='%23F6C2E4' stroke-width='5'/%3E%3Cpath d='M37 37l12 12' stroke='%23FCE303' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E2C59;--teal:#7A2E6E;--sky:#F6C2E4;--pink:#E85FA5;--bg:#F7F9FF;--line:#DDE1EB;--muted:#5B6B7C;--good:#1E7A4F;--bad:#C0392B}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:#1B2A3A;min-height:100vh;display:flex;flex-direction:column}
+header{background:linear-gradient(90deg,#C9C4F2 0%,#F9C8E8 100%);color:var(--navy);padding:14px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(420px 420px at 6% 16%,rgba(178,158,240,.30),transparent 70%),radial-gradient(520px 520px at 2% 78%,rgba(120,205,242,.22),transparent 70%),radial-gradient(400px 400px at 14% 46%,rgba(250,150,205,.22),transparent 70%)}
+header,main,footer{position:relative;z-index:1}
+footer{background:#E7F2FB;color:#6B7A99;font-size:13px;padding:10px 28px}
+header .badge{background:#fff;color:#C2447A;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+header h1{font-size:22px;font-weight:700}
+header .home{color:#52609B;text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px;margin-left:auto}
+header .home~.home{margin-left:0}
+header .home:hover{color:var(--navy)}
+
+main{flex:1;max-width:920px;width:100%;margin:0 auto;padding:18px 28px 26px;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05);padding:22px 24px}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:700;transition:.15s}
+.btn-grad{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;padding:12px 26px;border-radius:999px}
+.btn-grad:hover{filter:brightness(.93)}
+.btn-grad:disabled{background:#CBA9C6;filter:none;cursor:not-allowed}
+.btn-outline{background:#fff;border:1.5px solid var(--line);color:#1B2A3A;font-weight:500;padding:12px 18px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.spin{display:none;width:22px;height:22px;border:3px solid #E8E2F2;border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+textarea{width:100%;font-family:inherit;font-size:15px;padding:12px 14px;border:1.5px solid var(--line);border-radius:9px;outline:none;background:#fff;line-height:1.7;resize:vertical;min-height:84px}
+textarea:focus{border-color:var(--sky);background:#FEFBFE}
+
+#startCard h2{font-size:24px;color:var(--navy);margin-bottom:8px}
+#startCard .lead{font-size:15.5px;line-height:1.8;color:#33415C;margin-bottom:16px}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+@media(max-width:760px){.rules{grid-template-columns:1fr}}
+.rules>div{border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.6;background:#FAFAFE}
+.rules b{display:block;color:var(--navy);font-size:15px;margin-bottom:4px}
+
+.hud{display:flex;align-items:center;gap:14px;padding:12px 20px}
+.hud .prog{font-size:15px;font-weight:700;color:var(--teal)}
+.hud .phase{font-size:13.5px;color:var(--muted)}
+.hud .score{margin-left:auto;font-size:22px;font-weight:900;color:var(--navy)}
+.hud .plus{font-size:14px;color:var(--pink);font-weight:700;opacity:0;transition:.4s}
+.hud .plus.show{opacity:1}
+
+.case-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.case-head h2{font-size:20px;color:var(--navy)}
+.signals{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:6px}
+@media(max-width:720px){.signals{grid-template-columns:1fr}}
+.sig{background:#F4F8FF;border:1.5px solid #C6D8F5;border-radius:12px;padding:12px 14px}
+.sig .sv{font-size:19px;font-weight:900;color:#2E5AA8;line-height:1.4}
+.sig .sl{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.5}
+.sig .avg{font-size:12px;color:#8A87A8}
+
+.phase-box{margin-top:16px;border-top:2px dashed var(--line);padding-top:14px}
+.phase-box h3{font-size:17px;color:var(--navy);margin-bottom:4px}
+.phase-box .ph{font-size:14px;color:var(--muted);margin-bottom:10px;line-height:1.6}
+.phase-box .ph b{color:var(--pink)}
+.checks3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+@media(max-width:720px){.checks3{grid-template-columns:1fr}}
+.chk{border:1.5px solid;border-radius:12px;padding:11px 14px;font-size:13.5px;line-height:1.6;position:relative}
+.chk b{display:block;font-size:14.5px;margin-bottom:2px}
+.chk .mark{position:absolute;top:9px;right:11px;font-size:17px;font-weight:900}
+.chk.hit{background:#F0F9F4;border-color:#BFE3CE}.chk.hit b,.chk.hit .mark{color:var(--good)}
+.chk.miss{background:#FDF1F1;border-color:#EFC1C1}.chk.miss b,.chk.miss .mark{color:var(--bad)}
+.context{background:#FFF9EC;border:1.5px solid #E8D5A0;border-radius:12px;padding:13px 16px;font-size:14.5px;line-height:1.8;color:#6B5312;margin:12px 0 4px}
+.context b{color:#9C7A1E}
+.ai-note{margin-top:12px;background:#F4F8FF;border:1.5px solid #C6D8F5;border-radius:10px;padding:11px 14px;font-size:14px;line-height:1.7;color:#2E5AA8}
+.model-box{margin-top:10px;background:#F6F1FE;border:1.5px solid #DDD2F0;border-radius:10px;padding:11px 14px;font-size:14px;line-height:1.7;color:#4A3A6E}
+.model-box b{color:var(--teal)}
+.act-good{margin-top:10px;border-radius:10px;padding:11px 14px;font-size:14px;line-height:1.7;border:1.5px solid}
+.act-good.ok{background:#F0F9F4;border-color:#BFE3CE;color:#215C3C}
+.act-good.no{background:#FDF1F1;border-color:#EFC1C1;color:#8A3030}
+
+#resultCard{text-align:center}
+#resultCard h2{font-size:24px;color:var(--navy);margin-bottom:4px}
+.grade{font-size:42px;font-weight:900;margin:10px 0 2px;background:linear-gradient(90deg,#8F86DD,#EC6FB2);-webkit-background-clip:text;background-clip:text;color:transparent}
+.final{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:14px}
+.res-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+.res-table th{background:var(--navy);color:#fff;padding:8px;font-weight:700}
+.res-table td{border:1px solid var(--line);padding:8px;text-align:center}
+.res-table td.tt{text-align:left}
+.res-msg{font-size:15px;line-height:1.8;color:#33415C;max-width:640px;margin:0 auto 6px}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
+.toast.show{opacity:1;transform:none}
+.modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
+.modal h3{font-size:18px;color:var(--navy);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);margin-bottom:14px}
+.modal input{width:100%;padding:13px;font-size:16px;border:1.5px solid var(--line);border-radius:9px;outline:none;font-family:inherit}
+.modal input:focus{border-color:var(--sky)}
+.modal .err{display:none;color:#C0392B;font-size:13px;margin-top:8px}
+.modal .row{display:flex;gap:10px;margin-top:16px}
+.modal .row button{flex:1;padding:12px}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">12과정</span>
+  <h1>데이터 탐정</h1>
+  <a class="home" href="/12/">🎙 리허설 도우미</a>
+  <a class="home" href="/">🏠 홈</a>
+</header>
+
+<main>
+  <div class="card" id="startCard">
+    <h2>🔍 숫자 뒤의 아이를 찾아라</h2>
+    <p class="lead">대시보드에 수상한 신호를 남긴 학생 4명의 파일이 접수되었습니다.<br>
+    <b>데이터만 보고 서둘러 판결하면 탐정 실격.</b> 가설을 세우고, 사정이 공개되면 교사의 다음 행동을 결정하세요.</p>
+    <div class="rules">
+      <div><b>🧩 1단계 · 가설</b>데이터 신호만 보고 가설을 세웁니다 — ①데이터 근거 ②단정 금지 ③추가 확인 계획, 각 100점</div>
+      <div><b>📂 2단계 · 사정 공개</b>이 학생의 실제 이야기가 공개됩니다 — 내 가설과 비교해 보세요</div>
+      <div><b>🎯 3단계 · 교사 행동</b>사정을 반영한 다음 행동을 정하면 100점 — 4명 모두 만나면 최종 등급</div>
+    </div>
+    <button class="btn-grad" style="font-size:17px;padding:14px 34px" onclick="askStart()">🔍 수사 시작</button>
+  </div>
+
+  <div class="card hud hide" id="hud">
+    <span class="prog" id="hudProg">사건 1 / 4</span>
+    <span class="phase" id="hudPhase">1단계 · 가설</span>
+    <span class="plus" id="hudPlus"></span>
+    <span class="score" id="hudScore">0점</span>
+  </div>
+
+  <div class="card hide" id="playCard">
+    <div class="case-head"><h2 id="cTitle"></h2></div>
+    <div class="signals" id="cSignals"></div>
+
+    <div class="phase-box" id="ph1">
+      <h3>🧩 1단계 · 가설 세우기</h3>
+      <p class="ph">이 데이터가 말하는 것은 무엇일까요? <b>단정하지 말고</b>, 무엇을 더 확인할지까지 적어 보세요.</p>
+      <textarea id="hypoInput" placeholder="예) 학습시간에 비해 푼 문제가 적은 걸 보면 어딘가 막혀 있을 수 있다. 어떤 문제에서 멈췄는지 풀이 기록을 열어 보고, 본인과 짧게 이야기해 확인하고 싶다."></textarea>
+      <div class="tools" style="margin-top:10px">
+        <button class="btn-grad" id="hypoBtn" onclick="submitHypo()">🧩 가설 제출</button>
+        <div class="spin" id="hypoSpin"></div>
+        <span style="font-size:13px;color:var(--muted)">Ctrl+Enter 제출</span>
+      </div>
+      <div class="checks3 hide" id="hypoChecks"></div>
+      <div class="ai-note hide" id="hypoNote"></div>
+    </div>
+
+    <div class="phase-box hide" id="ph2">
+      <h3>📂 2단계 · 사정 공개</h3>
+      <div class="context" id="cContext"></div>
+      <h3 style="margin-top:14px">🎯 3단계 · 교사의 다음 행동</h3>
+      <p class="ph">공개된 사정을 반영해, 교사로서 <b>다음에 할 행동</b>을 구체적으로 적어 보세요.</p>
+      <textarea id="actInput" placeholder="예) …"></textarea>
+      <div class="tools" style="margin-top:10px">
+        <button class="btn-grad" id="actBtn" onclick="submitAct()">🎯 행동 제출</button>
+        <div class="spin" id="actSpin"></div>
+      </div>
+      <div class="act-good hide" id="actResult"></div>
+      <div class="model-box hide" id="modelBox"></div>
+      <div class="ai-note hide" id="actNote"></div>
+    </div>
+
+    <div class="tools hide" id="nextTools">
+      <button class="btn-grad" id="nextBtn" onclick="nextCase()">▶ 다음 사건</button>
+    </div>
+  </div>
+
+  <div class="card hide" id="resultCard">
+    <div id="resultShot" style="padding:6px">
+      <h2>🔍 수사 종료 — 탐정 등급</h2>
+      <div class="grade" id="gradeName"></div>
+      <div class="final" id="finalScore"></div>
+      <p class="res-msg" id="gradeMsg"></p>
+      <table class="res-table">
+        <thead><tr><th>사건</th><th>가설</th><th>행동</th><th>점수</th></tr></thead>
+        <tbody id="resBody"></tbody>
+      </table>
+      <p class="res-msg" style="font-size:13.5px;color:var(--muted)">데이터는 신호를 보여 주지만, 이야기는 아이에게 있습니다 — 수치 → 맥락 → 판단.</p>
+    </div>
+    <div class="tools" style="justify-content:center">
+      <button class="btn-outline" onclick="saveResult()">🖼 결과 카드 저장</button>
+      <button class="btn-outline" onclick="location.reload()">↺ 다시 수사하기</button>
+    </div>
+  </div>
+</main>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>🔒 AI 채점관 호출</h3>
+    <p>강사가 안내한 비밀번호를 입력하세요.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호">
+    <div class="err" id="pwErr">비밀번호가 일치하지 않습니다.</div>
+    <div class="row">
+      <button class="btn-outline" id="pwCancel">취소</button>
+      <button class="btn-navy" id="pwOk" style="background:#7A2E6E;color:#fff">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>2026년 인공지능 활용 선도교사 연수 · 12과정 수업 실행 결과를 성장으로 잇다 — 데이터 뒤의 아이 읽기</footer>
+
+<script>
+// 사건 4건 — 12과정 교안 활동 1의 사례를 재구성 (외부 도구 캡쳐 대신 데이터 카드로 재현)
+const CASES=[
+ {title:'사건 1 · 오래 붙잡고 있는 아이',
+  signals:[
+   {v:'주당 312분',l:'학습시간',avg:'학급 평균 150분'},
+   {v:'9문제',l:'이번 주 푼 문제 수',avg:'학급 평균 25문제'},
+   {v:'71%',l:'정답률',avg:'학급 평균 74%'}],
+  context:'풀이 기록을 열어 보니 <b>한 단원의 어려운 문제에서 오래 멈춰</b> 있었다. 쉬는 시간에도 같은 문제를 다시 열어 본 기록이 남아 있다. 포기한 것이 아니라 붙잡고 있었던 것이다.',
+  model:'막힌 문제를 함께 열어 어디서 멈췄는지 확인하고, 문제를 작은 단계로 쪼개 힌트를 준다. 오래 붙잡은 끈기를 먼저 인정해 준다.'},
+ {title:'사건 2 · 이번 주만 조용한 아이',
+  signals:[
+   {v:'0건',l:'이번 주 학습 기록',avg:'지난주까지 주 12건'},
+   {v:'88% · 100%',l:'지난 4주 정답률 · 제출률',avg:'꾸준히 상위권'},
+   {v:'정상',l:'이번 주 출석',avg:'지각·결석 없음'}],
+  context:'학기 전체 기록은 꾸준히 성실했다. 조용히 물어보니 <b>가정 행사로 이번 주에는 기기를 쓸 수 없었다</b>고 한다. 다음 주부터는 평소대로 할 수 있다고 했다.',
+  model:'일시적 공백을 학습 부진으로 단정하지 않는다. 놓친 활동 중 꼭 필요한 것만 골라 부담 없이 따라잡을 길을 안내하고, 기록 공백의 사정을 메모해 둔다.'},
+ {title:'사건 3 · 화면은 켜져 있는데',
+  signals:[
+   {v:'55분',l:'오늘 LMS 접속 시간',avg:'학급 최상위'},
+   {v:'2건',l:'문제 풀이 기록',avg:'학급 평균 11건'},
+   {v:'무응답',l:'영상 중간 퀴즈',avg:'재생은 완료로 표시'}],
+  context:'순회하며 살펴보니 <b>학습 창을 켜 둔 채 다른 앱을 쓰고 있었다.</b> 접속 시간은 길지만 실제 학습 행동은 거의 없었다.',
+  model:'접속 시간을 참여로 읽지 않는다. 벌보다 먼저 과제 구조를 바꾼다 — 중간중간 응답해야 진행되는 활동으로 재설계하고, 순회 위치를 조정한다. 흥미를 잃은 이유도 따로 살핀다.'},
+ {title:'사건 4 · 뒤죽박죽 글의 비밀',
+  signals:[
+   {v:'낮음',l:'글쓰기 과제 AI 평가',avg:'평: 구성이 혼란스러움'},
+   {v:'2회',l:'최근 수업 중 자리 이탈',avg:'이전에는 없던 행동'},
+   {v:'다툼 기록',l:'모둠 활동 관찰',avg:'또래 갈등 증가'}],
+  context:'상담해 보니 <b>사인펜·키보드 소리에 극도로 민감</b>해 교실 소음이 큰 스트레스였고, <b>가족의 해외 이주를 앞둔 불안</b>까지 겹쳐 있었다. 부모 상담과 치료 지원 뒤 눈에 띄게 안정을 찾았다.',
+  model:'글 점수·행동 기록만으로 판단하지 않고 정서·감각 요인을 확인한다. 학부모 상담과 전문 지원을 연계하고, 소음을 줄인 자리 배치 등 환경을 조정한다.'}
+];
+
+const $=id=>document.getElementById(id);
+let idx=0, score=0, results=[], phase=1, enteredPw='';
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600); }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function sigText(c){ return c.signals.map(s=>`${s.l}: ${s.v} (${s.avg})`).join(' / '); }
+
+// ---------- 비밀번호 ----------
+const modalBg=$('modalBg'), pwInput=$('pwInput');
+function askStart(){ modalBg.style.display='flex'; pwInput.value=''; $('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50); }
+$('pwCancel').onclick=()=>modalBg.style.display='none';
+async function tryPw(){
+  const v=pwInput.value.trim();
+  if(!v){ $('pwErr').style.display='block'; return; }
+  $('pwOk').disabled=true;
+  try{
+    const r=await fetch('/api/detective',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pw:v,mode:'verify'})});
+    if(r.status===401){ $('pwErr').style.display='block'; return; }
+    if(!r.ok) throw new Error('서버 확인 실패');
+    enteredPw=v; modalBg.style.display='none'; startGame();
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ $('pwOk').disabled=false; }
+}
+$('pwOk').onclick=tryPw;
+pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
+
+// ---------- 진행 ----------
+function startGame(){
+  $('startCard').classList.add('hide'); $('hud').classList.remove('hide'); $('playCard').classList.remove('hide');
+  idx=0; score=0; results=[]; loadCase();
+}
+function loadCase(){
+  const c=CASES[idx]; phase=1;
+  $('hudProg').textContent=`사건 ${idx+1} / ${CASES.length}`;
+  $('hudPhase').textContent='1단계 · 가설';
+  $('cTitle').textContent=c.title;
+  $('cSignals').innerHTML=c.signals.map(s=>`<div class="sig"><div class="sv">${esc(s.v)}</div><div class="sl">${esc(s.l)}</div><div class="avg">${esc(s.avg)}</div></div>`).join('');
+  $('hypoInput').value=''; $('actInput').value='';
+  $('hypoInput').disabled=false; $('actInput').disabled=false;
+  $('hypoBtn').classList.remove('hide'); $('actBtn').classList.remove('hide');
+  ['hypoChecks','hypoNote','ph2','actResult','modelBox','actNote','nextTools'].forEach(id=>$(id).classList.add('hide'));
+  window.scrollTo({top:0});
+  setTimeout(()=>$('hypoInput').focus(),100);
+}
+function addScore(pts,label){
+  score+=pts;
+  $('hudScore').textContent=score.toLocaleString()+'점';
+  const p=$('hudPlus'); p.textContent=`+${pts} ${label}`; p.classList.add('show');
+  clearTimeout(p._tm); p._tm=setTimeout(()=>p.classList.remove('show'),2200);
+}
+
+async function submitHypo(){
+  const c=CASES[idx], ans=$('hypoInput').value.trim();
+  if(ans.length<10){ toast('가설을 조금 더 구체적으로 적어 주세요 ✏️'); return; }
+  $('hypoBtn').disabled=true; $('hypoSpin').style.display='block';
+  try{
+    const r=await fetch('/api/detective',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw,mode:'hypo',answer:ans,signals:sigText(c)})});
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error||'요청 실패');
+    const items=[
+      {k:'grounded',t:'데이터 근거',d:'제시된 신호를 근거로 삼았는가'},
+      {k:'careful',t:'단정 금지',d:'낙인 없이 가설 톤을 지켰는가'},
+      {k:'checks',t:'추가 확인 계획',d:'판단 전 더 확인할 것을 정했는가'}];
+    const got=items.filter(it=>j[it.k]).length;
+    $('hypoChecks').innerHTML=items.map(it=>`<div class="chk ${j[it.k]?'hit':'miss'}"><span class="mark">${j[it.k]?'✓':'✗'}</span><b>${it.t}</b>${it.d}</div>`).join('');
+    $('hypoChecks').classList.remove('hide');
+    if(j.comment){ $('hypoNote').textContent='🔍 채점관 | '+j.comment; $('hypoNote').classList.remove('hide'); }
+    if(got>0) addScore(got*100,`가설 ${got}/3`);
+    results.push({title:c.title,hypo:got,act:false,pts:got*100});
+    $('hypoInput').disabled=true; $('hypoBtn').classList.add('hide');
+    phase=2; $('hudPhase').textContent='2·3단계 · 사정과 행동';
+    $('cContext').innerHTML=c.context;
+    $('ph2').classList.remove('hide');
+    setTimeout(()=>{ $('actInput').focus(); $('ph2').scrollIntoView({behavior:'smooth',block:'center'}); },100);
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ $('hypoBtn').disabled=false; $('hypoSpin').style.display='none'; }
+}
+
+async function submitAct(){
+  const c=CASES[idx], ans=$('actInput').value.trim();
+  if(ans.length<10){ toast('행동을 조금 더 구체적으로 적어 주세요 ✏️'); return; }
+  $('actBtn').disabled=true; $('actSpin').style.display='block';
+  try{
+    const r=await fetch('/api/detective',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw,mode:'action',answer:ans,signals:sigText(c),context:c.context.replace(/<[^>]+>/g,'')})});
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error||'요청 실패');
+    const box=$('actResult');
+    box.className='act-good '+(j.ok?'ok':'no');
+    box.textContent=j.ok?'✓ 사정을 반영한 좋은 행동입니다 (+100점)':'✗ 공개된 사정이 행동에 반영되지 않았어요';
+    box.classList.remove('hide');
+    $('modelBox').innerHTML='<b>참고 행동</b> · '+esc(c.model); $('modelBox').classList.remove('hide');
+    if(j.comment){ $('actNote').textContent='🔍 채점관 | '+j.comment; $('actNote').classList.remove('hide'); }
+    if(j.ok) addScore(100,'교사 행동');
+    const rec=results[results.length-1];
+    rec.act=!!j.ok; if(j.ok) rec.pts+=100;
+    $('actInput').disabled=true; $('actBtn').classList.add('hide');
+    $('nextBtn').textContent=(idx+1<CASES.length)?'▶ 다음 사건':'🏁 탐정 등급 보기';
+    $('nextTools').classList.remove('hide');
+    setTimeout(()=>$('nextTools').scrollIntoView({behavior:'smooth',block:'center'}),100);
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ $('actBtn').disabled=false; $('actSpin').style.display='none'; }
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.ctrlKey){
+    if(phase===1&&!$('hypoInput').disabled) submitHypo();
+    else if(phase===2&&!$('actInput').disabled) submitAct();
+  }
+});
+
+function nextCase(){ idx++; if(idx<CASES.length){ loadCase(); return; } showResult(); }
+
+function showResult(){
+  $('playCard').classList.add('hide'); $('hud').classList.add('hide'); $('resultCard').classList.remove('hide');
+  const max=CASES.length*400;
+  let grade,msg;
+  if(score>=1400){ grade='🕵️ 명탐정'; msg='숫자 뒤의 이야기까지 읽는 눈이 있습니다. 데이터와 아이 사이의 간극을 놓치지 않아요.'; }
+  else if(score>=1000){ grade='🔎 베테랑 형사'; msg='가설의 감이 좋습니다. 단정 대신 확인, 그 습관만 단단히 하면 명탐정입니다.'; }
+  else if(score>=600){ grade='📋 수습 탐정'; msg='데이터 읽기는 시작됐습니다. 판단 전에 「무엇을 더 확인할까」를 한 번씩 물어 보세요.'; }
+  else { grade='👣 신입 조수'; msg='첫 수사로는 충분합니다. 숫자를 보면 결론보다 질문을 먼저 떠올려 보세요.'; }
+  $('gradeName').textContent=grade;
+  $('finalScore').textContent=`${score.toLocaleString()}점 / ${max.toLocaleString()}점`;
+  $('gradeMsg').textContent=msg;
+  $('resBody').innerHTML=results.map((r,i)=>`<tr><td class="tt">${esc(r.title)}</td><td>${r.hypo}/3</td><td>${r.act?'✓':'✗'}</td><td><b>${r.pts.toLocaleString()}</b></td></tr>`).join('');
+  window.scrollTo({top:0});
+}
+function saveResult(){
+  toast('이미지를 만드는 중…');
+  html2canvas($('resultShot'),{scale:2,backgroundColor:'#ffffff'}).then(cv=>{
+    const a=document.createElement('a');
+    a.download='데이터탐정_결과.png';
+    a.href=cv.toDataURL('image/png'); a.click();
+    toast('결과 카드를 저장했어요 🖼');
+  }).catch(()=>toast('⚠ 이미지 저장에 실패했어요'));
+}
+</script>
+</body>
+</html>

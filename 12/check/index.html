@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>과정중심평가 자가 체크 · 12과정</title>
+<meta property="og:title" content="과정중심평가 자가 체크">
+<meta property="og:description" content="내 수업은 결과중심일까 과정중심일까 — 10문항 체크와 AI 진단.">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2C59'/%3E%3Cpath d='M16 34l10 10 22-24' fill='none' stroke='%23F6C2E4' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E2C59;--teal:#7A2E6E;--sky:#F6C2E4;--pink:#E85FA5;--bg:#F7F9FF;--line:#DDE1EB;--muted:#5B6B7C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:#1B2A3A;min-height:100vh;display:flex;flex-direction:column}
+header{background:linear-gradient(90deg,#C9C4F2 0%,#F9C8E8 100%);color:var(--navy);padding:14px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(420px 420px at 6% 16%,rgba(178,158,240,.30),transparent 70%),radial-gradient(520px 520px at 2% 78%,rgba(120,205,242,.22),transparent 70%),radial-gradient(400px 400px at 14% 46%,rgba(250,150,205,.22),transparent 70%)}
+header,main,footer{position:relative;z-index:1}
+footer{background:#E7F2FB;color:#6B7A99;font-size:13px;padding:10px 28px}
+header .badge{background:#fff;color:#C2447A;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+header h1{font-size:22px;font-weight:700}
+header .home{color:#52609B;text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px;margin-left:auto}
+header .home~.home{margin-left:0}
+header .home:hover{color:var(--navy)}
+
+main{flex:1;max-width:980px;width:100%;margin:0 auto;padding:18px 28px 26px;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05);padding:22px 24px}
+.card h2{font-size:19px;color:var(--navy);margin-bottom:4px}
+.card .hint{font-size:14px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.card .hint b{color:var(--pink)}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:700;transition:.15s}
+.btn-grad{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;padding:12px 26px;border-radius:999px}
+.btn-grad:hover{filter:brightness(.93)}
+.btn-grad:disabled{background:#CBA9C6;filter:none;cursor:not-allowed}
+.btn-navy{background:var(--teal);color:#fff;padding:12px 22px}
+.btn-navy:hover{background:#5C2253}
+.btn-navy:disabled{background:#B99DB4;cursor:not-allowed}
+.btn-outline{background:#fff;border:1.5px solid var(--line);color:#1B2A3A;font-weight:500;padding:12px 18px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.spin{display:none;width:22px;height:22px;border:3px solid #E8E2F2;border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+textarea{width:100%;font-family:inherit;font-size:14.5px;padding:11px 13px;border:1.5px solid var(--line);border-radius:9px;outline:none;background:#fff;line-height:1.7;resize:vertical}
+textarea:focus{border-color:var(--sky);background:#FEFBFE}
+
+.grp{border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.grp h3{font-size:15.5px;margin-bottom:8px}
+.grp.g1{background:#F4F8FF;border-color:#C6D8F5}.grp.g1 h3{color:#2E5AA8}
+.grp.g2{background:#FFF5FA;border-color:#F5C6E0}.grp.g2 h3{color:#C2447A}
+.grp.g3{background:#F0F9F4;border-color:#BFE3CE}.grp.g3 h3{color:#1E7A4F}
+.grp.g4{background:#FFF9EC;border-color:#E8D5A0}.grp.g4 h3{color:#9C7A1E}
+.qrow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed rgba(0,0,0,.06)}
+.qrow:last-child{border-bottom:none}
+.qrow .q{flex:1;font-size:14px;line-height:1.5}
+.opts{display:flex;gap:5px}
+.opts button{padding:6px 13px;border-radius:999px;background:#fff;color:#8A87A8;font-size:13px;font-weight:700;border:1px solid rgba(0,0,0,.1)}
+.opts button.sel{background:linear-gradient(135deg,#8F86DD,#EC6FB2);color:#fff;border-color:transparent}
+
+.result{display:none;margin-top:4px}
+.verdict{text-align:center;margin-bottom:14px}
+.verdict .vname{font-size:30px;font-weight:900;background:linear-gradient(90deg,#8F86DD,#EC6FB2);-webkit-background-clip:text;background-clip:text;color:transparent}
+.verdict .vsub{font-size:14px;color:var(--muted);margin-top:4px;line-height:1.6}
+.bars .brow{margin-bottom:10px}
+.bars .bl{display:flex;justify-content:space-between;font-size:13.5px;color:#33415C;margin-bottom:3px}
+.bars .bl b{color:var(--navy)}
+.bar{height:16px;background:#F1EFF8;border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#8F86DD,#EC6FB2);transition:width .6s}
+
+.ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+@media(max-width:820px){.ai-grid{grid-template-columns:1fr}}
+.lst{border-radius:12px;padding:13px 16px;font-size:14px;line-height:1.8;border:1.5px solid}
+.lst h4{font-size:14.5px;margin-bottom:6px}
+.lst.s{background:#F0F9F4;border-color:#BFE3CE}.lst.s h4{color:#1E7A4F}
+.lst.g{background:#FDF1F6;border-color:#F2C4DA}.lst.g h4{color:#C2447A}
+.lst.p{background:#F6F1FE;border-color:#DDD2F0}.lst.p h4{color:var(--teal)}
+.lst.c{background:#F4F8FF;border-color:#C6D8F5}.lst.c h4{color:#2E5AA8}
+.lst.wide{grid-column:1/-1}
+.pre{white-space:pre-wrap}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
+.toast.show{opacity:1;transform:none}
+.modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
+.modal h3{font-size:18px;color:var(--navy);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);margin-bottom:14px}
+.modal input{width:100%;padding:13px;font-size:16px;border:1.5px solid var(--line);border-radius:9px;outline:none;font-family:inherit}
+.modal input:focus{border-color:var(--sky)}
+.modal .err{display:none;color:#C0392B;font-size:13px;margin-top:8px}
+.modal .row{display:flex;gap:10px;margin-top:16px}
+.modal .row button{flex:1;padding:12px}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">12과정</span>
+  <h1>과정중심평가 자가 체크</h1>
+  <button class="home" onclick="clearAll()" style="border:none;cursor:pointer;color:#C0392B">🗑 지우기</button>
+  <a class="home" href="/12/quiz/">🔍 데이터 탐정</a>
+  <a class="home" href="/12/">🎙 리허설 도우미</a>
+  <a class="home" href="/">🏠 홈</a>
+</header>
+
+<main>
+  <div class="card">
+    <h2>✅ 나의 수업은 결과중심일까, 과정중심일까</h2>
+    <p class="hint">최근에 실행한 수업(또는 시연한 설계안) 하나를 떠올리며 10문항을 체크하세요. <b>과정중심평가 3대 특징</b>(다각도 수집·즉각 피드백·성장 지원)과 평가 방법 배치를 스스로 점검합니다.</p>
+
+    <div id="checkSheet">
+    <div class="grp g1"><h3>① 다각도 수집 — 과정 중에 증거가 쌓이는가</h3><div data-g="1"></div></div>
+    <div class="grp g2"><h3>② 즉각 피드백 — 피드백이 제때 돌아가는가</h3><div data-g="2"></div></div>
+    <div class="grp g3"><h3>③ 성장 지원 — 평가의 목적이 성장인가</h3><div data-g="3"></div></div>
+    <div class="grp g4"><h3>④ 평가 방법 배치 — 적재적소에 있는가</h3><div data-g="4"></div></div>
+
+    <div class="result" id="resultBox">
+      <div class="verdict"><div class="vname" id="vName"></div><div class="vsub" id="vSub"></div></div>
+      <div class="bars" id="barsBox"></div>
+    </div>
+    </div>
+
+    <div class="tools">
+      <button class="btn-grad" onclick="showResult()">📊 결과 보기</button>
+      <button class="btn-outline" onclick="savePng()">🖼 결과 저장</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🤖 AI 진단 — 내 수업을 설명하면</h2>
+    <p class="hint">내 수업과 평가 방법을 3~5문장으로 설명하면, AI가 3대 특징 관점의 <b>강점·빈틈과 평가 방법 배치 제안</b>을 돌려줍니다. 체크 결과와 나란히 보세요.</p>
+    <textarea data-k="desc" style="min-height:88px" placeholder="예) 4학년 수학 분수 단원. 매 차시 끝에 AI 코스웨어로 형성평가 5문항을 풀고, 단원 끝에 지필 평가를 본다. 모둠 활동은 관찰하지만 따로 기록하지는 않는다. 피드백은 단원평가 후 오답을 같이 푸는 방식."></textarea>
+    <div class="tools" style="margin-top:10px">
+      <button class="btn-navy" id="aiBtn">🤖 진단 받기</button>
+      <div class="spin" id="aiSpin"></div>
+    </div>
+    <div class="ai-grid hide" id="aiBox">
+      <div class="lst s"><h4>👍 갖춰진 특징</h4><div class="pre" id="aiStr"></div></div>
+      <div class="lst g"><h4>🔧 빈틈</h4><div class="pre" id="aiGaps"></div></div>
+      <div class="lst p wide"><h4>📌 평가 방법 배치 제안</h4><div class="pre" id="aiSug"></div></div>
+      <div class="lst c wide"><h4>🧭 수석교사의 한마디</h4><div class="pre" id="aiCmt"></div></div>
+    </div>
+  </div>
+</main>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>🔒 AI 기능 활성화</h3>
+    <p>강사가 안내한 비밀번호를 입력하세요.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호">
+    <div class="err" id="pwErr">비밀번호가 일치하지 않습니다.</div>
+    <div class="row">
+      <button class="btn-outline" id="pwCancel">취소</button>
+      <button class="btn-navy" id="pwOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>2026년 인공지능 활용 선도교사 연수 · 12과정 수업 실행 결과를 성장으로 잇다 — 평가는 성장을 위한 데이터 수집이다</footer>
+
+<script>
+const LS_KEY='p12-check';
+const QUESTIONS=[
+ {g:1,q:'수업이 끝난 뒤가 아니라, 수업 과정 중에 평가 증거가 쌓인다'},
+ {g:1,q:'지식(점수)만이 아니라 기능·태도의 변화도 수집한다'},
+ {g:1,q:'디지털 기록 외에 교사 관찰·산출물도 평가 자료로 쓴다'},
+ {g:2,q:'평가 결과가 그 수업 안(늦어도 다음 차시 초반)에 학생에게 돌아간다'},
+ {g:2,q:'피드백이 점수 통보가 아니라 다음에 할 행동 안내다'},
+ {g:3,q:'평가의 목적이 서열 매기기가 아니라 학습 지원이다'},
+ {g:3,q:'학생에게 다시 도전할 기회가 설계되어 있다'},
+ {g:4,q:'관찰평가(기록으로 남기는)가 있다'},
+ {g:4,q:'포트폴리오(과정 산출물 누적)가 있다'},
+ {g:4,q:'동료평가나 자기평가가 있다'}
+];
+const GROUPS={1:'다각도 수집',2:'즉각 피드백',3:'성장 지원',4:'평가 방법 배치'};
+const OPTS=[['아니오',0],['부분',1],['예',2]];
+const $=id=>document.getElementById(id);
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600); }
+
+let data={ans:{}};
+try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); if(s) data=s; if(!data.ans) data.ans={}; }catch(e){}
+function save(){ localStorage.setItem(LS_KEY,JSON.stringify(data)); }
+
+QUESTIONS.forEach((qd,i)=>{
+  const box=document.querySelector(`[data-g="${qd.g}"]`);
+  const row=document.createElement('div'); row.className='qrow';
+  const q=document.createElement('span'); q.className='q'; q.textContent=qd.q;
+  const opts=document.createElement('div'); opts.className='opts'; opts.dataset.i=i;
+  OPTS.forEach(([label,val])=>{
+    const b=document.createElement('button'); b.textContent=label;
+    b.onclick=()=>{ data.ans[i]=val; save(); renderOpts(); };
+    opts.appendChild(b);
+  });
+  row.append(q,opts); box.appendChild(row);
+});
+function renderOpts(){
+  document.querySelectorAll('.opts').forEach(o=>{
+    const i=+o.dataset.i;
+    o.querySelectorAll('button').forEach((b,bi)=>b.classList.toggle('sel',data.ans[i]===OPTS[bi][1]));
+  });
+}
+renderOpts();
+
+const descEl=document.querySelector('[data-k=desc]');
+if(data.desc) descEl.value=data.desc;
+descEl.addEventListener('input',()=>{ data.desc=descEl.value; save(); });
+
+function showResult(){
+  const missing=QUESTIONS.filter((q,i)=>data.ans[i]===undefined).length;
+  if(missing>0){ toast(`아직 체크하지 않은 문항이 ${missing}개 있어요 ✏️`); return; }
+  const gScore={},gMax={};
+  QUESTIONS.forEach((q,i)=>{ gScore[q.g]=(gScore[q.g]||0)+data.ans[i]; gMax[q.g]=(gMax[q.g]||0)+2; });
+  const total=Object.values(gScore).reduce((a,b)=>a+b,0), max=20;
+  let vn,vs;
+  if(total>=16){ vn='과정중심 항해사 ⛵'; vs='평가가 이미 성장의 도구로 움직이고 있습니다. 빈칸이 남은 배치 하나만 더하면 완성형이에요.'; }
+  else if(total>=11){ vn='환승 중 🚉'; vs='결과중심에서 과정중심으로 넘어가는 중입니다. 가장 낮은 막대부터 하나씩 채워 보세요.'; }
+  else if(total>=6){ vn='출발선 🏁'; vs='결과 확인 중심에 가깝습니다. 수업 중에 증거가 쌓이는 장치 하나부터 시작해 보세요.'; }
+  else { vn='결과중심 항구 ⚓'; vs='평가가 수업 끝의 행사로 머물러 있어요. 다음 수업에서 형성 피드백 한 번을 실험해 보세요.'; }
+  $('vName').textContent=vn; $('vSub').textContent=vs+` (${total}/${max}점)`;
+  $('barsBox').innerHTML=[1,2,3,4].map(g=>{
+    const pct=Math.round(gScore[g]/gMax[g]*100);
+    return `<div class="brow"><div class="bl"><span>${GROUPS[g]}</span><b>${gScore[g]}/${gMax[g]}</b></div><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+  }).join('');
+  $('resultBox').style.display='block';
+  toast('체크 결과가 나왔어요 📊 AI 진단과 나란히 보세요');
+}
+
+// ---------- 비밀번호 + AI ----------
+let unlocked=false, enteredPw='';
+const modalBg=$('modalBg'), pwInput=$('pwInput');
+$('pwCancel').onclick=()=>modalBg.style.display='none';
+function tryPw(){
+  enteredPw=pwInput.value.trim();
+  if(!enteredPw){ $('pwErr').style.display='block'; return; }
+  unlocked=true; modalBg.style.display='none'; runAI();
+}
+$('pwOk').onclick=tryPw;
+pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
+
+$('aiBtn').onclick=()=>{
+  if((descEl.value||'').trim().length<30){ toast('수업 설명을 조금 더 적어 주세요 (3~5문장) ✏️'); return; }
+  if(unlocked) runAI();
+  else { modalBg.style.display='flex'; pwInput.value=''; $('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50); }
+};
+async function runAI(){
+  const btn=$('aiBtn'), spin=$('aiSpin');
+  btn.disabled=true; spin.style.display='block';
+  try{
+    const res=await fetch('/api/detective',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw,mode:'pcheck',answer:descEl.value.trim().slice(0,1200)})});
+    const j=await res.json();
+    if(res.status===401){ unlocked=false; enteredPw=''; $('aiBtn').click(); $('pwErr').style.display='block'; throw new Error('비밀번호가 올바르지 않습니다. 다시 입력해 주세요.'); }
+    if(!res.ok) throw new Error(j.error||'요청 실패');
+    $('aiBox').classList.remove('hide');
+    $('aiStr').textContent=j.strengths||'—';
+    $('aiGaps').textContent=j.gaps||'—';
+    $('aiSug').textContent=j.suggest||'—';
+    $('aiCmt').textContent=j.comment||'—';
+    toast('진단이 도착했어요. 환류 템플릿(리허설 도우미 ②)에 반영해 보세요 🤖');
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ btn.disabled=false; spin.style.display='none'; }
+}
+
+function savePng(){
+  if($('resultBox').style.display!=='block'){ toast('먼저 결과 보기를 눌러 주세요 📊'); return; }
+  toast('이미지를 만드는 중…');
+  html2canvas($('checkSheet'),{scale:2,backgroundColor:'#ffffff'}).then(cv=>{
+    const a=document.createElement('a');
+    a.download='과정중심평가_자가체크.png';
+    a.href=cv.toDataURL('image/png'); a.click();
+    toast('결과를 저장했어요 🖼');
+  }).catch(()=>toast('⚠ 이미지 저장에 실패했어요'));
+}
+function clearAll(){
+  if(!confirm('체크와 설명을 모두 지울까요? 되돌릴 수 없습니다.')) return;
+  data={ans:{}}; localStorage.removeItem(LS_KEY);
+  descEl.value=''; renderOpts();
+  $('resultBox').style.display='none'; $('aiBox').classList.add('hide');
+  toast('내용을 지웠어요');
+}
+</script>
+</body>
+</html>
