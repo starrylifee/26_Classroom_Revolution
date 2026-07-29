@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수업 클리닉 · 10과정</title>
+<meta property="og:title" content="수업 클리닉 — 사례 진단 게임">
+<meta property="og:description" content="참여가 무너진 수업 사례 6개를 진단하고 AI·디지털 처방을 내리는 게임.">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2C59'/%3E%3Cpath d='M32 14v36M14 32h36' stroke='%23F6C2E4' stroke-width='9' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E2C59;--teal:#7A2E6E;--sky:#F6C2E4;--pink:#E85FA5;--bg:#F7F9FF;--line:#DDE1EB;--muted:#5B6B7C;--good:#1E7A4F;--bad:#C0392B}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:#1B2A3A;min-height:100vh;display:flex;flex-direction:column}
+header{background:linear-gradient(90deg,#C9C4F2 0%,#F9C8E8 100%);color:var(--navy);padding:14px 28px;display:flex;align-items:center;gap:14px}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(420px 420px at 6% 16%,rgba(178,158,240,.30),transparent 70%),radial-gradient(520px 520px at 2% 78%,rgba(120,205,242,.22),transparent 70%),radial-gradient(400px 400px at 14% 46%,rgba(250,150,205,.22),transparent 70%)}
+header,main,footer{position:relative;z-index:1}
+footer{background:#E7F2FB;color:#6B7A99;font-size:13px;padding:10px 28px}
+header .badge{background:#fff;color:#C2447A;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+header h1{font-size:22px;font-weight:700}
+header .sub{margin-left:auto;font-size:13px;color:#52609B;white-space:nowrap}
+header .home{color:#52609B;text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px}
+header .home:hover{color:var(--navy)}
+
+main{flex:1;max-width:980px;width:100%;margin:0 auto;padding:18px 28px 26px;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05);padding:22px 24px}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:700;transition:.15s}
+.btn-grad{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;padding:12px 26px;border-radius:999px}
+.btn-grad:hover{filter:brightness(.93)}
+.btn-grad:disabled{background:#CBA9C6;filter:none;cursor:not-allowed}
+.btn-navy{background:var(--teal);color:#fff;padding:12px 22px}
+.btn-navy:hover{background:#5C2253}
+.btn-outline{background:#fff;border:1.5px solid var(--line);color:#1B2A3A;font-weight:500;padding:12px 18px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.spin{display:none;width:22px;height:22px;border:3px solid #E8E2F2;border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+textarea{width:100%;font-family:inherit;font-size:15px;padding:12px 14px;border:1.5px solid var(--line);border-radius:9px;outline:none;background:#fff;line-height:1.7;resize:vertical;min-height:88px}
+textarea:focus{border-color:var(--sky);background:#FEFBFE}
+
+/* 시작 화면 */
+#startCard h2{font-size:24px;color:var(--navy);margin-bottom:8px}
+#startCard .lead{font-size:15.5px;line-height:1.8;color:#33415C;margin-bottom:16px}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+@media(max-width:760px){.rules{grid-template-columns:1fr}}
+.rules>div{border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.6;background:#FAFAFE}
+.rules b{display:block;color:var(--navy);font-size:15px;margin-bottom:4px}
+
+/* HUD */
+.hud{display:flex;align-items:center;gap:14px;padding:12px 20px}
+.hud .prog{font-size:15px;font-weight:700;color:var(--teal)}
+.hud .phase{font-size:13.5px;color:var(--muted)}
+.hud .score{margin-left:auto;font-size:22px;font-weight:900;color:var(--navy);white-space:nowrap}
+.hud .plus{font-size:14px;color:var(--pink);font-weight:700;opacity:0;transition:.4s}
+.hud .plus.show{opacity:1}
+
+/* 사례 카드 */
+.case-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.case-band{background:#EDF3FE;color:#2E5AA8;font-size:13px;font-weight:700;padding:4px 12px;border-radius:999px}
+.case-head h2{font-size:20px;color:var(--navy)}
+.case-meta{background:#F7F7FB;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:14px;line-height:1.7;color:#33415C;margin-bottom:12px}
+.case-story{border-left:4px solid #8F86DD;padding:4px 0 4px 16px;font-size:15px;line-height:1.9;color:#2A2A3E;white-space:pre-line}
+.case-story .punch{color:var(--bad);font-weight:700}
+
+/* 단계 */
+.phase-box{margin-top:18px;border-top:2px dashed var(--line);padding-top:16px}
+.phase-box h3{font-size:17px;color:var(--navy);margin-bottom:4px}
+.phase-box .ph{font-size:14px;color:var(--muted);margin-bottom:10px;line-height:1.6}
+.phase-box .ph b{color:var(--pink)}
+
+/* 공개 카드 */
+.reveal{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+@media(max-width:760px){.reveal{grid-template-columns:1fr}}
+.rv{border:1.5px solid;border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.6;position:relative}
+.rv b{display:block;font-size:15px;margin-bottom:3px}
+.rv .mark{position:absolute;top:10px;right:12px;font-size:18px;font-weight:900}
+.rv.hit{background:#F0F9F4;border-color:#BFE3CE}.rv.hit b{color:var(--good)}.rv.hit .mark{color:var(--good)}
+.rv.miss{background:#FDF1F1;border-color:#EFC1C1}.rv.miss b{color:#8A3030}.rv.miss .mark{color:var(--bad)}
+.ai-note{margin-top:12px;background:#F4F8FF;border:1.5px solid #C6D8F5;border-radius:10px;padding:11px 14px;font-size:14px;line-height:1.7;color:#2E5AA8}
+.creative-note{margin-top:10px;background:#FFF9EC;border:1.5px solid #E8D5A0;border-radius:10px;padding:11px 14px;font-size:14px;line-height:1.7;color:#9C7A1E}
+
+/* 결과 */
+#resultCard{text-align:center}
+#resultCard h2{font-size:24px;color:var(--navy);margin-bottom:4px}
+.grade{font-size:44px;font-weight:900;margin:10px 0 2px;background:linear-gradient(90deg,#8F86DD,#EC6FB2);-webkit-background-clip:text;background-clip:text;color:transparent}
+.final{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:14px}
+.res-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+.res-table th{background:var(--navy);color:#fff;padding:8px;font-weight:700}
+.res-table td{border:1px solid var(--line);padding:8px;text-align:center}
+.res-table td.tt{text-align:left}
+.res-msg{font-size:15px;line-height:1.8;color:#33415C;max-width:640px;margin:0 auto 6px}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
+.toast.show{opacity:1;transform:none}
+.modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:14px;padding:26px;width:min(92vw,400px)}
+.modal h3{font-size:18px;color:var(--navy);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);margin-bottom:14px}
+.modal input{width:100%;padding:13px;font-size:16px;border:1.5px solid var(--line);border-radius:9px;outline:none;font-family:inherit}
+.modal input:focus{border-color:var(--sky)}
+.modal .err{display:none;color:#C0392B;font-size:13px;margin-top:8px}
+.modal .row{display:flex;gap:10px;margin-top:16px}
+.modal .row button{flex:1;padding:12px}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">10과정</span>
+  <h1>수업 클리닉</h1>
+  <span class="sub">참여가 무너진 수업 6례 — 진단하고 처방하라</span>
+  <a class="home" href="/10/">🧑‍🏫 도우미로</a>
+  <a class="home" href="/">🏠 홈</a>
+</header>
+
+<main>
+  <!-- 시작 -->
+  <div class="card" id="startCard">
+    <h2>🩺 수업 클리닉에 오신 것을 환영합니다</h2>
+    <p class="lead">참여가 무너진 실제 같은 수업 사례 6개가 접수되었습니다.<br>
+    사례를 읽고 <b>① 참여 저해 요인을 진단</b>한 뒤, <b>② AI·디지털 처방</b>을 내려 주세요. AI 채점관이 여러분의 소견서를 읽고 판정합니다.</p>
+    <div class="rules">
+      <div><b>🔍 1단계 · 진단</b>사례 속에 숨은 참여 저해 요인 3가지를 자기 말로 짚으면 요인당 100점</div>
+      <div><b>💊 2단계 · 처방</b>요인을 해결할 수업 방법·도구를 쓰면 처방당 100점, 모범 답에 없는 좋은 아이디어는 +50점</div>
+      <div><b>🏆 완벽 진단</b>한 사례에서 진단·처방 6개를 모두 맞히면 보너스 100점 — 최고 등급은 '수업 명의'</div>
+    </div>
+    <button class="btn-grad" style="font-size:17px;padding:14px 34px" onclick="askStart()">🩺 진료 시작</button>
+  </div>
+
+  <!-- HUD -->
+  <div class="card hud hide" id="hud">
+    <span class="prog" id="hudProg">사례 1 / 6</span>
+    <span class="phase" id="hudPhase">1단계 · 진단</span>
+    <span class="plus" id="hudPlus"></span>
+    <span class="score" id="hudScore">0점</span>
+  </div>
+
+  <!-- 사례 진행 -->
+  <div class="card hide" id="playCard">
+    <div class="case-head">
+      <span class="case-band" id="cBand"></span>
+      <h2 id="cTitle"></h2>
+    </div>
+    <div class="case-meta" id="cMeta"></div>
+    <div class="case-story" id="cStory"></div>
+
+    <!-- 1단계 진단 -->
+    <div class="phase-box" id="ph1">
+      <h3>🔍 1단계 · 진단</h3>
+      <p class="ph">이 수업의 <b>참여 저해 요인</b>은 무엇인가요? 사례 장면을 근거로, 찾은 만큼 모두 적어 보세요. (3가지가 숨어 있습니다)</p>
+      <textarea id="dxInput" placeholder="예) 한 학생이 활동을 독차지하고 나머지는 구경만 한다. 그리고…"></textarea>
+      <div class="tools" style="margin-top:10px">
+        <button class="btn-grad" id="dxBtn" onclick="submitDx()">🩺 진단 제출</button>
+        <div class="spin" id="dxSpin"></div>
+        <span style="font-size:13px;color:var(--muted)">Ctrl+Enter로도 제출됩니다</span>
+      </div>
+      <div class="reveal hide" id="dxReveal"></div>
+      <div class="ai-note hide" id="dxNote"></div>
+    </div>
+
+    <!-- 2단계 처방 -->
+    <div class="phase-box hide" id="ph2">
+      <h3>💊 2단계 · 처방</h3>
+      <p class="ph">진단이 끝났습니다. 이 요인들을 해결할 <b>AI·디지털 수업 방법과 도구</b>를 처방해 주세요. (모범 처방 3가지와 대조합니다)</p>
+      <textarea id="rxInput" placeholder="예) 패들렛에 전원이 의견을 올리게 해서 독점을 막고…"></textarea>
+      <div class="tools" style="margin-top:10px">
+        <button class="btn-grad" id="rxBtn" onclick="submitRx()">💊 처방 제출</button>
+        <div class="spin" id="rxSpin"></div>
+      </div>
+      <div class="reveal hide" id="rxReveal"></div>
+      <div class="creative-note hide" id="rxCreative"></div>
+      <div class="ai-note hide" id="rxNote"></div>
+    </div>
+
+    <div class="tools hide" id="nextTools">
+      <button class="btn-grad" id="nextBtn" onclick="nextCase()">▶ 다음 사례</button>
+    </div>
+  </div>
+
+  <!-- 결과 -->
+  <div class="card hide" id="resultCard">
+    <div id="resultShot" style="padding:6px">
+      <h2>🩺 진료 종료 — 최종 소견</h2>
+      <div class="grade" id="gradeName"></div>
+      <div class="final" id="finalScore"></div>
+      <p class="res-msg" id="gradeMsg"></p>
+      <table class="res-table">
+        <thead><tr><th>사례</th><th>진단</th><th>처방</th><th>점수</th></tr></thead>
+        <tbody id="resBody"></tbody>
+      </table>
+      <p class="res-msg" style="font-size:13.5px;color:var(--muted)">진짜 시험대는 다음 시간 — 내 설계안 시연에서 이 진단의 눈을 스스로에게 돌려 보세요.</p>
+    </div>
+    <div class="tools" style="justify-content:center">
+      <button class="btn-navy" onclick="saveResult()">🖼 결과 카드 저장</button>
+      <button class="btn-outline" onclick="location.reload()">↺ 다시 진료하기</button>
+    </div>
+  </div>
+</main>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>🔒 AI 채점관 호출</h3>
+    <p>강사가 안내한 비밀번호를 입력하세요.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호">
+    <div class="err" id="pwErr">비밀번호가 일치하지 않습니다.</div>
+    <div class="row">
+      <button class="btn-outline" id="pwCancel">취소</button>
+      <button class="btn-navy" id="pwOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>2026년 인공지능 활용 선도교사 연수 · 10과정 교실처럼 실행하다 — 사례로 진단 훈련</footer>
+
+<script>
+// 사례 6개 — 10과정 교안 11~22쪽 원문
+const CASES=[
+ {band:'초등학교 · 사회/도덕',title:'모둠 활동, 누구를 위한 것인가?',
+  topic:'우리 지역의 문제점 찾고 해결 방안 토의하기',act:'4인 1조 모둠 토의 후 전지(종이)에 정리하여 발표',
+  story:`"자, 우리 동네 주차 문제를 해결할 방법을 모둠별로 의논해서 적어보자!" 선생님의 말씀에 아이들이 모둠 대형으로 책상을 붙인다.
+하지만 3모둠의 분위기가 심상치 않다. 목소리 큰 민수(가명)가 "야, 주차장 더 만들자고 쓰면 되잖아. 내가 쓸게." 하며 펜을 독차지한다.
+내성적인 지민이는 뭔가 생각이 있는 듯 입술을 달싹이지만, 민수의 기세에 눌려 끄덕이기만 한다. 뒷자리에 앉은 준호는 아예 몸을 뒤로 젖히고 딴청을 피우고 있다.`,
+  punch:'결국 3모둠의 전지에는 민수의 생각 하나만 달랑 적혀 제출되었다.',
+  factors:[{n:'독점과 소외',d:'목소리 큰 학생 1인이 주도하고 나머지는 침묵함'},{n:'무임승차',d:'참여하지 않아도 티가 나지 않음'},{n:'사고의 제한',d:'다양한 의견이 오가지 않고 하나의 답으로만 귀결됨'}],
+  rx:['디지털 협업 도구(패들렛 등) 적용','모둠 학생 전원이 참여할 수 있는 활동 제공','교사의 사고 확장 발문 및 피드백 제공']},
+ {band:'초등학교 · 수학/기초',title:'속도가 너무 다른 우리 반',
+  topic:'수학 익힘책 풀이 및 개별 지도',act:'주어진 시간 동안 문제 풀고 교사 확인 받기',
+  story:`수학 익힘책을 푸는 시간. 민지는 5분 만에 다 풀고 "선생님 다 했어요, 뭐 해요?"라고 소리치며 벌써 몸을 비튼다.
+반면 뒷자리의 현수는 아직 1번 문제도 이해하지 못해 멍하니 연필만 쥐고 있다. 선생님이 현수에게 다가가 문제를 설명해주는 사이, 민지는 지루함을 못 이겨 옆 짝꿍에게 장난을 걸기 시작한다.`,
+  punch:'교사의 몸은 하나인데, 25명의 서로 다른 학습 속도를 맞추는 것은 불가능에 가깝다.',
+  factors:[{n:'심각한 학습 격차',d:'상위권은 지루해하고 하위권은 포기함'},{n:'개별 지도 불가능',d:'한 학생을 지도하는 동안 다른 학생 방치'},{n:'학습 결손 누적',d:'느린 학습자는 계속 뒤처지는 악순환'}],
+  rx:['학생 수준에 맞는 맞춤형 문항 제공','AI 코스웨어를 활용한 맞춤형 지도 방안 마련','학생의 학습 결손 및 태도 분석 후 피드백 제공']},
+ {band:'중학교 · 영어/국어',title:'30명의 글쓰기, 피드백은 언제?',
+  topic:'자신의 진로에 대한 영문 에세이(또는 주장하는 글) 쓰기',act:'45분 동안 개요 짜기부터 초안 작성까지 완료하기',
+  story:`30명의 학생들이 고개를 숙이고 글을 쓰고 있다. 선생님은 교실을 순회하며 학생들을 돕느라 진땀을 뺀다.
+"선생님, 첫 문장을 어떻게 시작해요?", "이 단어 영어로 뭐예요?" 여기저기서 손을 들지만, 선생님은 한 명당 1분만 봐줘도 30분이 걸린다.
+기다리다 지친 학생들은 멍하니 있거나 옆 친구와 잡담을 시작한다. 수업 종이 울릴 때까지 피드백을 한 번도 못 받은 학생이 절반이다.`,
+  punch:'피드백은 일주일 뒤에나 돌아오고, 학생들은 자신이 뭘 썼는지조차 잊어버렸다.',
+  factors:[{n:'피드백 지연',d:'즉각적인 도움을 받지 못해 학습 의욕이 꺾임'},{n:'개별화 실패',d:'수준이 다른 학생들에게 동일한 과제만 주어짐'},{n:'물리적 한계',d:'교사 1인이 30명을 동시에 지도할 수 없음'}],
+  rx:['교육용 AI를 활용한 즉각적인 피드백 제공','AI 코스웨어를 활용한 수준별 문항 적용','개별 지도가 필요한 학생에게 대시보드 피드백 제공']},
+ {band:'중학교 · 사회/토론',title:'침묵의 토론장, 혹은 아무말 대잔치',
+  topic:'사회적 쟁점(예: 사형제도)에 대한 찬반 토론',act:'조별 입론 작성 및 전체 토론 진행',
+  story:`'사형제도 존폐'를 주제로 토론하는 시간. 학생들이 찬성과 반대로 나뉘었지만 토론이 깊어지지 않는다.
+"그냥 나쁜 놈들은 죽여야죠", "사람 죽이는 건 나빠요" 수준의 감정적이고 단편적인 주장만 반복된다. 객관적인 통계나 논리적 근거는 찾아볼 수 없다.`,
+  punch:'교사가 "근거를 찾아보라"고 해도 무엇을 검색해야 할지 몰라 헤매고, 결국 목소리 큰 몇 명의 \'아무말 대잔치\'로 수업이 끝난다.',
+  factors:[{n:'근거 빈약',d:'사실 확인이나 증거 없이 감정에 호소함'},{n:'정보 탐색 능력 부족',d:'신뢰할 수 있는 자료를 찾는 방법을 모름'},{n:'논리적 사고 부재',d:'상대방의 논리적 허점을 찾지 못함'}],
+  rx:['객관적인 통계 자료를 찾을 수 있는 누리집 안내','디지털 리터러시 함양 교육 적용','교육용 AI를 활용한 논리적 허점 발견']},
+ {band:'고등학교 · 과학/탐구',title:'데이터는 있는데 해석을 못 해',
+  topic:'환경 데이터(미세먼지 농도 등)를 분석하여 기후 변화의 경향성 파악하기',act:'엑셀 데이터를 보고 그래프를 그리고 결론 도출하기',
+  story:`학생들에게 지역별 미세먼지 농도 엑셀 파일이 주어졌다. "자, 이 데이터를 보고 그래프를 그려보세요."
+하지만 대부분의 시간을 그래프 축을 설정하고, 데이터를 입력하는 '기능적 조작'에만 쓰고 있다. 정작 "이 그래프가 의미하는 바가 뭐지?"라는 '탐구적 사고'를 할 시간은 부족하다.`,
+  punch:'결국 "그래프 예쁘게 그리기" 수업이 되어버리고, 과학적 탐구 역량은 기르지 못한 채 수업이 끝난다.',
+  factors:[{n:'본질의 전도',d:'도구 조작(기능)에 에너지를 다 써서 탐구(사고)를 하지 못함'},{n:'진입 장벽',d:'데이터 처리 능력이 부족한 학생은 시작조차 못 함'},{n:'통찰의 부재',d:'데이터를 시각화만 하고 해석하지 않음'}],
+  rx:['탐구적 사고를 할 수 있는 탐구 질문 안내','AI를 활용한 데이터 해석 제시','빈칸(데이터의 해석)을 넣은 프레젠테이션 과제 제시']},
+ {band:'고등학교 · 진로/프로젝트',title:'과정은 사라지고 결과만 남았다',
+  topic:'한 학기 동안 진행하는 진로 탐구 프로젝트',act:'주제 선정부터 최종 보고서 작성까지 장기 프로젝트',
+  story:`학기 말, 생활기록부 '세부능력 및 특기사항'을 작성하려는 선생님은 난관에 봉착했다.
+학생들이 제출한 최종 보고서는 훌륭하지만, 그 학생이 어떤 시행착오를 겪었는지, 중간에 어떤 자료를 읽고 생각이 바뀌었는지 도무지 기억나지 않는다.`,
+  punch:'학생들에게 "과정 기록장"을 쓰라고 했지만 대충 쓴 몇 줄이 전부다. 결국 구체적인 성장 과정이 빠진, 밋밋하고 천편일률적인 평가만 남게 생겼다.',
+  factors:[{n:'과정 기록의 부재',d:'결과물만 남고 성장 과정은 휘발됨'},{n:'평가의 신뢰성 저하',d:'교사의 불완전한 기억에 의존해야 함'},{n:'개별화 평가의 한계',d:'모든 학생의 활동 과정을 교사가 일일이 관찰할 수 없음'}],
+  rx:['시행착오와 사고 흐름을 추적하는 최적의 AI 활용','학생들의 평가 자료가 누적되도록 데이터 체계적 수집','자기평가·동료평가 등 과정중심 평가 다양화']}
+];
+
+const PT_ITEM=100, PT_CREATIVE=50, PT_PERFECT=100;
+let idx=0, score=0, results=[], phase=1, enteredPw='';
+const $=id=>document.getElementById(id);
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600); }
+
+// ---------- 비밀번호 ----------
+const modalBg=$('modalBg'), pwInput=$('pwInput');
+function askStart(){ modalBg.style.display='flex'; pwInput.value=''; $('pwErr').style.display='none'; setTimeout(()=>pwInput.focus(),50); }
+$('pwCancel').onclick=()=>modalBg.style.display='none';
+async function tryPw(){
+  const v=pwInput.value.trim();
+  if(!v){ $('pwErr').style.display='block'; return; }
+  $('pwOk').disabled=true;
+  try{
+    const r=await fetch('/api/case',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pw:v,mode:'verify'})});
+    if(r.status===401){ $('pwErr').style.display='block'; return; }
+    if(!r.ok) throw new Error('서버 확인 실패');
+    enteredPw=v; modalBg.style.display='none'; startGame();
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ $('pwOk').disabled=false; }
+}
+$('pwOk').onclick=tryPw;
+pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
+
+// ---------- 진행 ----------
+function startGame(){
+  $('startCard').classList.add('hide');
+  $('hud').classList.remove('hide');
+  $('playCard').classList.remove('hide');
+  idx=0; score=0; results=[];
+  loadCase();
+}
+function loadCase(){
+  const c=CASES[idx]; phase=1;
+  $('hudProg').textContent=`사례 ${idx+1} / ${CASES.length}`;
+  $('hudPhase').textContent='1단계 · 진단';
+  $('cBand').textContent=c.band;
+  $('cTitle').textContent=c.title;
+  $('cMeta').innerHTML=`📌 <b>주제</b> ${esc(c.topic)}<br>🎬 <b>활동</b> ${esc(c.act)}`;
+  $('cStory').innerHTML=esc(c.story)+`\n`+`<span class="punch">${esc(c.punch)}</span>`;
+  $('dxInput').value=''; $('rxInput').value='';
+  $('dxInput').disabled=false; $('rxInput').disabled=false;
+  $('dxBtn').classList.remove('hide'); $('rxBtn').classList.remove('hide');
+  ['dxReveal','dxNote','ph2','rxReveal','rxCreative','rxNote','nextTools'].forEach(id=>$(id).classList.add('hide'));
+  window.scrollTo({top:0});
+  setTimeout(()=>$('dxInput').focus(),100);
+}
+function addScore(pts,label){
+  score+=pts;
+  $('hudScore').textContent=score.toLocaleString()+'점';
+  const p=$('hudPlus'); p.textContent=`+${pts} ${label}`; p.classList.add('show');
+  clearTimeout(p._tm); p._tm=setTimeout(()=>p.classList.remove('show'),2200);
+}
+
+async function submitDx(){
+  const c=CASES[idx], ans=$('dxInput').value.trim();
+  if(ans.length<10){ toast('진단을 조금 더 구체적으로 적어 주세요 ✏️'); return; }
+  $('dxBtn').disabled=true; $('dxSpin').style.display='block';
+  try{
+    const r=await fetch('/api/case',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw,mode:'diagnose',answer:ans,
+        story:`${c.title} / 주제: ${c.topic} / 활동: ${c.act}\n${c.story}\n${c.punch}`,
+        items:c.factors.map(f=>`${f.n} — ${f.d}`)})});
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error||'요청 실패');
+    const hits=j.hits||[false,false,false];
+    const got=hits.filter(Boolean).length;
+    $('dxReveal').innerHTML=c.factors.map((f,i)=>`<div class="rv ${hits[i]?'hit':'miss'}"><span class="mark">${hits[i]?'✓':'✗'}</span><b>${esc(f.n)}</b>${esc(f.d)}</div>`).join('');
+    $('dxReveal').classList.remove('hide');
+    if(j.comment){ $('dxNote').textContent='🩺 AI 채점관 | '+j.comment; $('dxNote').classList.remove('hide'); }
+    if(got>0) addScore(got*PT_ITEM,`진단 ${got}개`);
+    results.push({title:c.title,dx:got,rx:0,creative:false,pts:got*PT_ITEM});
+    $('dxInput').disabled=true; $('dxBtn').classList.add('hide');
+    phase=2; $('hudPhase').textContent='2단계 · 처방';
+    $('ph2').classList.remove('hide');
+    setTimeout(()=>{ $('rxInput').focus(); $('ph2').scrollIntoView({behavior:'smooth',block:'center'}); },100);
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ $('dxBtn').disabled=false; $('dxSpin').style.display='none'; }
+}
+
+async function submitRx(){
+  const c=CASES[idx], ans=$('rxInput').value.trim();
+  if(ans.length<10){ toast('처방을 조금 더 구체적으로 적어 주세요 ✏️'); return; }
+  $('rxBtn').disabled=true; $('rxSpin').style.display='block';
+  try{
+    const r=await fetch('/api/case',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pw:enteredPw,mode:'prescribe',answer:ans,
+        story:`${c.title} / 주제: ${c.topic} / 활동: ${c.act}\n${c.story}\n${c.punch}`,
+        factors:c.factors.map(f=>`${f.n} — ${f.d}`),
+        items:c.rx})});
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error||'요청 실패');
+    const hits=j.hits||[false,false,false];
+    const got=hits.filter(Boolean).length;
+    $('rxReveal').innerHTML=c.rx.map((t,i)=>`<div class="rv ${hits[i]?'hit':'miss'}"><span class="mark">${hits[i]?'✓':'✗'}</span><b>처방 ${i+1}</b>${esc(t)}</div>`).join('');
+    $('rxReveal').classList.remove('hide');
+    let pts=got*PT_ITEM;
+    if(j.creative){ pts+=PT_CREATIVE; $('rxCreative').textContent='💡 창의 처방 +50점 | '+(j.creativeNote||'모범 처방에 없는 좋은 아이디어입니다.'); $('rxCreative').classList.remove('hide'); }
+    if(j.comment){ $('rxNote').textContent='🩺 AI 채점관 | '+j.comment; $('rxNote').classList.remove('hide'); }
+    const rec=results[results.length-1];
+    const perfect=(rec.dx===3&&got===3);
+    if(perfect) pts+=PT_PERFECT;
+    if(pts>0) addScore(pts,perfect?`처방 ${got}개 + 완벽 진단`:`처방 ${got}개${j.creative?' + 창의':''}`);
+    rec.rx=got; rec.creative=!!j.creative; rec.perfect=perfect; rec.pts+=pts;
+    $('rxInput').disabled=true; $('rxBtn').classList.add('hide');
+    $('nextBtn').textContent=(idx+1<CASES.length)?'▶ 다음 사례':'🏁 최종 소견 보기';
+    $('nextTools').classList.remove('hide');
+    setTimeout(()=>$('nextTools').scrollIntoView({behavior:'smooth',block:'center'}),100);
+  }catch(e){ toast('⚠ '+e.message); }
+  finally{ $('rxBtn').disabled=false; $('rxSpin').style.display='none'; }
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.ctrlKey){
+    if(phase===1&&!$('dxInput').disabled) submitDx();
+    else if(phase===2&&!$('rxInput').disabled) submitRx();
+  }
+});
+
+function nextCase(){
+  idx++;
+  if(idx<CASES.length){ loadCase(); return; }
+  showResult();
+}
+
+// ---------- 결과 ----------
+function showResult(){
+  $('playCard').classList.add('hide'); $('hud').classList.add('hide');
+  $('resultCard').classList.remove('hide');
+  const max=CASES.length*(PT_ITEM*6+PT_PERFECT);
+  let grade,msg;
+  if(score>=3000){ grade='🏅 수업 명의'; msg='숫자 뒤의 장면까지 읽어내는 눈이 있습니다. 동료의 수업을 봐 줄 준비가 되었어요.'; }
+  else if(score>=2200){ grade='🥈 수업 전문의'; msg='핵심 요인을 대부분 짚어냈습니다. 처방을 조금 더 구체적인 도구·장면으로 쓰면 명의가 됩니다.'; }
+  else if(score>=1400){ grade='🥉 수업 레지던트'; msg='진단의 감이 잡혔습니다. 놓친 요인이 사례의 어느 장면에 있었는지 다시 읽어 보세요.'; }
+  else { grade='🩺 수업 인턴'; msg='첫 진료로는 충분합니다. 요인 이름보다 "사례 속 장면"을 근거로 말하는 연습을 해 보세요.'; }
+  $('gradeName').textContent=grade;
+  $('finalScore').textContent=`${score.toLocaleString()}점 / ${max.toLocaleString()}점`;
+  $('gradeMsg').textContent=msg;
+  $('resBody').innerHTML=results.map((r,i)=>`<tr><td class="tt">${i+1}. ${esc(r.title)}</td><td>${r.dx}/3</td><td>${r.rx}/3${r.creative?' +💡':''}${r.perfect?' 🏆':''}</td><td><b>${r.pts.toLocaleString()}</b></td></tr>`).join('');
+  window.scrollTo({top:0});
+}
+function saveResult(){
+  toast('이미지를 만드는 중…');
+  html2canvas($('resultShot'),{scale:2,backgroundColor:'#ffffff'}).then(cv=>{
+    const a=document.createElement('a');
+    a.download='수업클리닉_결과.png';
+    a.href=cv.toDataURL('image/png'); a.click();
+    toast('결과 카드를 저장했어요 🖼');
+  }).catch(()=>toast('⚠ 이미지 저장에 실패했어요'));
+}
+</script>
+</body>
+</html>
