@@ -64,6 +64,12 @@ table.frm input[type=text]{border:none;border-radius:0}
 .lst.cmt{background:#F4F8FF;border-color:#C6D8F5}.lst.cmt h4{color:#2E5AA8}
 .pre{white-space:pre-wrap}
 
+details.card>summary{cursor:pointer;font-size:18px;font-weight:700;color:var(--navy);list-style-position:inside}
+.dt{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:13.5px}
+.dt th{background:#EEF2FA;border:1px solid var(--line);padding:5px 8px;color:#1E2C59}
+.dt td{border:1px solid var(--line);padding:5px 8px;text-align:center}
+.src-h{font-size:14.5px;font-weight:700;color:#2E5AA8;margin:12px 0 2px}
+.src-memo{background:#FFF9EC;border:1.5px solid #E8D5A0;border-radius:10px;padding:10px 14px;font-size:13.5px;line-height:1.7;margin:8px 0}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
 .toast.show{opacity:1;transform:none}
 .modal-bg{position:fixed;inset:0;background:rgba(14,40,65,.45);display:none;align-items:center;justify-content:center;z-index:50}
@@ -112,6 +118,11 @@ table.frm input[type=text]{border:none;border-radius:0}
       <div class="spin" id="draftSpin"></div>
     </div>
   </div>
+
+  <details class="card" id="srcCard" style="display:none">
+    <summary>📊 내가 고른 학급 데이터 <span id="srcName" style="color:#C2447A"></span> <span style="font-size:13px;color:#5B6B7C;font-weight:400">(눌러서 펴고 접기)</span></summary>
+    <div id="srcBody" style="margin-top:10px"></div>
+  </details>
 
   <div class="card">
     <h2>① 데이터 개요</h2>
@@ -287,17 +298,46 @@ function applyImp(i){
     fillOverview(e.context,'판독 훈련 샘플 · '+e.name);
     lines.push(`[${e.name}] 판독 훈련에서 내가 답한 것`);
     e.qa.forEach(x=>lines.push(`· ${x.q}\n  → 내 답: ${x.a}`));
+    data.src={name:e.name,sc:e.sc||null,context:e.context};
   } else {
     fillOverview(s.sc&&s.sc.context,'판독 훈련 자유 판독');
     if((s.individual||'').trim()) lines.push('개별 지원: '+s.individual.trim());
     if((s.classAdj||'').trim()) lines.push('학급 조정: '+s.classAdj.trim());
+    data.src={name:'자유 판독 학급',sc:s.sc||null,context:s.sc&&s.sc.context||''};
   }
   const memoEl=document.querySelector('[data-k=memo]');
   memoEl.value=(memoEl.value?memoEl.value.trim()+'\n':'')+lines.join('\n');
   data.memo=memoEl.value; save();
+  renderSrc(true);
   closeImp();
   toast(`「${o.label}」 내용으로 개요·메모를 채웠어요 → 🤖 AI 초안을 받아 보세요`);
 }
+
+// ---- 고른 학급의 데이터를 접기/펴기 패널로 표시 (보고서를 쓰며 참조) ----
+function renderSrc(open){
+  const card=$('srcCard'), src=data.src;
+  if(!src){ card.style.display='none'; return; }
+  card.style.display='block';
+  if(open) card.open=true;
+  $('srcName').textContent=src.name||'';
+  const sc=src.sc, h=[];
+  const esc=v=>String(v==null?'':v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  if(!sc){
+    h.push(`<p style="font-size:14px;color:#5B6B7C">${esc(src.context||'')} — 수치 데이터가 저장되기 전에 판독한 학급이에요. 판독 훈련에서 이 학급 문항을 하나만 다시 통과하면 수치가 함께 저장됩니다.</p>`);
+  } else {
+    h.push(`<p style="font-size:14px;color:#5B6B7C">${esc(sc.context||'')}</p>`);
+    if(sc.kpi) h.push(`<div class="src-h">핵심 지표</div><table class="dt"><tr><th>평균</th><th>직전 대비</th><th>목표 도달률</th><th>주당 학습시간</th><th>제출률</th></tr><tr><td>${esc(sc.kpi.avg)}점</td><td>${sc.kpi.delta>0?'+':''}${esc(sc.kpi.delta)}</td><td>${esc(sc.kpi.ab)}%</td><td>${esc(sc.kpi.study)}분</td><td>${esc(sc.kpi.submit)}%</td></tr></table>`);
+    if(sc.box&&sc.box.length) h.push(`<div class="src-h">영역별 분포 (상자그림 수치)</div><table class="dt"><tr><th>영역</th><th>최저</th><th>Q1</th><th>중앙값</th><th>Q3</th><th>최고</th></tr>${sc.box.map(b=>`<tr><td>${esc(b.area)}</td><td>${esc(b.min)}</td><td>${esc(b.q1)}</td><td><b>${esc(b.med)}</b></td><td>${esc(b.q3)}</td><td>${esc(b.max)}</td></tr>`).join('')}</table>`);
+    if(sc.trend&&sc.trend.length) h.push(`<div class="src-h">회차별 평균 추이</div><table class="dt"><tr><th>영역</th>${sc.trend[0].values.map((_,i)=>`<th>${i+1}회차</th>`).join('')}</tr>${sc.trend.map(t=>`<tr><td>${esc(t.area)}</td>${t.values.map(v=>`<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</table>`);
+    if(sc.errors&&sc.errors.length) h.push(`<div class="src-h">오답 유형</div><table class="dt"><tr>${sc.errors.map(e=>`<th>${esc(e.type)}</th>`).join('')}</tr><tr>${sc.errors.map(e=>`<td>${esc(e.pct)}%</td>`).join('')}</tr></table>`);
+    if(sc.radar&&sc.radar.axes) h.push(`<div class="src-h">정의적 영역 (사전 → 사후)</div><table class="dt"><tr><th>구분</th>${sc.radar.axes.map(a=>`<th>${esc(a)}</th>`).join('')}</tr><tr><td>사전</td>${sc.radar.pre.map(v=>`<td>${esc(v)}</td>`).join('')}</tr><tr><td>사후</td>${sc.radar.post.map(v=>`<td>${esc(v)}</td>`).join('')}</tr></table>`);
+    if(sc.students&&sc.students.length) h.push(`<div class="src-h">주목 학생</div><table class="dt"><tr><th>학생</th><th>점수</th><th>학습시간(분)</th><th>완주율</th></tr>${sc.students.map(st=>`<tr><td>${esc(st.id)}</td><td>${esc(st.score)}</td><td>${esc(st.time)}</td><td>${esc(st.complete)}%</td></tr>`).join('')}</table>`);
+    if(sc.memos&&sc.memos.length) h.push(`<div class="src-h">교사 관찰 메모</div><div class="src-memo">${sc.memos.map((m,i)=>`${i+1}. ${esc(m)}`).join('<br>')}</div>`);
+  }
+  h.push(`<p style="font-size:13px;color:#6B7A99">차트 원본은 <a href="/11/" target="_blank" style="color:#52609B">판독 훈련</a>에서 같은 학급을 열면 볼 수 있어요. 이 수치는 참조용이라 hwpx·인쇄에는 들어가지 않습니다.</p>`);
+  $('srcBody').innerHTML=h.join('');
+}
+renderSrc(false);
 
 // ---- 비밀번호 ----
 let unlocked=false, enteredPw='', pendingAI='draft';
@@ -458,6 +498,7 @@ function clearAll(){
   data={}; localStorage.removeItem(LS_KEY);
   document.querySelectorAll('input[data-k],textarea[data-k]').forEach(el=>el.value='');
   $('revBox').style.display='none';
+  renderSrc(false);
   toast('내용을 지웠어요');
 }
 </script>
