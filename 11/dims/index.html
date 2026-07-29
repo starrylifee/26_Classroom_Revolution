@@ -284,11 +284,26 @@ function openTrainModal(){
 function closeTrainModal(){
   $('trOverlay').classList.add('hide');
 }
+// 어디부터 틀렸는지 짚어 주는 안내문 (띄어쓰기·기호 무시 기준)
+function diffHint(inputVal,target){
+  const keep=ch=>/[0-9A-Za-z가-힣]/.test(ch);
+  const nIn=norm(inputVal);
+  const map=[],chars=[];
+  for(let i=0;i<target.length;i++) if(keep(target[i])){ map.push(i); chars.push(target[i]); }
+  const nT=chars.join('');
+  let k=0; while(k<nIn.length&&k<nT.length&&nIn[k]===nT[k]) k++;
+  if(k>=nT.length) return `설명은 다 맞았는데 끝에 <b>「${nIn.slice(nT.length)}」</b>가 더 붙었어요. 지우면 통과!`;
+  const expected=`이어질 글자는 <b>「${nT[k]}」</b>`;
+  if(k===0) return `첫 글자부터 달라요. ${expected} — 위 설명을 처음부터 다시 보고 써 주세요.`;
+  const ctx=target.slice(Math.max(0,map[k]-9),map[k]);
+  if(k>=nIn.length) return `"…${ctx}" 까지는 맞아요 ✓ 아직 덜 썼어요 — ${expected}`;
+  return `"…${ctx}" 까지는 맞아요 ✓ 그 다음이 달라요: 내가 쓴 <b>「${nIn[k]}」</b> → 원문은 <b>「${nT[k]}」</b>`;
+}
 function trainCheck(){
   const inp=$('trInput');
   if(norm(inp.value)!==norm(trPick[trIdx].g)){
     inp.classList.remove('err'); void inp.offsetWidth; inp.classList.add('err');
-    $('trMsg').textContent='대표 카드의 설명과 똑같이 써 주세요. (띄어쓰기·기호는 달라도 괜찮아요)';
+    $('trMsg').innerHTML=diffHint(inp.value,trPick[trIdx].g);
     inp.focus();
     return;
   }
