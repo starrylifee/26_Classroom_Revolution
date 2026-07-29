@@ -103,11 +103,11 @@ table.frm input[type=text]{border:none;border-radius:0}
 <main>
   <div class="card">
     <h2>✍ 판독한 것을 보고서로</h2>
-    <p class="hint">11과정 최종 산출물입니다. 판독 훈련(또는 샘플사이트 분석)에서 본 것을 정리해 <b>KERIS LMS 제출용 hwpx</b>로 내려받으세요. 아래 메모만 적고 <b>AI 초안</b>을 받아 고쳐 써도 됩니다.</p>
+    <p class="hint">11과정 최종 산출물입니다. <b>① 판독 훈련에서 다룬 학급을 고르면</b> 개요와 메모가 자동으로 채워지고, <b>② AI 초안</b>을 받아 <b>③ 다듬어서 hwpx로 제출</b>하면 됩니다. (판독 훈련을 한 브라우저에서 여세요)</p>
     <div style="margin-bottom:10px"><label class="fl">차트에서 본 것 메모 (AI 초안의 재료)</label>
     <textarea data-k="memo" style="min-height:76px" placeholder="예) 도형 상자그림이 길고 아래 수염 깊음(양극화). 오답 1위 문제 해석 오류 34%. 학생07 학습시간 최다인데 44점, 표정 어두움 메모. 5주차 히트맵 공백은 체험학습."></textarea></div>
     <div class="tools" style="margin-top:0">
-      <button class="btn-outline" onclick="importDash()">⬅ 판독 훈련에서 쓴 내용 가져오기</button>
+      <button class="btn-grad" onclick="importDash()">⬅ 판독 훈련 학급으로 시작하기</button>
       <button class="btn-navy" id="draftBtn">🤖 AI 초안 받기</button>
       <div class="spin" id="draftSpin"></div>
     </div>
@@ -187,6 +187,15 @@ table.frm input[type=text]{border:none;border-radius:0}
   </div>
 </div>
 
+<div class="modal-bg" id="impBg">
+  <div class="modal">
+    <h3>⬅ 어느 학급으로 보고서를 쓸까요?</h3>
+    <p>판독 훈련에서 답한 학급 중 하나를 고르세요. 개요(과목·학생 수·기간)와 메모가 자동으로 채워집니다.</p>
+    <div id="impList" style="display:flex;flex-direction:column;gap:8px;max-height:44vh;overflow:auto"></div>
+    <div class="row"><button class="btn-outline" onclick="closeImp()">취소</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <footer>2026년 인공지능 활용 선도교사 연수 · 11과정 데이터를 읽고 다음을 그리다 — 분석의 종착점은 보고서가 아니라 학생을 위한 다음 한 걸음</footer>
@@ -241,19 +250,53 @@ document.querySelectorAll('[data-k]').forEach(el=>{
 // 작성일 기본값
 (function(){ const el=document.querySelector('[data-k=o_1_5]'); if(el&&!el.value){ const d=new Date(); el.value=`${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}.`; data.o_1_5=el.value; save(); } })();
 
-// ---- 판독 훈련 내용 가져오기 ----
+// ---- 판독 훈련 내용 가져오기: 학급 선택 → 개요·메모 자동 채움 ----
+function readDash(){
+  try{ return JSON.parse(localStorage.getItem('p11-dash')||'{}'); }catch(e){ return {}; }
+}
 function importDash(){
-  try{
-    const s=JSON.parse(localStorage.getItem('p11-dash')||'{}');
-    const parts=[];
-    if(s.individual&&s.individual.trim()) parts.push('개별 지원: '+s.individual.trim());
-    if(s.classAdj&&s.classAdj.trim()) parts.push('학급 조정: '+s.classAdj.trim());
-    if(!parts.length){ toast('판독 훈련의 자유 판독에 적은 내용이 없어요 — 먼저 /11/에서 적어 보세요'); return; }
-    const memoEl=document.querySelector('[data-k=memo]');
-    memoEl.value=(memoEl.value?memoEl.value.trim()+'\n':'')+parts.join('\n');
-    data.memo=memoEl.value; save();
-    toast('판독 훈련 내용을 메모에 가져왔어요 ⬅ AI 초안을 받아 보세요');
-  }catch(e){ toast('가져오기에 실패했어요'); }
+  const s=readDash();
+  const opts=[];
+  Object.keys(s.bank||{}).sort().forEach(k=>{
+    const e=s.bank[k];
+    if(e&&e.qa&&e.qa.length) opts.push({kind:'set',key:k,label:`${e.name}`,sub:`${e.context} · 답변 ${e.qa.length}개`});
+  });
+  if((s.individual||'').trim()||(s.classAdj||'').trim())
+    opts.push({kind:'free',key:'',label:'자유 판독에 적은 메모',sub:(s.sc&&s.sc.context)||'자유 판독 학급'});
+  if(!opts.length){ toast('판독 훈련 기록이 없어요 — 먼저 /11/에서 학급 하나를 판독해 보세요 (같은 브라우저여야 해요)'); return; }
+  $('impList').innerHTML=opts.map((o,i)=>
+    `<button class="btn-outline" style="text-align:left;line-height:1.5" onclick="applyImp(${i})"><b>${o.label}</b><br><span style="font-size:12.5px;color:#5B6B7C;font-weight:400">${o.sub}</span></button>`).join('');
+  window._impOpts=opts;
+  $('impBg').style.display='flex';
+}
+function closeImp(){ $('impBg').style.display='none'; }
+function fillOverview(context,sourceLabel){
+  const parts=(context||'').split('·').map(t=>t.trim()).filter(Boolean);
+  const set=(k,v)=>{ const el=document.querySelector(`[data-k=${k}]`); if(el&&!el.value.trim()&&v){ el.value=v; data[k]=v; } };
+  set('o_1_0',parts[0]||'');
+  set('o_1_1',parts.find(p=>/명$/.test(p))||'');
+  set('o_1_2',parts.filter(p=>/주|평가|회차/.test(p)&&!/명$/.test(p)).join(' · '));
+  set('o_1_3',sourceLabel);
+}
+function applyImp(i){
+  const o=(window._impOpts||[])[i]; if(!o) return;
+  const s=readDash();
+  const lines=[];
+  if(o.kind==='set'){
+    const e=s.bank[o.key];
+    fillOverview(e.context,'판독 훈련 샘플 · '+e.name);
+    lines.push(`[${e.name}] 판독 훈련에서 내가 답한 것`);
+    e.qa.forEach(x=>lines.push(`· ${x.q}\n  → 내 답: ${x.a}`));
+  } else {
+    fillOverview(s.sc&&s.sc.context,'판독 훈련 자유 판독');
+    if((s.individual||'').trim()) lines.push('개별 지원: '+s.individual.trim());
+    if((s.classAdj||'').trim()) lines.push('학급 조정: '+s.classAdj.trim());
+  }
+  const memoEl=document.querySelector('[data-k=memo]');
+  memoEl.value=(memoEl.value?memoEl.value.trim()+'\n':'')+lines.join('\n');
+  data.memo=memoEl.value; save();
+  closeImp();
+  toast(`「${o.label}」 내용으로 개요·메모를 채웠어요 → 🤖 AI 초안을 받아 보세요`);
 }
 
 // ---- 비밀번호 ----

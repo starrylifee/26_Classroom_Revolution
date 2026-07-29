@@ -1010,6 +1010,11 @@ async function runStep(){
     pushLog('coach',j.reply||'');
     if(j.verdict==='pass'){
       pushLog('model',g.model);
+      // 보고서 작성기(/11/report/)가 학급별로 가져다 쓰는 답변 저장소 — 학급을 옮겨도 유지
+      const bk=(data.bank=data.bank||{}), bkey=String(data.g.set);
+      const ent=bk[bkey]=bk[bkey]||{name:curSet().name,context:curSet().sc.context,qa:[]};
+      const rec={q:g.q,a:pendingAns}, exi=ent.qa.findIndex(x=>x.q===g.q);
+      if(exi>=0) ent.qa[exi]=rec; else ent.qa.push(rec);
       data.g.i++; data.g.tries=0;
       if(data.g.i>=curGuide().length){
         data.g.done=true; data.doneSets[data.g.set]=true;
