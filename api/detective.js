@@ -22,6 +22,12 @@ module.exports = async function handler(req, res) {
       res.status(200).json({ grounded: false, careful: false, checks: false, ok: false, comment: '데이터와 수업 장면으로 답해 주세요.' });
       return;
     }
+    // 'ㅁㅁㅁ'·'ㅋㅋㅋ' 같은 자모 나열·글자 반복 등 무의미 답변도 LLM에 보내지 않고 전 항목 불인정
+    const core = answer.replace(/[\s\d\p{P}\p{S}]/gu, '');
+    if (!core || /^[ㄱ-ㅎㅏ-ㅣ]+$/.test(core) || new Set(core).size <= 3) {
+      res.status(200).json({ grounded: false, careful: false, checks: false, ok: false, comment: '의미가 담긴 문장으로 적어 주세요. 데이터 신호에서 본 것을 근거로 답해 보세요.' });
+      return;
+    }
 
     const askRaw = async (prompt, maxTokens, temp) => {
       const r = await fetch('https://api.upstage.ai/v1/chat/completions', {
@@ -66,11 +72,11 @@ ${signals}
 ${answer}
 </연수생의 가설>
 
-세 가지를 각각 판정하세요. 관대하게 — 표현이 달라도 의미가 통하면 인정:
+세 가지를 각각 판정하세요. 표현이 달라도 의미가 통하면 인정하되, 각 항목은 답변에 그 요소가 실제로 있을 때만 true — 답변에 없는 내용을 좋게 추측해 채워 주면 안 됩니다. 무의미한 글자 나열이나 데이터와 무관한 내용이면 세 항목 모두 false:
 - grounded: 데이터 신호를 근거로 삼았는가 (막연한 감상이 아니라 제시된 숫자·기록을 언급하거나 그에 기반)
 - careful: 단정·낙인 없이 가설 톤인가 ('게으르다', '문제아다'처럼 학생을 규정하면 false. '~일 수 있다', '~로 보인다', 복수 가능성 제시면 true)
 - checks: 판단 전에 추가로 확인할 것(관찰, 대화, 다른 데이터 등)을 제시했는가
-- comment: 격려하는 동료 말투 2문장 이내. 잘한 점을 짚고, false인 항목이 있으면 그 이유를 부드럽게. 존댓말.
+- comment: 격려하는 동료 말투 2문장 이내. 답변에 실제로 적힌 표현만 근거로 잘한 점을 짚고, false인 항목이 있으면 그 이유를 부드럽게. 존댓말.
 
 {"grounded":true 또는 false,"careful":true 또는 false,"checks":true 또는 false,"comment":"..."} JSON으로만 출력. 다른 텍스트 금지.`;
       const d = await ask(prompt, 2200, 0.1);

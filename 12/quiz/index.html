@@ -90,6 +90,9 @@ textarea:focus{border-color:var(--sky);background:#FEFBFE}
 .res-table td{border:1px solid var(--line);padding:8px;text-align:center}
 .res-table td.tt{text-align:left}
 .res-msg{font-size:15px;line-height:1.8;color:#33415C;max-width:640px;margin:0 auto 6px}
+.mydata{text-align:left;max-width:640px;margin:0 auto 12px;font-size:14px;line-height:1.8;background:#F4F8FF;border:1.5px solid #C6D8F5;border-radius:12px;padding:13px 16px}
+.mydata h4{color:#2E5AA8;font-size:14.5px;margin-bottom:6px}
+.mydata .md-note{margin-top:6px;padding-top:6px;border-top:1px dashed #C6D8F5;color:#33415C;font-size:13.5px}
 
 .toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
 .toast.show{opacity:1;transform:none}
@@ -182,6 +185,7 @@ textarea:focus{border-color:var(--sky);background:#FEFBFE}
         <thead><tr><th>사건</th><th>가설</th><th>행동</th><th>점수</th></tr></thead>
         <tbody id="resBody"></tbody>
       </table>
+      <div class="mydata" id="myData"></div>
       <p class="res-msg" style="font-size:13.5px;color:var(--muted)">데이터는 신호를 보여 주지만, 이야기는 아이에게 있습니다 — 수치 → 맥락 → 판단.</p>
     </div>
     <div class="tools" style="justify-content:center">
@@ -243,6 +247,7 @@ const CASES=[
 
 const $=id=>document.getElementById(id);
 let idx=0, score=0, results=[], phase=1, enteredPw='';
+let startTs=0, caseStart=0, actStart=0, rejects=0; // 플레이어(교사) 행동 기록 — 결과의 '내가 남긴 데이터'
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600); }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function sigText(c){ return c.signals.map(s=>`${s.l}: ${s.v} (${s.avg})`).join(' / '); }
@@ -269,7 +274,7 @@ pwInput.addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
 // ---------- 진행 ----------
 function startGame(){
   $('startCard').classList.add('hide'); $('hud').classList.remove('hide'); $('playCard').classList.remove('hide');
-  idx=0; score=0; results=[]; loadCase();
+  idx=0; score=0; results=[]; rejects=0; startTs=Date.now(); loadCase();
 }
 function loadCase(){
   const c=CASES[idx]; phase=1;
@@ -282,6 +287,7 @@ function loadCase(){
   $('hypoBtn').classList.remove('hide'); $('actBtn').classList.remove('hide');
   ['hypoChecks','hypoNote','ph2','actResult','modelBox','actNote','nextTools'].forEach(id=>$(id).classList.add('hide'));
   window.scrollTo({top:0});
+  caseStart=Date.now();
   setTimeout(()=>$('hypoInput').focus(),100);
 }
 function addScore(pts,label){
@@ -293,7 +299,8 @@ function addScore(pts,label){
 
 async function submitHypo(){
   const c=CASES[idx], ans=$('hypoInput').value.trim();
-  if(ans.length<10){ toast('가설을 조금 더 구체적으로 적어 주세요 ✏️'); return; }
+  if(ans.length<10){ rejects++; toast('가설을 조금 더 구체적으로 적어 주세요 ✏️'); return; }
+  const sec=+((Date.now()-caseStart)/1000).toFixed(1);
   $('hypoBtn').disabled=true; $('hypoSpin').style.display='block';
   try{
     const r=await fetch('/api/detective',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -309,11 +316,12 @@ async function submitHypo(){
     $('hypoChecks').classList.remove('hide');
     if(j.comment){ $('hypoNote').textContent='🔍 채점관 | '+j.comment; $('hypoNote').classList.remove('hide'); }
     if(got>0) addScore(got*100,`가설 ${got}/3`);
-    results.push({title:c.title,hypo:got,act:false,pts:got*100});
+    results.push({title:c.title,hypo:got,act:false,pts:got*100,hypoSec:sec,hypoLen:ans.length});
     $('hypoInput').disabled=true; $('hypoBtn').classList.add('hide');
     phase=2; $('hudPhase').textContent='2·3단계 · 사정과 행동';
     $('cContext').innerHTML=c.context;
     $('ph2').classList.remove('hide');
+    actStart=Date.now();
     setTimeout(()=>{ $('actInput').focus(); $('ph2').scrollIntoView({behavior:'smooth',block:'center'}); },100);
   }catch(e){ toast('⚠ '+e.message); }
   finally{ $('hypoBtn').disabled=false; $('hypoSpin').style.display='none'; }
@@ -321,7 +329,8 @@ async function submitHypo(){
 
 async function submitAct(){
   const c=CASES[idx], ans=$('actInput').value.trim();
-  if(ans.length<10){ toast('행동을 조금 더 구체적으로 적어 주세요 ✏️'); return; }
+  if(ans.length<10){ rejects++; toast('행동을 조금 더 구체적으로 적어 주세요 ✏️'); return; }
+  const sec=+((Date.now()-actStart)/1000).toFixed(1);
   $('actBtn').disabled=true; $('actSpin').style.display='block';
   try{
     const r=await fetch('/api/detective',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -337,6 +346,7 @@ async function submitAct(){
     if(j.ok) addScore(100,'교사 행동');
     const rec=results[results.length-1];
     rec.act=!!j.ok; if(j.ok) rec.pts+=100;
+    rec.actSec=sec; rec.actLen=ans.length;
     $('actInput').disabled=true; $('actBtn').classList.add('hide');
     $('nextBtn').textContent=(idx+1<CASES.length)?'▶ 다음 사건':'🏁 탐정 등급 보기';
     $('nextTools').classList.remove('hide');
@@ -366,7 +376,44 @@ function showResult(){
   $('finalScore').textContent=`${score.toLocaleString()}점 / ${max.toLocaleString()}점`;
   $('gradeMsg').textContent=msg;
   $('resBody').innerHTML=results.map((r,i)=>`<tr><td class="tt">${esc(r.title)}</td><td>${r.hypo}/3</td><td>${r.act?'✓':'✗'}</td><td><b>${r.pts.toLocaleString()}</b></td></tr>`).join('');
+  renderMyData();
   window.scrollTo({top:0});
+}
+// 방금 수사한 교사의 행동 기록을 학생 대시보드처럼 보여 준다 (11과정 분류 게임과 같은 장치)
+function renderMyData(){
+  const fmt=s=>s>=60?`${Math.floor(s/60)}분 ${Math.round(s%60)}초`:`${Math.round(s)}초`;
+  const caseNo=r=>r.title.split('·')[0].trim();
+  const total=(Date.now()-startTs)/1000;
+  const rows=[`· <b>전체 수사 시간</b> — ${fmt(total)} <span style="color:#6B7A99">(사정 읽기·해설 시간 포함)</span>`];
+  const hy=results.filter(r=>r.hypoSec!=null);
+  if(hy.length){
+    const avg=hy.reduce((a,r)=>a+r.hypoSec,0)/hy.length;
+    const slow=hy.reduce((a,b)=>a.hypoSec>=b.hypoSec?a:b), fast=hy.reduce((a,b)=>a.hypoSec<=b.hypoSec?a:b);
+    rows.push(`· <b>가설 세우는 데 쓴 시간</b> — 평균 ${fmt(avg)} · 가장 오래 「${caseNo(slow)}」 ${fmt(slow.hypoSec)} · 가장 빨리 「${caseNo(fast)}」 ${fmt(fast.hypoSec)}`);
+  }
+  const ac=results.filter(r=>r.actSec!=null);
+  if(ac.length){
+    const avg=ac.reduce((a,r)=>a+r.actSec,0)/ac.length;
+    rows.push(`· <b>행동 정하는 데 쓴 시간</b> — 평균 ${fmt(avg)} <span style="color:#6B7A99">(사정 읽는 시간 포함)</span>`);
+  }
+  if(hy.length){
+    const hl=Math.round(hy.reduce((a,r)=>a+r.hypoLen,0)/hy.length);
+    const al=ac.length?Math.round(ac.reduce((a,r)=>a+r.actLen,0)/ac.length):0;
+    rows.push(`· <b>답변 길이</b> — 가설 평균 ${hl}자${al?` · 행동 평균 ${al}자`:''}`);
+  }
+  if(rejects) rows.push(`· <b>제출 반려</b> — ${rejects}회 <span style="color:#6B7A99">(10자 미만 제출 시도)</span>`);
+  // 응답 패턴 판독 — 이 퀴즈가 나를 판독한다면?
+  if(hy.length){
+    const avg=hy.reduce((a,r)=>a+r.hypoSec,0)/hy.length;
+    const hypoOk=hy.reduce((a,r)=>a+r.hypo,0);
+    let pat;
+    if(avg<15&&hypoOk<hy.length*2) pat=`⚠ 짧은 응답 시간 + 낮은 판정 — 실제 학생이라면 <b>「대충 넘김 의심」</b> 신호로 읽힙니다`;
+    else if(avg<15) pat=`빠르고 정확 — 몰입해서 판독한 흔적입니다`;
+    else pat=`사건마다 멈춰 고민한 흔적이 시간에 남았습니다`;
+    rows.push(`· <b>응답 패턴</b> — ${pat}`);
+  }
+  $('myData').innerHTML=`<h4>📈 내가 남긴 데이터 — 이 퀴즈도 나를 학생처럼 기록했어요</h4>${rows.join('<br>')}
+  <div class="md-note">여기까지가 자동으로 찍힌 수치입니다. 그런데 어느 사건에서 왜 오래 멈췄는지, 어떤 사건이 우리 반 아이를 떠올리게 했는지는 어디에도 안 남았죠 — 학생 데이터도 똑같습니다.</div>`;
 }
 function saveResult(){
   toast('이미지를 만드는 중…');
