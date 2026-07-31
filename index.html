@@ -32,6 +32,12 @@ main{max-width:1100px;margin:0 auto;padding:36px 24px;display:grid;grid-template
 .card a{display:block;text-align:center;background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;text-decoration:none;padding:12px;border-radius:999px;font-weight:700;font-size:16px}
 .card a:hover{filter:brightness(.93)}
 .card .soon-tag{text-align:center;background:#EFEDF6;color:#9AA1B8;padding:12px;border-radius:9px;font-weight:700;font-size:16px}
+
+/* 과정 필터 */
+.filters{margin-top:22px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.fch{font-family:inherit;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:#52609B;font-weight:700;font-size:14.5px;padding:8px 18px;border-radius:999px;transition:.15s}
+.fch:hover{border-color:#B9AEE0}
+.fch.on{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;border-color:transparent}
 </style>
 </head>
 <body>
@@ -39,6 +45,15 @@ main{max-width:1100px;margin:0 auto;padding:36px 24px;display:grid;grid-template
   <p class="overline">2026 <b>인공지능</b> 활용 선도교사 연수</p>
   <h1>교실혁명 집합연수 도구 모음</h1>
   <div class="pill">8~13과정 수업 활용 웹앱</div>
+  <div class="filters" id="filters">
+    <button class="fch on" data-c="all">전체</button>
+    <button class="fch" data-c="8">8과정</button>
+    <button class="fch" data-c="9">9과정</button>
+    <button class="fch" data-c="10">10과정</button>
+    <button class="fch" data-c="11">11과정</button>
+    <button class="fch" data-c="12">12과정</button>
+    <button class="fch" data-c="13">13과정</button>
+  </div>
 </header>
 <main>
   <div class="card">
@@ -151,5 +166,21 @@ main{max-width:1100px;margin:0 auto;padding:36px 24px;display:grid;grid-template
   </div>
 </main>
 <footer>2026년 인공지능 활용 선도교사 연수</footer>
+<script>
+// 과정 필터: 카드 배지 텍스트("10과정 · …")에서 과정 번호를 읽어 다중 선택 필터링
+const chips=[...document.querySelectorAll('.fch')];
+const cards=[...document.querySelectorAll('main .card')];
+cards.forEach(c=>{ const m=((c.querySelector('.no')||{}).textContent||'').match(/^(\d+)과정/); c.dataset.c=m?m[1]:''; });
+function applyFilter(){
+  const on=chips.filter(b=>b.classList.contains('on')&&b.dataset.c!=='all').map(b=>b.dataset.c);
+  cards.forEach(c=>{ c.style.display=(!on.length||on.includes(c.dataset.c))?'':'none'; });
+  document.querySelector('[data-c="all"]').classList.toggle('on',!on.length);
+}
+chips.forEach(b=>b.onclick=()=>{
+  if(b.dataset.c==='all') chips.forEach(x=>x.classList.remove('on'));
+  else b.classList.toggle('on');
+  applyFilter();
+});
+</script>
 </body>
 </html>
