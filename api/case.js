@@ -25,6 +25,12 @@ module.exports = async function handler(req, res) {
       res.status(200).json({ hits: [false, false, false], creative: false, comment: '사례 속 수업 장면에서 본 것으로 답해 주세요.' });
       return;
     }
+    // 'ㅁㅁㅁ'·'ddd' 같은 자모 나열·글자 반복 등 무의미 답변도 LLM에 보내지 않고 전 항목 불인정 (12과정 detective.js와 같은 장치)
+    const core = answer.replace(/[\s\d\p{P}\p{S}]/gu, '');
+    if (!core || /^[ㄱ-ㅎㅏ-ㅣ]+$/.test(core) || new Set(core).size <= 3) {
+      res.status(200).json({ hits: [false, false, false], creative: false, comment: '의미가 담긴 문장으로 적어 주세요. 사례 속 수업 장면에서 본 것을 근거로 답해 보세요.' });
+      return;
+    }
 
     const askRaw = async (prompt, maxTokens, temp) => {
       const r = await fetch('https://api.upstage.ai/v1/chat/completions', {
@@ -71,7 +77,7 @@ ${answer}
 
 채점 절차:
 1. 연수생의 진단을 요인별로 대조한다. 용어가 정확히 같지 않아도 의미가 통하면 인정한다. (예: '한 명이 다 해먹고 나머지는 구경만 한다' → 독점과 소외 인정)
-2. 사례 속 장면을 근거로 다르게 표현한 것도 인정한다. 단, 막연한 답('수업이 재미없다', '학생이 문제다')은 어떤 요인으로도 인정하지 않는다.
+2. 사례 속 장면을 근거로 다르게 표현한 것도 인정한다. 단, 막연한 답('수업이 재미없다', '학생이 문제다')은 어떤 요인으로도 인정하지 않는다. 진단에 적혀 있지 않은 내용을 좋게 추측해 채워 주면 안 되며, 무의미한 글자 나열이면 세 항목 모두 false.
 3. comment는 격려하는 동료 말투 2문장 이내 — 맞힌 것을 짚어 칭찬하고, 놓친 요인이 있으면 사례의 어느 장면에 있었는지 알려 준다. 존댓말.
 
 {"hits":[true 또는 false, true 또는 false, true 또는 false],"comment":"..."} JSON으로만 출력하세요. hits 순서는 정답 요인 1·2·3 순서. 다른 텍스트 금지.`;
@@ -107,7 +113,7 @@ ${answer}
 
 채점 절차:
 1. 연수생의 처방을 모범 처방별로 대조한다. 도구 이름이나 표현이 달라도 같은 방향이면 인정한다. (예: '띵커벨로 모두 의견을 올리게 한다' → 디지털 협업 도구 인정)
-2. 모범 처방에는 없지만 이 사례의 저해 요인을 실제로 해결할 수 있는 구체적 아이디어가 있으면 creative를 true로 하고 creativeNote에 1문장으로 짚는다. 막연한 답('AI를 활용한다', '열심히 지도한다')은 어느 것으로도 인정하지 않는다.
+2. 모범 처방에는 없지만 이 사례의 저해 요인을 실제로 해결할 수 있는 구체적 아이디어가 있으면 creative를 true로 하고 creativeNote에 1문장으로 짚는다. 막연한 답('AI를 활용한다', '열심히 지도한다')은 어느 것으로도 인정하지 않는다. 처방에 적혀 있지 않은 내용을 좋게 추측해 채워 주면 안 되며, 무의미한 글자 나열이면 세 항목 모두 false.
 3. comment는 격려하는 동료 말투 2문장 이내. 존댓말.
 
 {"hits":[true 또는 false, true 또는 false, true 또는 false],"creative":true 또는 false,"creativeNote":"...","comment":"..."} JSON으로만 출력하세요. hits 순서는 모범 처방 1·2·3 순서. 다른 텍스트 금지.`;
