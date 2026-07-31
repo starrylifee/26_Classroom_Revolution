@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>피드백 마스터 · 10과정</title>
+<meta property="og:title" content="피드백 마스터">
+<meta property="og:description" content="학생 피드백 원칙을 스피드 객관식으로 훈련합니다. 콤보와 시간 보너스로 점수를 쌓아 보세요.">
+<meta property="og:image" content="/og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2C59'/%3E%3Cpath d='M14 20a8 8 0 018-8h20a8 8 0 018 8v12a8 8 0 01-8 8H30l-9 8v-8h-1a8 8 0 01-8-8z' fill='%23F6C2E4'/%3E%3Ccircle cx='26' cy='26' r='3' fill='%231E2C59'/%3E%3Ccircle cx='38' cy='26' r='3' fill='%231E2C59'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E2C59;--teal:#7A2E6E;--sky:#F6C2E4;--pink:#E85FA5;--bg:#F7F9FF;--line:#DDE1EB;--muted:#5B6B7C;--ok:#1E7A4F;--bad:#C0392B}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:#1B2A3A;min-height:100vh;display:flex;flex-direction:column}
+header{background:linear-gradient(90deg,#C9C4F2 0%,#F9C8E8 100%);color:var(--navy);padding:14px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(420px 420px at 6% 16%,rgba(178,158,240,.30),transparent 70%),radial-gradient(520px 520px at 2% 78%,rgba(120,205,242,.22),transparent 70%),radial-gradient(400px 400px at 14% 46%,rgba(250,150,205,.22),transparent 70%)}
+header,main,footer{position:relative;z-index:1}
+footer{background:#E7F2FB;color:#6B7A99;font-size:13px;padding:10px 28px}
+header .badge{background:#fff;color:#C2447A;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+header h1{font-size:22px;font-weight:700}
+header .home{color:#52609B;text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap;background:#fff;padding:6px 14px;border-radius:999px;margin-left:auto}
+header .home~.home{margin-left:0}
+header .home:hover{color:var(--navy)}
+
+main{flex:1;max-width:980px;width:100%;margin:0 auto;padding:18px 28px 26px;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(14,40,65,.05);padding:24px 26px}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:15px;font-weight:700;transition:.15s}
+.btn-grad{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;padding:14px 34px;border-radius:999px;font-size:17px}
+.btn-grad:hover{filter:brightness(.93)}
+.btn-navy{background:var(--teal);color:#fff;padding:12px 22px}
+.btn-navy:hover{background:#5C2253}
+.btn-outline{background:#fff;border:1.5px solid var(--line);color:#1B2A3A;font-weight:500;padding:12px 18px}
+.hide{display:none!important}
+
+/* 시작 화면 */
+.intro h2{font-size:26px;color:var(--navy);margin-bottom:10px}
+.intro p{font-size:15.5px;color:var(--muted);line-height:1.8;margin-bottom:6px}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+@media(max-width:760px){.rules{grid-template-columns:1fr}}
+.rule{background:#F6F1FE;border:1.5px solid #DDD2F0;border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.7}
+.rule b{display:block;color:var(--teal);font-size:15.5px;margin-bottom:4px}
+
+/* 퀴즈 화면 */
+.hud{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.hud .prog{font-size:15px;font-weight:700;color:var(--muted)}
+.hud .score{font-size:22px;font-weight:900;color:var(--teal)}
+.hud .combo{font-size:16px;font-weight:900;color:#E8590C;background:#FFF1E6;border-radius:999px;padding:4px 14px;display:none}
+.hud .combo.on{display:inline-block;animation:pop .3s}
+@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.tbar{height:10px;background:#EEE9F6;border-radius:999px;overflow:hidden;margin-bottom:16px}
+.tbar>div{height:100%;width:100%;background:linear-gradient(90deg,#8F86DD,#EC6FB2);transition:width .2s linear}
+.qtxt{font-size:20px;font-weight:700;color:var(--navy);line-height:1.6;margin-bottom:16px}
+.qtxt .tag{display:inline-block;font-size:13px;background:#EDF3FE;color:#2E5AA8;border-radius:6px;padding:3px 10px;margin-right:8px;vertical-align:3px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:760px){.opts{grid-template-columns:1fr}}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;background:#FAFAFE;border:2px solid var(--line);border-radius:11px;padding:13px 15px;font-size:15.5px;font-weight:500;line-height:1.55}
+.opt:hover{border-color:#B9AEE0;background:#F6F1FE}
+.opt .no{flex:none;width:26px;height:26px;border-radius:8px;background:var(--navy);color:#fff;font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center}
+.opt.right{border-color:var(--ok);background:#F0F9F4}
+.opt.right .no{background:var(--ok)}
+.opt.wrong{border-color:var(--bad);background:#FDF1F0}
+.opt.wrong .no{background:var(--bad)}
+.opt:disabled{cursor:default;opacity:.92}
+.opt.dim{opacity:.45}
+.fb{margin-top:14px;border-radius:11px;padding:14px 17px;font-size:14.5px;line-height:1.75;display:none}
+.fb.ok{background:#F0F9F4;border:1.5px solid #BFE3CE}
+.fb.bad{background:#FDF1F0;border:1.5px solid #EFC4BE}
+.fb b{font-size:15.5px}
+.fb .src{display:block;margin-top:6px;font-size:13px;color:var(--muted)}
+.gain{font-weight:900;color:var(--teal)}
+.nextRow{margin-top:14px;text-align:right;display:none}
+
+/* 결과 화면 */
+.shot{background:#fff;border-radius:14px;padding:26px 28px}
+.shot .head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;border-bottom:2px solid var(--navy);padding-bottom:14px;margin-bottom:16px}
+.shot .head h2{font-size:23px;color:var(--navy)}
+.shot .head .sub{font-size:13px;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:#F6F1FE;border-radius:11px;padding:12px 8px;text-align:center}
+.kpi .v{font-size:22px;font-weight:900;color:var(--teal)}
+.kpi .l{font-size:12px;color:var(--muted);margin-top:2px}
+.kpi.big{background:linear-gradient(160deg,#FFF6FB,#F6F1FE);border:2px solid #DDD2F0}
+.kpi.big .v{font-size:26px;color:var(--pink)}
+.grade{font-size:17px;font-weight:900;color:var(--navy);background:#FFF9EC;border:1.5px solid #E8D5A0;border-radius:11px;padding:12px 17px;margin-bottom:16px;line-height:1.6}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{background:var(--navy);color:#fff;padding:9px 8px;font-weight:700;white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:8px;text-align:center}
+td.q{text-align:left;line-height:1.5}
+td .o{color:var(--ok);font-weight:900}
+td .x{color:var(--bad);font-weight:900}
+tr.slow td{background:#FFFBF2}
+.tblNote{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.6}
+.shot .foot{margin-top:14px;font-size:12px;color:#9AA6B8;text-align:right}
+.resTools{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;opacity:0;transform:translateY(16px);transition:.3s;z-index:60;pointer-events:none;max-width:70vw}
+.toast.show{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">10과정</span>
+  <h1>피드백 마스터</h1>
+  <a class="home" href="/10/">🧑‍🏫 도우미</a>
+  <a class="home" href="/10/game/">🩺 클리닉</a>
+  <a class="home" href="/10/stt/">🎙 발화 분석</a>
+  <a class="home" href="/">🏠 홈</a>
+</header>
+
+<main>
+  <!-- 시작 -->
+  <div class="card intro" id="scrIntro">
+    <h2>💬 피드백 마스터 — 학생 피드백 원칙 스피드 퀴즈</h2>
+    <p>교안 「데이터 기반 평가의 4요소 — 피드백」의 원칙을 객관식으로 훈련합니다. 빠르고 정확할수록 점수가 높습니다.</p>
+    <div class="rules">
+      <div class="rule"><b>✅ 정답 100점</b>맞히면 기본 100점. 틀리면 0점이지만 해설로 원칙을 확인하고 넘어갑니다.</div>
+      <div class="rule"><b>⚡ 시간 보너스 최대 +100</b>5초 안에 답하면 +100, 이후 줄어들어 20초부터는 0. 문항 위 게이지가 남은 보너스입니다.</div>
+      <div class="rule"><b>🔥 콤보 최대 +100</b>연속 정답마다 +20씩(2연속 +20 → 6연속 이상 +100). 틀리면 콤보가 끊깁니다.</div>
+    </div>
+    <p style="font-size:14px">⌨️ <b>1~4 숫자키</b>로 답하고 <b>Enter</b>로 다음 문항. 끝나면 문항별 소요 시간 표가 담긴 결과를 PNG로 저장할 수 있습니다.</p>
+    <div style="text-align:center;margin-top:16px"><button class="btn-grad" id="startBtn">🚀 시작하기</button></div>
+  </div>
+
+  <!-- 퀴즈 -->
+  <div class="card hide" id="scrQuiz">
+    <div class="hud">
+      <span class="prog" id="prog"></span>
+      <span class="combo" id="comboChip"></span>
+      <span style="flex:1"></span>
+      <span class="score" id="scoreChip">0점</span>
+    </div>
+    <div class="tbar"><div id="tFill"></div></div>
+    <div class="qtxt" id="qTxt"></div>
+    <div class="opts" id="optBox"></div>
+    <div class="fb" id="fbBox"></div>
+    <div class="nextRow" id="nextRow"><button class="btn-navy" id="nextBtn">다음 문항 (Enter) →</button></div>
+  </div>
+
+  <!-- 결과 -->
+  <div class="hide" id="scrRes">
+    <div class="shot" id="shot">
+      <div class="head">
+        <h2>💬 피드백 마스터 결과</h2>
+        <span style="flex:1"></span>
+        <span class="sub">2026 인공지능 활용 선도교사 연수 · 10과정</span>
+      </div>
+      <div class="kpis" id="kpiBox"></div>
+      <div class="grade" id="gradeBox"></div>
+      <div style="overflow-x:auto"><table id="resTbl"></table></div>
+      <p class="tblNote">⏱ 문항별 시간은 선택지가 나타난 순간부터 답을 고르기까지입니다. 노란 줄은 시간 보너스를 놓친 문항(20초 초과) — 헷갈렸던 원칙이니 교안에서 다시 확인해 보세요.</p>
+      <div class="foot">피드백 마스터 · 데이터 기반 평가의 4요소 — 피드백</div>
+    </div>
+    <div class="resTools">
+      <button class="btn-grad" onclick="savePng()">🖼 PNG로 저장</button>
+      <button class="btn-outline" onclick="location.reload()">🔄 다시 도전</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<footer>2026년 인공지능 활용 선도교사 연수 · 10과정 교실처럼 실행하다 — 피드백 원칙 훈련</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2600); }
+function esc(s){ return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// tag: 문항 주제(결과 표에도 표시) · src: 교안 근거 · exp: 해설
+// ans: 정답 인덱스(0~3). 렌더링 시 선택지 순서를 섞는다.
+const QUESTIONS=[
+ {tag:'양과 횟수', q:'피드백의 양을 정할 때 교안이 제시한 기준으로 알맞은 것은?',
+  opts:['학생이 이해하고 활용할 수 있을 정도의 양과 횟수로 제공한다','교사가 발견한 개선점은 빠짐없이 모두 전달한다','학생이 지금까지 한 것보다 앞으로 해야 할 것이 많도록 제공한다','피드백은 많을수록 좋으므로 횟수 제한 없이 수시로 제공한다'],
+  ans:0, exp:'학생이 지금까지 한 것보다 앞으로 해야 할 것이 더 많아서는 안 됩니다. 학생이 이해하고 활용할 수 있는 양이 기준입니다.', src:'교안 3-6) 피드백 — 양과 횟수'},
+ {tag:'횟수 계획', q:'피드백 횟수에 대한 교안의 설명으로 알맞은 것은?',
+  opts:['활동 내용·수준과 학급 규모에 따라 사전에 계획하고, 학생도 그 기회를 알게 한다','학생이 요청할 때마다 즉흥적으로 정한다','평가가 끝난 뒤 한 번에 몰아서 제공한다','학급 규모와 관계없이 모든 학급에서 같은 횟수로 제공한다'],
+  ans:0, exp:'피드백 횟수는 교수학습 활동의 내용과 수준, 학급 규모에 따라 사전에 계획하고, 학생들도 이런 기회가 있다는 것을 알아야 합니다.', src:'교안 3-6) 피드백 — 양과 횟수'},
+ {tag:'내용 선정', q:'피드백할 내용이 많을 때, 먼저 선정할 내용으로 교안이 제시한 두 가지 기준은?',
+  opts:['조금 더 노력하면 성취할 수 있는 것 + 다음 학습 내용과 관련된 것','가장 심각한 오류 + 가장 사소한 오류','교사가 가르치기 쉬운 것 + 시험에 나오는 것','학생이 이미 잘하는 것 + 칭찬할 것'],
+  ans:0, exp:'학생 수준에서 조금 더 노력하면 성취할 수 있는 것부터, 그리고 다음 학습과 관련된 것을 선정하면 피드백이 과거 조언을 넘어 다음 학습을 위한 정보가 됩니다.', src:'교안 3-6) 피드백 — 내용 선정 Q&A'},
+ {tag:'사용 기회', q:'"학생에게 피드백을 사용할 기회 제공"이 중요한 이유로 교안이 든 것은?',
+  opts:['수행이 개선되는 경험을 한 학생이 피드백의 유용성을 알게 되기 때문','교사의 피드백 부담을 줄일 수 있기 때문','학생이 피드백을 암기하게 되기 때문','평가 횟수를 줄일 수 있기 때문'],
+  ans:0, exp:'피드백을 듣고 실제 수행 개선에 활용해 나아지는 것을 경험한 학생은 피드백이 쓸모 있다는 것을 알게 됩니다.', src:'교안 3-6) 피드백 — 사용 기회'},
+ {tag:'어조', q:'피드백의 어조에 대한 교안의 설명으로 알맞은 것은?',
+  opts:['존중·지원하는 어조는 학생이 「적절한 교육적 지원을 받고 있다」고 느끼게 한다','엄격한 어조가 학생의 긴장감을 높여 효과적이다','어조보다 내용이 중요하므로 어조는 고려하지 않는다','칭찬만 하고 개선점은 말하지 않는 것이 좋다'],
+  ans:0, exp:'피드백은 받는 사람의 변화가 목적입니다. 존중하는 태도와 지원하는 어조가 그 변화를 이끕니다.', src:'교안 3-6) 피드백 — 어조'},
+ {tag:'입체적 피드백', q:'교안의 「입체적 피드백」 4가지 짝으로 알맞은 것은?',
+  opts:['인지적(오개념 교정)·과정적(풀이 속도)·정의적(참여 태도)·협력적(모둠 활동)','지필형·수행형·관찰형·면담형','즉시형·지연형·주간형·월간형','개인형·짝형·모둠형·전체형'],
+  ans:0, exp:'오개념을 바로잡는 인지적, 문제 풀이 속도 같은 과정적, 참여 태도의 정의적, 모둠 활동의 협력적 피드백을 함께 설계하는 것이 입체적 피드백입니다.', src:'교안 3-6) 피드백 — 입체적 피드백 설계'},
+ {tag:'수준별 차별화', q:'학습 수준에 따른 맞춤형 피드백으로 교안이 제시한 방식은?',
+  opts:['이해도가 낮으면 기본 개념 강화, 높으면 사고력 확장 문제 제공','이해도가 낮으면 피드백을 줄이고, 높으면 늘린다','모든 학생에게 같은 피드백을 제공해 공정성을 지킨다','이해도가 높은 학생에게만 피드백을 제공한다'],
+  ans:0, exp:'낮은 이해도 학생에게는 기본 개념 강화 중심, 높은 학생에게는 추가 사고력 확장 문제로 차별화합니다.', src:'교안 3-6) 피드백 — 맞춤형 피드백'},
+ {tag:'방법 다양화', q:'피드백 방법과 사용 상황의 연결이 교안과 일치하는 것은?',
+  opts:['구두=수업 중 즉각 정정, 서면=평가 후 자세한 개별 설명, 동료=친구와 논의 기회','구두=평가 후 상세 설명, 서면=즉각 반응, 동료=교사 부담 축소','구두=칭찬 전용, 서면=지적 전용, 동료=보상 전용','구두·서면·동료 모두 같은 상황에 같은 방식으로 쓴다'],
+  ans:0, exp:'즉각 반응이 필요하면 구두, 자세한 설명이 필요하면 서면, 학습 촉진을 위한 논의 기회는 동료 피드백입니다.', src:'교안 3-6) 피드백 — 방법의 다양화'},
+ {tag:'재도전 기회', q:'피드백 후 학생 지원 방법으로 교안이 제시한 것은?',
+  opts:['예시 문제 1~2개를 제시해 스스로 다시 도전·해결하는 과정을 경험하게 한다','피드백으로 마무리하고 다음 단원으로 바로 넘어간다','교사가 정답 풀이를 대신 완성해 보여 준다','재도전은 평가 공정성을 해치므로 제공하지 않는다'],
+  ans:0, exp:'피드백을 받은 뒤 1~2개 예시 문제로 다시 도전해 스스로 해결하는 경험이 피드백을 학습으로 연결합니다.', src:'교안 3-6) 피드백 — 문제 해결 기회'},
+ {tag:'지속 개선', q:'10과정 학습목표에서 수업·평가의 지속적 개선을 위해 반영하라고 한 두 가지는?',
+  opts:['동료 검토와 피드백','시험 점수와 석차','학부모 민원과 만족도','교과서 진도와 시수'],
+  ans:0, exp:'동료 검토와 피드백을 반영해 AI·디지털 수업·평가를 지속적으로 개선하는 것이 10과정의 학습목표입니다.', src:'교안 1-2) 학습 목표'},
+];
+
+// ---------- 진행 상태 ----------
+let order=[], idx=0, score=0, combo=0, maxCombo=0, qStart=0, tTick=null, runStart=0;
+const results=[]; // {n,tag,ok,sec,base,timeB,comboB}
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+$('startBtn').onclick=()=>{
+  order=shuffle(QUESTIONS.map((_,i)=>i));
+  idx=0; score=0; combo=0; maxCombo=0; results.length=0;
+  runStart=performance.now();
+  $('scrIntro').classList.add('hide'); $('scrQuiz').classList.remove('hide');
+  showQ();
+};
+
+function timeBonus(sec){ return sec<=5?100:Math.max(0,Math.round(100*(20-sec)/15)); }
+function comboBonus(c){ return c>=2?Math.min(c-1,5)*20:0; }
+
+function showQ(){
+  const q=QUESTIONS[order[idx]];
+  $('prog').textContent=`문항 ${idx+1} / ${order.length}`;
+  $('scoreChip').textContent=score.toLocaleString()+'점';
+  const cc=$('comboChip');
+  if(combo>=2){ cc.textContent='🔥 콤보 x'+combo; cc.classList.add('on'); } else cc.classList.remove('on');
+  $('qTxt').innerHTML=`<span class="tag">${esc(q.tag)}</span>${esc(q.q)}`;
+  // 선택지 섞기
+  const perm=shuffle([0,1,2,3]);
+  const box=$('optBox'); box.innerHTML='';
+  perm.forEach((oi,pos)=>{
+    const b=document.createElement('button');
+    b.className='opt'; b.dataset.oi=oi;
+    b.innerHTML=`<span class="no">${pos+1}</span><span>${esc(q.opts[oi])}</span>`;
+    b.onclick=()=>pick(b,q);
+    box.appendChild(b);
+  });
+  $('fbBox').style.display='none'; $('fbBox').className='fb';
+  $('nextRow').style.display='none';
+  qStart=performance.now();
+  clearInterval(tTick);
+  tTick=setInterval(()=>{
+    const sec=(performance.now()-qStart)/1000;
+    $('tFill').style.width=Math.max(0,100-(sec<=5?0:(sec-5)/15*100))+'%';
+  },200);
+}
+
+let answered=false;
+function pick(btn,q){
+  if(answered&&$('nextRow').style.display!=='none') return;
+  const sec=(performance.now()-qStart)/1000;
+  clearInterval(tTick);
+  answered=true;
+  const oi=+btn.dataset.oi, ok=oi===q.ans;
+  const opts=[...$('optBox').children];
+  opts.forEach(b=>{ b.disabled=true; const bi=+b.dataset.oi;
+    if(bi===q.ans) b.classList.add('right');
+    else if(b===btn) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  let base=0,tb=0,cb=0;
+  if(ok){ combo++; maxCombo=Math.max(maxCombo,combo); base=100; tb=timeBonus(sec); cb=comboBonus(combo); score+=base+tb+cb; }
+  else combo=0;
+  results.push({n:idx+1,tag:q.tag,ok,sec:Math.round(sec*10)/10,base,timeB:tb,comboB:cb});
+  $('scoreChip').textContent=score.toLocaleString()+'점';
+  const fb=$('fbBox');
+  fb.className='fb '+(ok?'ok':'bad'); fb.style.display='block';
+  fb.innerHTML=(ok
+    ?`<b>⭕ 정답! <span class="gain">+${base+tb+cb}점</span></b> (기본 100 · 시간 +${tb} · 콤보 +${cb})<br>`
+    :`<b>❌ 오답 — 콤보가 끊겼어요.</b><br>`)
+    +esc(q.exp)+`<span class="src">📖 ${esc(q.src)}</span>`;
+  $('nextRow').style.display='block';
+  $('nextBtn').textContent=(idx+1<order.length?'다음 문항 (Enter) →':'결과 보기 (Enter) 🏁');
+  $('nextBtn').focus();
+}
+
+$('nextBtn').onclick=next;
+function next(){
+  answered=false;
+  if(++idx<order.length) showQ();
+  else finish();
+}
+
+document.addEventListener('keydown',e=>{
+  if(!$('scrQuiz').classList.contains('hide')){
+    if(answered && e.key==='Enter'){ e.preventDefault(); next(); return; }
+    if(!answered && /^[1-4]$/.test(e.key)){
+      const b=$('optBox').children[+e.key-1];
+      if(b&&!b.disabled) b.click();
+    }
+  } else if(!$('scrIntro').classList.contains('hide') && e.key==='Enter'){ $('startBtn').click(); }
+});
+
+// ---------- 결과 ----------
+function fmtSec(s){ return s>=60?`${Math.floor(s/60)}분 ${Math.round(s%60)}초`:`${Math.round(s*10)/10}초`; }
+function grade(sc,total){
+  const max=total*300; const r=sc/max;
+  if(r>=.8) return ['🏆 피드백 마스터','원칙을 빠르고 정확하게 꿰고 있습니다. 이제 내 수업의 피드백 계획에 그대로 옮겨 보세요.'];
+  if(r>=.6) return ['🥇 피드백 전문가','핵심 원칙이 탄탄합니다. 시간 보너스를 놓친 문항의 원칙만 한 번 더 확인해 보세요.'];
+  if(r>=.4) return ['🥈 피드백 연습생','절반은 익혔습니다. 표에서 ❌·노란 줄 문항의 교안 근거를 다시 읽어 보세요.'];
+  return ['🌱 피드백 입문','교안 「데이터 기반 평가의 4요소 — 피드백」을 다시 읽고 재도전해 보세요. 원칙을 알면 점수는 따라옵니다.'];
+}
+function finish(){
+  clearInterval(tTick);
+  $('scrQuiz').classList.add('hide'); $('scrRes').classList.remove('hide');
+  const totalSec=(performance.now()-runStart)/1000;
+  const okN=results.filter(r=>r.ok).length;
+  const kpi=[[score.toLocaleString()+'점','총점','big'],[`${okN}/${results.length}`,'정답'],[maxCombo>=2?'x'+maxCombo:'—','최고 콤보'],[fmtSec(totalSec),'총 소요 시간'],[fmtSec(results.reduce((a,r)=>a+r.sec,0)/results.length),'문항 평균']];
+  $('kpiBox').innerHTML=kpi.map(([v,l,c])=>`<div class="kpi ${c||''}"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  const [g,gd]=grade(score,results.length);
+  $('gradeBox').innerHTML=`${g} — <span style="font-weight:500;font-size:14.5px">${gd}</span>`;
+  $('resTbl').innerHTML='<tr><th>문항</th><th>주제</th><th>정오</th><th>소요 시간</th><th>기본</th><th>시간 보너스</th><th>콤보</th><th>득점</th></tr>'
+    +results.map(r=>`<tr${r.sec>20?' class="slow"':''}><td>${r.n}</td><td class="q">${esc(r.tag)}</td><td>${r.ok?'<span class="o">⭕</span>':'<span class="x">❌</span>'}</td><td>${fmtSec(r.sec)}</td><td>${r.base||'·'}</td><td>${r.timeB?'+'+r.timeB:'·'}</td><td>${r.comboB?'+'+r.comboB:'·'}</td><td><b>${r.base+r.timeB+r.comboB}</b></td></tr>`).join('');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function savePng(){
+  toast('이미지를 만드는 중…');
+  html2canvas($('shot'),{scale:2,backgroundColor:'#ffffff'}).then(cv=>{
+    const a=document.createElement('a');
+    a.download='피드백_마스터_결과.png';
+    a.href=cv.toDataURL('image/png'); a.click();
+    toast('결과를 저장했어요 🖼');
+  }).catch(()=>toast('⚠ 이미지 저장에 실패했어요'));
+}
+</script>
+</body>
+</html>
