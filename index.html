@@ -33,11 +33,29 @@ main{max-width:1100px;margin:0 auto;padding:36px 24px;display:grid;grid-template
 .card a:hover{filter:brightness(.93)}
 .card .soon-tag{text-align:center;background:#EFEDF6;color:#9AA1B8;padding:12px;border-radius:9px;font-weight:700;font-size:16px}
 
+/* 과정별 색 구분 (메인 전용): 카드 상단 라인 + 배지 색 */
+.card{border-top:5px solid #CBD2E4}
+.card[data-c="8"]{border-top-color:#B7AEE8}.card[data-c="8"] .no{background:#E3DEF8}
+.card[data-c="9"]{border-top-color:#7FC3EC}.card[data-c="9"] .no{background:#D3EAFA}
+.card[data-c="10"]{border-top-color:#EE8EC6}.card[data-c="10"] .no{background:#FADCEE}
+.card[data-c="11"]{border-top-color:#6FC79A}.card[data-c="11"] .no{background:#D3F0E0}
+.card[data-c="12"]{border-top-color:#E8B054}.card[data-c="12"] .no{background:#F9E5C0}
+.card[data-c="13"]{border-top-color:#8FA4E8}.card[data-c="13"] .no{background:#DDE4FA}
+
 /* 과정 필터 */
 .filters{margin-top:22px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .fch{font-family:inherit;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:#52609B;font-weight:700;font-size:14.5px;padding:8px 18px;border-radius:999px;transition:.15s}
 .fch:hover{border-color:#B9AEE0}
 .fch.on{background:linear-gradient(90deg,#8F86DD,#EC6FB2);color:#fff;border-color:transparent}
+.fch::before{content:'';display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.fch[data-c="all"]::before{display:none}
+.fch.on::before{background:#fff}
+.fch[data-c="8"]:not(.on)::before{background:#B7AEE8}
+.fch[data-c="9"]:not(.on)::before{background:#7FC3EC}
+.fch[data-c="10"]:not(.on)::before{background:#EE8EC6}
+.fch[data-c="11"]:not(.on)::before{background:#6FC79A}
+.fch[data-c="12"]:not(.on)::before{background:#E8B054}
+.fch[data-c="13"]:not(.on)::before{background:#8FA4E8}
 </style>
 </head>
 <body>
