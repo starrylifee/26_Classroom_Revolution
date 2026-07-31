@@ -116,6 +116,7 @@ textarea:focus{border-color:var(--sky);background:#FEFBFE}
       <span style="flex:1"></span>
       <button class="btn-grad" id="startBtn" onclick="startRec()">🎙 받아쓰기 시작</button>
       <button class="btn-rec hide" id="stopBtn" onclick="stopRec()">⏹ 종료</button>
+      <button class="btn-outline" id="pasteBtn" onclick="goPaste()">⌨️ 마이크 없이 텍스트로</button>
     </div>
     <div class="live" id="liveBox"><span class="empty">여기에 발화가 실시간으로 쌓입니다. 마이크 없이 쓰려면 아래 ②에 전사문을 직접 붙여넣어도 됩니다.</span></div>
     <div class="warn hide" id="noApiWarn">⚠ 이 브라우저는 음성인식을 지원하지 않습니다. <b>크롬</b>에서 열거나, 아래 ②에 전사문을 직접 붙여넣어 주세요.</div>
@@ -130,6 +131,10 @@ textarea:focus{border-color:var(--sky);background:#FEFBFE}
     <textarea id="transcript" style="min-height:150px" placeholder="예) 자 오늘은 우리 지역의 문제를 이야기해 볼 거예요. 어떤 문제가 있을까요? …"></textarea>
     <div class="tools">
       <button class="btn-outline" onclick="copyTr()">📋 전사문 복사</button>
+      <label id="mminWrap" style="font-size:14px;color:var(--muted);display:flex;align-items:center;gap:6px">붙여넣은 전사문이라면 발화 시간
+        <input id="manualMin" type="number" min="1" max="60" step="1" style="width:64px;padding:8px 10px;font-size:15px;font-family:inherit;border:1.5px solid var(--line);border-radius:9px;outline:none;text-align:center"> 분
+        <span style="font-size:12.5px">— 적으면 말 속도가 계산됩니다</span>
+      </label>
     </div>
   </div>
 
@@ -185,6 +190,17 @@ function save(){ localStorage.setItem(LS_KEY,JSON.stringify(data)); }
 const tr=$('transcript');
 if(data.text) tr.value=data.text;
 tr.addEventListener('input',()=>{ data.text=tr.value; save(); renderStats(); });
+
+// 마이크 없이 텍스트로 — ② 전사문 칸으로 이동해 바로 붙여넣게
+function goPaste(){
+  document.querySelectorAll('.card')[1].scrollIntoView({behavior:'smooth',block:'start'});
+  setTimeout(()=>tr.focus(),350);
+  toast('전사문을 붙여넣고, 발화 시간(분)도 적으면 말 속도까지 계산돼요 ⌨️');
+}
+// 붙여넣은 전사문의 발화 시간(분) 직접 입력
+const mmin=$('manualMin');
+if(data.mmin) mmin.value=data.mmin;
+mmin.addEventListener('input',()=>{ data.mmin=mmin.value; save(); renderStats(); });
 
 // ---------- 음성인식 ----------
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -257,21 +273,24 @@ function renderLive(interim){
 function calcStats(){
   const t=tr.value.trim();
   const words=t?t.split(/\s+/).filter(Boolean):[];
-  const dur=data.dur||0;
+  const recDur=data.dur||0;
+  const manual=!recDur && (parseFloat(data.mmin)||0)>0;
+  const dur=recDur||(manual?Math.round(parseFloat(data.mmin)*60):0);
   const sil=data.sil||[];
   const wpm=dur>=30?Math.round(words.length/(dur/60)):null;
   const freq={};
   words.forEach(w=>{ const c=w.replace(/[.,!?~…"'「」]/g,''); if(c.length>=2){ freq[c]=(freq[c]||0)+1; } });
   const top=Object.entries(freq).filter(([,n])=>n>=4).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  return {words:words.length,dur,wpm,silCount:sil.length,silMax:sil.length?Math.max(...sil):0,top};
+  return {words:words.length,dur,recDur,manual,wpm,silCount:sil.length,silMax:sil.length?Math.max(...sil):0,top};
 }
 function renderStats(){
   const s=calcStats();
+  $('mminWrap').style.display=s.recDur>0?'none':'flex';
   const chips=[];
-  if(s.dur>0) chips.push([fmt(s.dur),'발화 시간']);
+  if(s.dur>0) chips.push([fmt(s.dur),s.manual?'발화 시간(입력)':'발화 시간']);
   chips.push([s.words.toLocaleString(),'어절 수']);
   if(s.wpm) chips.push([s.wpm+'/분','말 속도(어절)']);
-  if(s.dur>0){ chips.push([s.silCount+'회','3초+ 멈춤']); if(s.silMax) chips.push([s.silMax+'초','가장 긴 멈춤']); }
+  if(s.recDur>0){ chips.push([s.silCount+'회','3초+ 멈춤']); if(s.silMax) chips.push([s.silMax+'초','가장 긴 멈춤']); }
   $('statsBox').innerHTML=chips.map(([v,l])=>`<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
   $('freqBox').innerHTML=s.top.length?('<span style="background:none;color:#5B6B7C;font-weight:500;padding-left:0">자주 쓴 표현</span>'+s.top.map(([w,n])=>`<span>${w} ×${n}</span>`).join('')):'';
 }
@@ -301,10 +320,10 @@ async function runAnalyze(){
   try{
     const s=calcStats();
     const statLine=[
-      s.dur?`발화 시간 ${fmt(s.dur)}`:'발화 시간 미측정(붙여넣은 전사문)',
+      s.dur?`발화 시간 ${fmt(s.dur)}${s.manual?'(붙여넣은 전사문, 교사가 직접 입력한 시간)':''}`:'발화 시간 미측정(붙여넣은 전사문)',
       `어절 ${s.words}개`,
       s.wpm?`분당 ${s.wpm}어절`:'',
-      s.dur?`3초 이상 멈춤 ${s.silCount}회(최장 ${s.silMax}초)`:'',
+      s.recDur?`3초 이상 멈춤 ${s.silCount}회(최장 ${s.silMax}초)`:'',
       s.top.length?('자주 쓴 표현: '+s.top.map(([w,n])=>`${w}(${n}회)`).join(', ')):''
     ].filter(Boolean).join(' · ');
     const res=await fetch('/api/speech',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -344,7 +363,7 @@ function clearAll(){
   if(recording){ toast('먼저 받아쓰기를 종료해 주세요 ⏹'); return; }
   if(!confirm('전사문과 분석 결과를 모두 지울까요? 되돌릴 수 없습니다.')) return;
   data={}; localStorage.removeItem(LS_KEY);
-  tr.value=''; $('timer').textContent='00:00'; $('recStatus').textContent='대기 중';
+  tr.value=''; $('manualMin').value=''; $('timer').textContent='00:00'; $('recStatus').textContent='대기 중';
   $('aiShot').classList.add('hide'); $('pngBtn').classList.add('hide');
   renderLive(''); renderStats();
   toast('내용을 지웠어요');
